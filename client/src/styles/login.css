@@ -1,0 +1,53 @@
+.login-container {
+  min-height: 100vh;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&h=900&fit=crop");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 60px;
+  padding-right: 20px;
+}
+
+.login-card-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 500px;
+  flex-shrink: 0;
+}
+
+/* Tablet and smaller screens */
+@media (max-width: 768px) {
+  .login-container {
+    justify-content: center;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .login-card-wrapper {
+    width: 100%;
+    max-width: 420px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .login-container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .login-card-wrapper {
+    max-width: 100%;
+  }
+}

@@ -1,0 +1,55 @@
+Connected to MongoDB
+
+Looking for employee with _id: 6904a10b3a5301d8a87fc7dc
+
+Employee Found:
+{
+  "salaryStructure": {
+    "basic": 0,
+    "hra": 0,
+    "allowances": 0,
+    "pf": 0,
+    "esi": 0,
+    "tds": 0,
+    "netSalary": 0
+  },
+  "attendanceSettings": {
+    "gracePeriod": 15,
+    "requireLocation": false,
+    "shift": "general"
+  },
+  "exitProcess": {
+    "exitChecklist": {
+      "assetReturned": false,
+      "accessRevoked": false,
+      "documentsSubmitted": false,
+      "finalSettlement": false,
+      "exitInterview": false
+    }
+  },
+  "dateOfBirth": null,
+  "gender": null,
+  "alternatePhone": "",
+  "workLocation": "office",
+  "employmentType": "full-time",
+  "probationEndDate": null,
+  "probationStatus": "not-started",
+  "avatar": null,
+  "_id": "6904a10b3a5301d8a87fc7dc",
+  "user": "6904a0c03a5301d8a87fc78b",
+  "employeeId": "Em000",
+  "department": "HR",
+  "designation": "Developer",
+  "salary": 200000,
+  "phone": "+916396497489",
+  "skills": [],
+  "status": "inactive",
+  "documents": [],
+  "joiningDate": "2025-10-31T11:44:11.846Z",
+  "createdAt": "2025-10-31T11:44:11.847Z",
+  "updatedAt": "2026-01-29T06:19:05.899Z",
+  "__v": 0,
+  "deletedAt": "2026-01-29T06:19:05.899Z",
+  "deletedBy": "69049c7ae002c4ca389e9ef8",
+  "salaryHistory": []
+}

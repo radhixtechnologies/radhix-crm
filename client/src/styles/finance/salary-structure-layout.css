@@ -1,0 +1,305 @@
+/* ============================================
+   PROFESSIONAL SALARY STRUCTURE FORM
+   Clean, Minimal, Enterprise-Ready
+   ============================================ */
+
+/* Two-Column Layout */
+.form-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+    align-items: start;
+}
+
+.form-left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-right-column {
+    position: relative;
+}
+
+.sticky-summary {
+    position: sticky;
+    top: 24px;
+}
+
+/* Polished Section Cards */
+.form-section {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    padding: 28px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.2s ease !important;
+}
+
+.form-section:hover {
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    transform: none !important;
+}
+
+.form-section::before {
+    display: none !important;
+}
+
+/* Enhanced Section Headers */
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px !important;
+    padding-bottom: 18px !important;
+    border-bottom: 2px solid #f3f4f6 !important;
+    background: none !important;
+    padding: 0 0 18px 0 !important;
+    margin: 0 0 24px 0 !important;
+}
+
+.section-header::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 48px;
+    height: 2px;
+    background: #3b82f6;
+    border-radius: 2px;
+}
+
+.section-icon {
+    width: 20px !important;
+    height: 20px !important;
+    color: #3b82f6 !important;
+    background: #eff6ff !important;
+    padding: 8px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    box-sizing: content-box !important;
+}
+
+.section-title {
+    font-size: 17px !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    letter-spacing: -0.02em !important;
+    background: none !important;
+    -webkit-text-fill-color: initial !important;
+    text-transform: none !important;
+}
+
+/* Remove Color Coding but Keep Visual Interest */
+.earnings-section,
+.deductions-section {
+    background: #ffffff !important;
+    border-color: #e5e7eb !important;
+}
+
+.earnings-section::before,
+.deductions-section::before {
+    display: none !important;
+}
+
+.earnings-section .section-icon {
+    background: #f0fdf4 !important;
+    color: #10b981 !important;
+    box-shadow: none !important;
+}
+
+.deductions-section .section-icon {
+    background: #fef2f2 !important;
+    color: #ef4444 !important;
+    box-shadow: none !important;
+}
+
+/* Refined Subsections */
+.subsection {
+    margin-top: 28px;
+    padding-top: 28px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.subsection::before {
+    display: none !important;
+}
+
+.subsection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.subsection-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+    text-transform: none;
+    letter-spacing: -0.01em;
+}
+
+/* Polished Buttons */
+.btn-sm {
+    padding: 9px 16px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    background: #ffffff !important;
+    color: #374151 !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.2s ease !important;
+    border-radius: 8px !important;
+}
+
+.btn-sm:hover {
+    background: #f9fafb !important;
+    border-color: #9ca3af !important;
+    transform: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Premium Summary Panel */
+.summary-section {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    border-radius: 12px !important;
+    overflow: visible !important;
+}
+
+.summary-section::before {
+    display: none !important;
+}
+
+.summary-section .section-header {
+    background: none !important;
+    backdrop-filter: none !important;
+    border-bottom: 2px solid #f3f4f6 !important;
+}
+
+.summary-section .section-header::after {
+    background: #3b82f6;
+}
+
+.summary-section .section-icon {
+    background: #eff6ff !important;
+    color: #3b82f6 !important;
+    box-shadow: none !important;
+}
+
+.summary-section .section-title {
+    color: #0f172a !important;
+    background: none !important;
+    -webkit-text-fill-color: initial !important;
+}
+
+.salary-summary-card {
+    background: #fafbfc;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: none;
+    border: 1px solid #f3f4f6;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    background: transparent !important;
+    border-radius: 0 !important;
+    margin-bottom: 0 !important;
+    border: none !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    transition: none !important;
+}
+
+.summary-row:hover {
+    padding-left: 0 !important;
+    border-bottom-color: #e5e7eb !important;
+}
+
+.summary-row:last-child {
+    border-bottom: none !important;
+}
+
+.summary-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.summary-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Prominent Net Salary */
+.summary-row.total {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+    border: none !important;
+    margin-top: 16px !important;
+    padding: 18px 20px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2) !important;
+    overflow: visible !important;
+}
+
+.summary-row.total::before {
+    display: none !important;
+}
+
+.summary-row.total .summary-label,
+.summary-row.total .summary-value {
+    position: relative;
+    z-index: 1;
+}
+
+.summary-row.total .summary-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.summary-row.total .summary-value {
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 700;
+    text-shadow: none;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .form-layout-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sticky-summary {
+        position: relative;
+        top: 0;
+    }
+
+    .form-right-column {
+        order: -1;
+    }
+}
+
+/* Remove all animations */
+@keyframes shimmer {
+
+    0%,
+    100% {
+        opacity: 0;
+    }
+}

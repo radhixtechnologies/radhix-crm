@@ -1,0 +1,9 @@
+/* FIX FOR DUPLICATE SELECT ELEMENT - Updated to not hide inputs */
+.form-group select~button:not(.btn):not(.btn-sm),
+.form-group select~span:not(.required):not(.error-message):not(.input-prefix) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}

@@ -1,0 +1,5 @@
+firstName,lastName,email,phone,company,status,lifecycleStage
+John,Doe,john.doe@example.com,+1234567890,Acme Corp,active,customer
+Jane,Smith,jane.smith@example.com,+1234567891,Tech Solutions,active,lead
+Bob,Johnson,bob.johnson@example.com,+1234567892,Digital Agency,inactive,marketing-qualified
+Alice,Williams,alice.williams@example.com,+1234567893,StartupXYZ,active,sales-qualified

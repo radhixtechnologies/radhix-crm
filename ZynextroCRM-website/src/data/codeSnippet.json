@@ -1,0 +1,24 @@
+{
+  "title": "pipeline.yml",
+  "language": "yaml",
+  "description": "A tiny pipeline that installs dependencies, runs tests, and deploys if the branch is main.",
+  "snippet": [
+    "name: DevFlow Deploy",
+    "on:",
+    "  push:",
+    "    branches: [\"main\"]",
+    "jobs:",
+    "  build:",
+    "    runs-on: ubuntu-latest",
+    "    steps:",
+    "      - uses: actions/checkout@v4",
+    "      - name: Install",
+    "        run: npm ci",
+    "      - name: Test",
+    "        run: npm test",
+    "      - name: Deploy",
+    "        if: success()",
+    "        run: npm run deploy"
+  ]
+}
+

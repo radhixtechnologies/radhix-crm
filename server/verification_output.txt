@@ -1,0 +1,244 @@
+﻿[dotenv@17.2.3] injecting env (14) from .env -- tip: ≡ƒöæ add access controls to secrets: https://dotenvx.com/ops
+≡ƒöî Connecting to MongoDB...
+node : (node:13256) 
+[MONGOOSE] Warning: 
+Duplicate schema index on 
+{"slug":1} found. This is 
+often due to declaring an 
+index using both "index: 
+true" and "schema.index()". 
+Please remove the duplicate 
+index definition.
+At line:1 char:1
++ node scripts/verifyTimeshe
+etSetup.js 2>&1 | Out-File 
+-FilePath verifi ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: ((node  
+  :13256) [M...dex defini   
+ tion.:String) [], Remot    
+eException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+(Use `node --trace-warnings 
+...` to show where the 
+warning was created)
+Γ£à Connected to: Zynextrolive
+
+============================================================
+
+≡ƒôï TIMESHEET MODEL VERIFICATION
+============================================================
+Total Timesheets: 2
+
+≡ƒôä Sample Timesheet:
+{
+  "_id": "6990526f384688841311d1cd",
+  "employee": {
+    "_id": "698dc1cab5adfda0340b9cec",
+    "user": "698dc1c9b5adfda0340b9cea",
+    "employeeId": "ZY25/ND/DEV/OO19",
+    "department": "IT"
+  },
+  "date": "2026-02-14T00:00:00.000Z",
+  "workDescription": "this is my workupdate for tod",
+  "hours": 12,
+  "createdBy": {
+    "_id": "698dc1c9b5adfda0340b9cea",
+    "name": "Ayush Deep",
+    "email": "ayushdeep8860@gmail.com",
+    "role": "696f31e3266527f24f2fe4b0"
+  },
+  "roleOfCreator": "employee",
+  "isEditable": true,
+  "createdAt": "2026-02-14T10:46:07.635Z",
+  "updatedAt": "2026-02-14T10:46:23.308Z",
+  "__v": 0
+}
+
+
+≡ƒöì TIMESHEET INDEXES
+============================================================
+Indexes: {
+  "_id_": [
+    [
+      "_id",
+      1
+    ]
+  ],
+  "employee_1_date_1": [
+    [
+      "employee",
+      1
+    ],
+    [
+      "date",
+      1
+    ]
+  ],
+  "createdBy_1": [
+    [
+      "createdBy",
+      1
+    ]
+  ],
+  "roleOfCreator_1": [
+    [
+      "roleOfCreator",
+      1
+    ]
+  ],
+  "createdAt_-1": [
+    [
+      "createdAt",
+      -1
+    ]
+  ]
+}
+
+
+≡ƒæÑ ROLE VERIFICATION
+============================================================
+Total Active Roles: 13
+
+≡ƒôî Super Admin (super_admin)
+   Level: 100
+   Modules: dashboard, employee, finance, sales, hrm, settings
+
+≡ƒôî Admin (admin)
+   Level: 80
+   Modules: dashboard, employee, finance, sales, hrm, settings
+
+≡ƒôî Sales Employee (sales_employee)
+   Level: 10
+   Modules: dashboard, employee, sales, marketing
+
+≡ƒôî Sales Manager (sales_manager)
+   Level: 50
+   Modules: dashboard, employee, sales, marketing
+
+≡ƒôî HRM Employee (hrm_employee)
+   Level: 10
+   Modules: dashboard, employee, hrm
+
+≡ƒôî HRM Admin (hrm_admin)
+   Level: 50
+   Modules: dashboard, employee, hrm
+
+≡ƒôî Finance Employee (finance_employee)
+   Level: 10
+   Modules: dashboard, employee, finance
+
+≡ƒôî Finance Manager (finance_manager)
+   Level: 50
+   Modules: dashboard, employee, finance
+
+≡ƒôî Employee (employee)
+   Level: 10
+   Modules: dashboard, employee
+
+≡ƒôî Operations Employee (operations_employee)
+   Level: 10
+   Modules: dashboard, employee, inventory
+
+≡ƒôî Operations Manager (operations_manager)
+   Level: 50
+   Modules: dashboard, employee, inventory
+
+≡ƒôî Management Employee (management_employee)
+   Level: 10
+   Modules: dashboard, employee, support
+
+≡ƒôî Management Admin (management_admin)
+   Level: 50
+   Modules: dashboard, employee, support, settings
+
+
+≡ƒæñ USER-ROLE MAPPING
+============================================================
+Total Active Users: 8
+
+Showing first 8 users:
+
+≡ƒôº admin@zynextro.com
+   Name: Super Admin
+   Role: Super Admin (super_admin)
+   Department: Management
+
+≡ƒôº srivastavaneharika41@gmail.com
+   Name: Neharika Srivastava
+   Role: HRM Admin (hrm_admin)
+   Department: HR
+
+≡ƒôº knehu8532@gmail.com
+   Name: Neha Kumari
+   Role: Employee (employee)
+   Department: IT
+
+≡ƒôº mdrahmatullahquraishi@gmail.com
+   Name: MD. Rahmatullah
+   Role: Employee (employee)
+   Department: IT
+
+≡ƒôº priyapnde7727@gmail.com
+   Name: Priya Pandey
+   Role: Employee (employee)
+   Department: IT
+
+≡ƒôº ayushdeep8860@gmail.com
+   Name: Ayush Deep
+   Role: Employee (employee)
+   Department: IT
+
+≡ƒôº jiyachaudhary296@gmail.com
+   Name: Jiya Chaudhary
+   Role: Sales Employee (sales_employee)
+   Department: Sales
+
+≡ƒôº charusaraswat639649@gmail.com
+   Name: Charu Sarswat
+   Role: HRM Admin (hrm_admin)
+   Department: IT
+
+
+≡ƒæö EMPLOYEE VERIFICATION
+============================================================
+Total Active Employees: 8
+
+≡ƒôä Sample Employee:
+   Employee ID: MGT-0001
+   Name: Super Admin
+   Email: admin@zynextro.com
+   Department: Management
+   Designation: Super Administrator
+
+
+≡ƒöÉ TIMESHEET ACCESS CONTROL SUMMARY
+============================================================
+
+ΓöîΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö¼ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö¼ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö¼ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö¼ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö¼ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö¼ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÉ
+Γöé Role            Γöé View All Γöé View Dept      Γöé View Own Γöé Create Own Γöé Update Own Γöé Delete Own Γöé
+Γö£ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö╝ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö╝ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö╝ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö╝ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö╝ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö╝ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöñ
+Γöé Super Admin     Γöé    Γ£à    Γöé      Γ£à        Γöé    Γ£à    Γöé     Γ£à     Γöé     Γ£à     Γöé     Γ£à     Γöé
+Γöé HRM Admin       Γöé    Γ£à    Γöé      Γ£à        Γöé    Γ£à    Γöé     Γ£à     Γöé     Γ£à     Γöé     Γ£à     Γöé
+Γöé Dept Admin      Γöé    Γ¥î    Γöé      Γ£à        Γöé    Γ£à    Γöé     Γ£à     Γöé     Γ£à     Γöé     Γ£à     Γöé
+Γöé Employee        Γöé    Γ¥î    Γöé      Γ¥î        Γöé    Γ£à    Γöé     Γ£à     Γöé     Γ£à     Γöé     Γ£à     Γöé
+ΓööΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö┤ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö┤ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö┤ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö┤ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö┤ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö┤ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÿ
+    
+
+≡ƒô¥ KEY FEATURES:
+   ΓÇó Department Isolation: Admins only see their department
+   ΓÇó Creator Ownership: Users can only modify their own entries
+   ΓÇó Unique Constraint: One timesheet per employee per day
+   ΓÇó Role Tracking: roleOfCreator field tracks who created each entry
+   ΓÇó Editable Flag: isEditable allows locking timesheets if needed
+   ΓÇó Activity Logging: All create/update/delete operations are logged
+
+
+Γ£à VERIFICATION COMPLETE!
+============================================================
+
+≡ƒöî Database connection closed

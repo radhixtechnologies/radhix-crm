@@ -1,0 +1,15 @@
+.add-item-row td {
+  padding: 8px !important;
+}
+
+.add-item-row .form-input {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.add-item-row .amount {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+

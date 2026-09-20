@@ -1,0 +1,30 @@
+[
+    {
+        "id": 1,
+        "name": "Sarah Jenkins",
+        "role": "Chief Operations Officer",
+        "photo": "../assets/clt1.png",
+        "feedback": "Zynextro CRM has completely transformed how we track our global sales pipeline. The automation features alone saved us hundreds of hours in the first quarter."
+    },
+    {
+        "id": 2,
+        "name": "David Chen",
+        "role": "Sales Director",
+        "photo": "../assets/clt2.png",
+        "feedback": "The intuitive interface and real-time analytics have given our team a massive competitive edge. It's the first CRM that my team actually enjoys using every day."
+    },
+    {
+        "id": 3,
+        "name": "Michelle Rodriguez",
+        "role": "Founder & CEO",
+        "photo": "../assets/clt3.png",
+        "feedback": "As a startup founder, I needed a solution that scales with us. Zynextro provided exactly that—powerful features without the enterprise complexity."
+    },
+    {
+        "id": 4,
+        "name": "Robert Taylor",
+        "role": "VP of Customer Success",
+        "photo": "../assets/clt4.png",
+        "feedback": "The 360-degree view of our customers has improved our retention rates by 25%. We finally have all our data in one place, accessible and actionable."
+    }
+]

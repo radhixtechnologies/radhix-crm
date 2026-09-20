@@ -1,0 +1,8 @@
+Super Admin | admin@zynextro.com | super_admin | dashboard,employee,finance,sales,hrm,settings
+Neharika Srivastava | srivastavaneharika41@gmail.com | hrm_admin | dashboard,employee,hrm
+Neha Kumari | knehu8532@gmail.com | employee | dashboard,employee
+MD. Rahmatullah | mdrahmatullahquraishi@gmail.com | employee | dashboard,employee
+Priya Pandey | priyapnde7727@gmail.com | employee | dashboard,employee
+Ayush Deep | ayushdeep8860@gmail.com | employee | dashboard,employee
+Jiya Chaudhary | jiyachaudhary296@gmail.com | sales_employee | dashboard,employee,sales,marketing
+Charu Sarswat | charusaraswat639649@gmail.com | employee | dashboard,employee

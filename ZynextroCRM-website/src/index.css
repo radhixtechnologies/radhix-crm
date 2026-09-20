@@ -1,0 +1,232 @@
+@import "tailwindcss";
+
+:root {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
+
+.animate-logo-scroll {
+  animation: logo-scroll 30s linear infinite;
+  will-change: transform;
+  display: inline-flex;
+  white-space: nowrap;
+}
+
+.animate-marquee-slow {
+  animation: marquee-slow 40s linear infinite;
+}
+
+.animate-testimonial-marquee {
+  animation: testimonial-marquee 10s linear infinite;
+}
+
+.animate-fade {
+  opacity: 0;
+  animation: fade-in 1s ease-out forwards;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes logo-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-slow {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes testimonial-marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Vertical slot machine scrolling animations for icons */
+/* All start at the same time (no delay) but move at different speeds */
+/* Smooth easing and hardware acceleration for better performance */
+/* All start at the same time (no delay) but move at different speeds */
+/* Smooth easing and hardware acceleration for better performance */
+/* All icons synchronized: scroll 2s, pause 1s (3s total cycle) */
+.animate-icon-scroll-1 {
+  --scroll-dist: -120px;
+  /* 5 icons */
+  animation: icon-scroll-vertical 3s ease-in-out infinite;
+  animation-delay: 0s;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.animate-icon-scroll-2 {
+  --scroll-dist: -240px;
+  /* 10 icons - 2x speed */
+  animation: icon-scroll-vertical 3s ease-in-out infinite;
+  animation-delay: 0s;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.animate-icon-scroll-3 {
+  --scroll-dist: -360px;
+  /* 15 icons - 3x speed */
+  animation: icon-scroll-vertical 3s ease-in-out infinite;
+  animation-delay: 0s;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.animate-icon-scroll-4 {
+  --scroll-dist: -240px;
+  /* 10 icons - 2x speed */
+  animation: icon-scroll-vertical 3s ease-in-out infinite;
+  animation-delay: 0s;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.animate-icon-scroll-5 {
+  --scroll-dist: -120px;
+  /* 5 icons - normal speed */
+  animation: icon-scroll-vertical 3s ease-in-out infinite;
+  animation-delay: 0s;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+@keyframes icon-scroll-vertical {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  /* Scroll phase: 0% to 66.67% (2 seconds out of 3 second cycle) */
+  /* Scroll through varying number of icons defined by --scroll-dist */
+  66.67% {
+    transform: translate3d(0, var(--scroll-dist, -120px), 0);
+  }
+
+  /* Pause phase: 66.67% to 100% (1 second pause) - all icons stop together */
+  100% {
+    transform: translate3d(0, var(--scroll-dist, -120px), 0);
+    /* Stay at same position during pause */
+  }
+}
+
+/* Scroll section animations */
+.tool-card,
+.feature-card {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  contain: layout style paint;
+}
+
+/* Ensure cards stay within container bounds */
+.feature-card {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* About page - Core values infinite scroll */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-320px * 6 - 24px * 6));
+  }
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
+}
+
+.animate-scroll:hover {
+  animation-play-state: paused;
+}

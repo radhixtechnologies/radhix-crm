@@ -1,0 +1,33 @@
+Connected to MongoDB
+
+Is "6904a10b3a5301d8a87fc7dc" a valid ObjectId: true
+
+--- Checking Employee Collection ---
+Employee by _id: FOUND: Em000
+
+--- Checking User Collection ---
+User by _id: NOT FOUND
+
+--- All Employees (First 10) ---
+1. Employee _id: 690721c159761aeb98016143
+   employeeId: MGT-0001
+   User: Super Admin
+   User _id: 69049c7ae002c4ca389e9ef8
+
+2. Employee _id: 697afc50379c929f9ae9cd8e
+   employeeId: EMP0006
+   User: Charu Sarswat
+   User _id: 6904a0c03a5301d8a87fc78b
+
+
+--- All Users (First 10) ---
+1. User _id: 69049c7ae002c4ca389e9ef8, Name: Super Admin, Email: admin@zynextro.com
+2. User _id: 6904a0c03a5301d8a87fc78b, Name: Charu Sarswat, Email: charusaraswat639649@gmail.com
+3. User _id: 6905ca8c2ee06b7ff16eb183, Name: Anjali, Email: 26csneeru@rkgit.edu.in
+4. User _id: 6905f76fdda345449838a5aa, Name: Anita, Email: ani@gmail.com
+5. User _id: 690709cfe320be48b3d8c75a, Name: A D, Email: a@gmai.com
+6. User _id: 690b18f4968490d3d720814a, Name: Ayush, Email: anki@gmail.com
+7. User _id: 690b25ffdc4e26b810362fad, Name: ajay, Email: ajay@gmail.com
+8. User _id: 690b27a89edd32ae7353afcc, Name: charu, Email: c@gmail.com
+9. User _id: 690b2cad4fdf030a337dc09c, Name: Ankit, Email: g@gmail.com
+10. User _id: 69513866875b56ebc0ce8894, Name: Charu Sarswat, Email: p@gmail.com

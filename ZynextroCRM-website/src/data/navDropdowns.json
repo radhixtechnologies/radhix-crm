@@ -1,0 +1,328 @@
+{
+  "Platform": {
+    "categories": [
+      {
+        "title": "ACCEPT PAYMENTS ONLINE",
+        "items": [
+          {
+            "title": "Payment Gateway",
+            "description": "Payments on your Website & App",
+            "icon": "payment-gateway"
+          },
+          {
+            "title": "Payment Links",
+            "description": "Create & send links to collect money",
+            "icon": "payment-links"
+          },
+          {
+            "title": "Payment Pages",
+            "description": "Get paid with personalized page",
+            "icon": "payment-pages"
+          },
+          {
+            "title": "QR Codes",
+            "description": "Multi-feature QR for your business",
+            "icon": "qr-code"
+          },
+          {
+            "title": "UPI Payments",
+            "description": "Discover the complete UPI stack",
+            "icon": "upi-payments",
+            "badge": "NEW"
+          }
+        ]
+      },
+      {
+        "title": "ACCEPT PAYMENTS OFFLINE",
+        "items": [
+          {
+            "title": "POS Terminal",
+            "description": "Accept Payments In-Store",
+            "icon": "pos-terminal"
+          }
+        ]
+      }
+    ],
+    "rightColumn": [
+      {
+        "title": "Magic Checkout",
+        "description": "Improve Order Conversions & Reduce RTOs",
+        "icon": "magic-checkout",
+        "badge": "NEW"
+      },
+      {
+        "title": "Subscriptions",
+        "description": "Collect recurring subscription payments",
+        "icon": "subscriptions"
+      },
+      {
+        "title": "Instant Settlement",
+        "description": "Customer payments settled faster",
+        "icon": "instant-settlement"
+      },
+      {
+        "title": "Optimizer",
+        "description": "Manage multiple payment gateways",
+        "icon": "optimizer"
+      },
+      {
+        "title": "International Payments",
+        "description": "Accept payments from across the globe",
+        "icon": "international-payments"
+      },
+      {
+        "title": "International Bank Transfers",
+        "description": "Accept USD, GBP, EUR payments in your account",
+        "icon": "international-bank-transfers"
+      },
+      {
+        "title": "Accept Payments from India",
+        "description": "Seamless INR collections via UPI & cards",
+        "icon": "accept-payments-india",
+        "badge": "NEW"
+      },
+      {
+        "title": "Omnichannel Payments",
+        "description": "One Payment Platform for All Channels",
+        "icon": "omnichannel-payments",
+        "badge": "NEW"
+      }
+    ]
+  },
+  "Workflows": {
+    "categories": [
+      {
+        "title": "AUTOMATION",
+        "items": [
+          {
+            "title": "Workflow Builder",
+            "description": "Create automated workflows easily",
+            "icon": "workflow-builder"
+          },
+          {
+            "title": "Task Automation",
+            "description": "Automate repetitive tasks",
+            "icon": "task-automation"
+          },
+          {
+            "title": "Scheduled Jobs",
+            "description": "Run tasks on schedule",
+            "icon": "scheduled-jobs"
+          }
+        ]
+      },
+      {
+        "title": "INTEGRATIONS",
+        "items": [
+          {
+            "title": "API Integrations",
+            "description": "Connect with external services",
+            "icon": "api-integrations"
+          },
+          {
+            "title": "Webhooks",
+            "description": "Real-time event notifications",
+            "icon": "webhooks"
+          }
+        ]
+      }
+    ],
+    "rightColumn": [
+      {
+        "title": "Custom Workflows",
+        "description": "Build your own automation",
+        "icon": "custom-workflows"
+      },
+      {
+        "title": "Templates",
+        "description": "Pre-built workflow templates",
+        "icon": "templates"
+      }
+    ]
+  },
+  "Docs": {
+    "categories": [
+      {
+        "title": "GETTING STARTED",
+        "items": [
+          {
+            "title": "Quick Start Guide",
+            "description": "Get up and running in minutes",
+            "icon": "quick-start"
+          },
+          {
+            "title": "API Reference",
+            "description": "Complete API documentation",
+            "icon": "api-reference"
+          },
+          {
+            "title": "SDKs & Libraries",
+            "description": "Client libraries for all languages",
+            "icon": "sdks-libraries"
+          }
+        ]
+      },
+      {
+        "title": "GUIDES",
+        "items": [
+          {
+            "title": "Integration Guides",
+            "description": "Step-by-step integration tutorials",
+            "icon": "integration-guides"
+          },
+          {
+            "title": "Best Practices",
+            "description": "Learn from experts",
+            "icon": "best-practices"
+          }
+        ]
+      }
+    ],
+    "rightColumn": [
+      {
+        "title": "Code Examples",
+        "description": "Real-world code samples",
+        "icon": "code-examples"
+      },
+      {
+        "title": "Video Tutorials",
+        "description": "Watch and learn",
+        "icon": "video-tutorials"
+      }
+    ]
+  },
+  "Pricing": {
+    "categories": [
+      {
+        "title": "PLANS & PRICING",
+        "items": [
+          {
+            "title": "Basic Plan",
+            "description": "Perfect for small teams and startups",
+            "icon": "starter-plan"
+          },
+          {
+            "title": "Standard Plan",
+            "description": "For growing businesses and teams",
+            "icon": "professional-plan"
+          },
+          {
+            "title": "Premium Plan",
+            "description": "Powerful features for large organizations",
+            "icon": "enterprise-plan"
+          },
+          {
+            "title": "Custom Pricing",
+            "description": "Tailored plans for your needs",
+            "icon": "custom-pricing"
+          }
+        ]
+      },
+      {
+        "title": "FEATURES BY PLAN",
+        "items": [
+          {
+            "title": "Compare Plans",
+            "description": "See what's included in each plan",
+            "icon": "compare-plans"
+          },
+          {
+            "title": "Feature Matrix",
+            "description": "Detailed feature comparison",
+            "icon": "feature-matrix"
+          }
+        ]
+      }
+    ],
+    "rightColumn": [
+      {
+        "title": "Free Trial",
+        "description": "Start with 14 days free trial",
+        "icon": "free-trial",
+        "badge": "FREE"
+      },
+      {
+        "title": "Volume Discounts",
+        "description": "Save more with higher usage",
+        "icon": "volume-discounts"
+      },
+      {
+        "title": "Annual Billing",
+        "description": "Save up to 20% with annual plans",
+        "icon": "annual-billing"
+      },
+      {
+        "title": "Contact Sales",
+        "description": "Talk to our sales team",
+        "icon": "contact-sales"
+      }
+    ]
+  },
+  "Contact": {
+    "categories": [
+      {
+        "title": "GET IN TOUCH",
+        "items": [
+          {
+            "title": "Sales Inquiry",
+            "description": "Speak with our sales team",
+            "icon": "sales-inquiry"
+          },
+          {
+            "title": "Support Request",
+            "description": "Get help from our support team",
+            "icon": "support-request"
+          },
+          {
+            "title": "Partnership",
+            "description": "Explore partnership opportunities",
+            "icon": "partnership"
+          },
+          {
+            "title": "Media & Press",
+            "description": "Press inquiries and media kit",
+            "icon": "media-press"
+          }
+        ]
+      },
+      {
+        "title": "RESOURCES",
+        "items": [
+          {
+            "title": "Help Center",
+            "description": "Find answers to common questions",
+            "icon": "help-center"
+          },
+          {
+            "title": "Community Forum",
+            "description": "Connect with other users",
+            "icon": "community-forum"
+          }
+        ]
+      }
+    ],
+    "rightColumn": [
+      {
+        "title": "Schedule Demo",
+        "description": "Book a personalized demo",
+        "icon": "schedule-demo",
+        "badge": "POPULAR"
+      },
+      {
+        "title": "Live Chat",
+        "description": "Chat with us in real-time",
+        "icon": "live-chat"
+      },
+      {
+        "title": "Email Us",
+        "description": "Send us an email",
+        "icon": "email-us"
+      },
+      {
+        "title": "Phone Support",
+        "description": "Call us directly",
+        "icon": "phone-support"
+      }
+    ]
+  }
+}

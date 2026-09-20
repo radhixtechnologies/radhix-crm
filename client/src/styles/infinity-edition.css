@@ -1,0 +1,99 @@
+/* ===================================
+   INFINITY EDITION DESIGN SYSTEM
+   Radhix CRM - Cutting-edge Aesthetic
+   Advanced Visual Effects & Motion
+   =================================== */
+
+:root {
+    --neon-primary: #6366f1;
+    --neon-secondary: #a855f7;
+    --neon-accent: #22d3ee;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-bg-dark: rgba(15, 15, 15, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-border-dark: rgba(255, 255, 255, 0.1);
+}
+
+/* ========== MESH GRADIENT BACKGROUND ========== */
+.infinity-mesh-bg {
+    background: var(--surface);
+    background-attachment: fixed;
+}
+
+[data-theme='dark'] .infinity-mesh-bg {
+    background: var(--bg-main);
+}
+
+/* ========== GLASSMORPHISM CARDS ========== */
+.ep-card.infinity-glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: none;
+}
+
+[data-theme='dark'] .ep-card.infinity-glass {
+    background: var(--glass-bg-dark);
+    border: 1px solid var(--glass-border-dark);
+    box-shadow: none;
+}
+
+/* ========== NEON ACCENTS ========== */
+.ep-status-badge.neon {
+    box-shadow: none;
+    border: 1px solid currentColor;
+    background: transparent !important;
+    font-weight: 700;
+}
+
+.status-active.neon {
+    color: #10b981;
+    box-shadow: none;
+}
+
+.status-inactive.neon {
+    color: #6b7280;
+    box-shadow: none;
+}
+
+/* ========== INFINITY TEXT GLOW ========== */
+.infinity-text-glow {
+    text-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+}
+
+/* ========== PREMIUM SCROLLBAR ========== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.5);
+}
+
+/* ========== MICRO-INTERACTIONS ========== */
+.infinity-hover-glow:hover {
+    box-shadow: none;
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+/* ========== DASHBOARD HEADER ENHANCEMENT ========== */
+.ep-header.infinity-header {
+    background: var(--background);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+[data-theme='dark'] .ep-header.infinity-header {
+    background: var(--bg-main);
+}

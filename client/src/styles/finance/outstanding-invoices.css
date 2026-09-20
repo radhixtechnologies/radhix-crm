@@ -1,0 +1,59 @@
+.outstanding-invoices-card h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.invoices-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.invoice-item {
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.invoice-item:hover {
+  background: var(--bg-tertiary);
+  transform: translateX(4px);
+}
+
+.invoice-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.invoice-number {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.invoice-client {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.invoice-details {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.invoice-amount {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.invoice-date {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+

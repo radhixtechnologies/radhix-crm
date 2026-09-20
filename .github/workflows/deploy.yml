@@ -1,0 +1,93 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
+
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm ci
+
+      - name: Install client dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Build client
+        working-directory: ./client
+        run: npm run build
+        env:
+          VITE_API_URL: https://crm-server.zynextro.com/api
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            # Navigate to project directory
+            cd ~/CRM
+            
+            # Pull latest changes
+            echo "📥 Pulling latest changes from GitHub..."
+            git pull origin main || git pull origin master
+            
+            # Install server dependencies
+            echo "📦 Installing server dependencies..."
+            cd ~/CRM/server
+            npm ci --production
+            
+            # Install client dependencies and build
+            echo "📦 Installing client dependencies..."
+            cd ~/CRM/client
+            npm ci
+            
+            echo "🔨 Building client..."
+            VITE_API_URL=https://crm-server.zynextro.com/api npm run build
+            
+            # Restart backend with PM2
+            echo "🔄 Restarting backend server..."
+            pm2 restart all || pm2 start ~/CRM/server/server.js --name crm-backend
+            
+            # Save PM2 configuration
+            pm2 save
+            
+            echo "✅ Deployment completed successfully!"
+            
+            # Show PM2 status
+            pm2 status
+
+      - name: Deployment Status
+        if: success()
+        run: |
+          echo "✅ Deployment to EC2 completed successfully!"
+          echo "🌐 Backend: https://crm-server.zynextro.com"
+          echo "📊 Check PM2 status on EC2 for details"
+
+      - name: Deployment Failed
+        if: failure()
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Please check the logs above for details"

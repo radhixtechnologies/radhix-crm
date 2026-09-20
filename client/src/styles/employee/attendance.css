@@ -1,0 +1,382 @@
+/* Modern Attendance Page - Horizontal Toolbar Design (Matching Finance Pages) */
+
+:root {
+    --primary: #4F46E5;
+    --primary-hover: #4338CA;
+    --primary-bg: #EEF2FF;
+    --surface: #ffffff;
+    --bg-page: #f8fafc;
+    --border: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warning: #f59e0b;
+}
+
+.attendance-list-page {
+    padding: 24px 32px;
+    max-width: 1200px;
+    /* Constrain width for better reading */
+    margin: 0 auto;
+    min-height: 100vh;
+    background: #f8fafc !important;
+    font-family: 'Inter', sans-serif;
+}
+
+/* --- Header Section --- */
+.attendance-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.header-title-group h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 4px 0;
+}
+
+.header-title-group p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* --- Today's Attendance Card (Redesigned) --- */
+.attendance-today-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    /* Subtle shadow */
+    overflow: hidden;
+    margin-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+}
+
+.today-card-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.today-card-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.today-card-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Split Layout */
+    gap: 32px;
+    padding: 32px;
+    align-items: center;
+}
+
+/* Left Side: Info & Clock */
+.today-info-side {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border-right: 1px solid var(--border);
+    padding-right: 32px;
+}
+
+.live-time-display {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -1px;
+}
+
+.current-date-display {
+    font-size: 16px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.status-badge-lg {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 600;
+    width: fit-content;
+    text-transform: capitalize;
+}
+
+.status-badge-lg.inactive {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.status-badge-lg.active {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.status-badge-lg.wfh {
+    background: #eef2ff;
+    color: #4f46e5;
+}
+
+.status-dot-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(79, 70, 229, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+    }
+}
+
+/* Right Side: Actions */
+.today-action-side {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.action-instruction {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.action-buttons-grid {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+}
+
+.btn-action-lg {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 120px;
+    font-weight: 600;
+    color: var(--text-main);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-action-lg:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.btn-action-lg:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f9fafb;
+}
+
+.btn-action-lg.primary {
+    background: var(--primary-bg);
+    color: var(--primary);
+    border-color: transparent;
+}
+
+.btn-action-lg.primary:hover:not(:disabled) {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-action-lg.success {
+    background: #ecfdf5;
+    color: #059669;
+    border-color: transparent;
+}
+
+.btn-action-lg.success:hover:not(:disabled) {
+    background: #059669;
+    color: white;
+}
+
+.btn-action-lg.warning {
+    background: #fffbeb;
+    color: #d97706;
+    border-color: transparent;
+}
+
+.btn-action-lg.warning:hover:not(:disabled) {
+    background: #d97706;
+    color: white;
+}
+
+.btn-action-lg.error {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: transparent;
+}
+
+.btn-action-lg.error:hover:not(:disabled) {
+    background: #dc2626;
+    color: white;
+}
+
+/* History Section */
+.history-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.date-range-picker {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 12px;
+    height: 40px;
+}
+
+.date-input {
+    border: none;
+    font-size: 13px;
+    color: var(--text-main);
+    padding: 0 8px;
+    outline: none;
+    font-family: inherit;
+}
+
+.card-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+/* Modern Table */
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.modern-table th {
+    background: #f9fafb;
+    padding: 12px 24px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.modern-table td {
+    padding: 16px 24px;
+    font-size: 14px;
+    color: var(--text-main);
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.modern-table tr:last-child td {
+    border-bottom: none;
+}
+
+.modern-table tr:hover {
+    background: #f8fafc;
+}
+
+/* Status Badges */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.badge-success {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.badge-warning {
+    background: #fffbeb;
+    color: #d97706;
+}
+
+.badge-error {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+/* Used for absent or late */
+.badge-info {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .today-card-body {
+        grid-template-columns: 1fr;
+        padding: 24px;
+    }
+
+    .today-info-side {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding-right: 0;
+        padding-bottom: 24px;
+        align-items: center;
+        text-align: center;
+    }
+
+    .today-action-side {
+        width: 100%;
+        align-items: center;
+    }
+
+    .live-time-display {
+        font-size: 36px;
+    }
+}

@@ -1,0 +1,54 @@
+[
+  {
+    "id": 1,
+    "title": "Unified Ecosystem",
+    "icon": "workflow",
+    "mainText": "Eliminate data silos by connecting Sales, HR, Finance, and Operations in one platform.",
+    "highlightedText": [
+      "Eliminate data silos",
+      "one platform"
+    ],
+    "description": "Data flows seamlessly between modules, so your invoice automatically updates your revenue reports.",
+    "signUpText": "Start Free",
+    "knowMoreText": "Explore Modules"
+  },
+  {
+    "id": 2,
+    "title": "Smart Automation",
+    "icon": "fast-forward",
+    "mainText": "Automate everything from lead follow-ups to monthly payroll processing.",
+    "highlightedText": [
+      "lead follow-ups",
+      "payroll processing"
+    ],
+    "description": "Save hundreds of hours by letting the system handle repetitive admin tasks across all departments.",
+    "signUpText": "Start Free",
+    "knowMoreText": "See Automation"
+  },
+  {
+    "id": 3,
+    "title": "360° Business View",
+    "icon": "dashboard",
+    "mainText": "From employee attendance to quarterly sales targets, see your entire business health at a glance.",
+    "highlightedText": [
+      "employee attendance",
+      "business health"
+    ],
+    "description": "Real-time dashboards give you the insights you need to make critical decisions faster.",
+    "signUpText": "Start Free",
+    "knowMoreText": "View Dashboards"
+  },
+  {
+    "id": 4,
+    "title": "Employee Empowerment",
+    "icon": "team",
+    "mainText": "Give your team self-service tools for leave, expenses, and task management.",
+    "highlightedText": [
+      "self-service tools",
+      "task management"
+    ],
+    "description": "Empower your workforce with their own dedicated portals to manage their work life efficiently.",
+    "signUpText": "Start Free",
+    "knowMoreText": "HR Features"
+  }
+]

@@ -1,0 +1,246 @@
+/* ===================================
+   DETAIL SECTIONS - MODERN STYLING
+   =================================== */
+
+/* ========== BREADCRUMB NAVIGATION ========== */
+.breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 13px;
+}
+
+.breadcrumb-link {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+    font-size: 13px;
+}
+
+.breadcrumb-link:hover {
+    color: var(--primary);
+}
+
+.breadcrumb-separator {
+    color: var(--text-tertiary);
+    user-select: none;
+}
+
+.breadcrumb-current {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* ========== DETAIL GRID LAYOUTS ========== */
+.detail-grid-2col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.detail-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-label .label-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--primary-color);
+}
+
+.detail-value {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .detail-grid-2col {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+/* ========== TABLE UTILITIES ========== */
+.text-right {
+    text-align: right !important;
+}
+
+.text-capitalize {
+    text-transform: capitalize !important;
+}
+
+.font-semibold {
+    font-weight: 600 !important;
+}
+
+.table-total-row {
+    background: var(--surface) !important;
+    font-weight: 700 !important;
+    border-top: 2px solid var(--border) !important;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-danger {
+    color: var(--error) !important;
+}
+
+/* ===================================
+   CLEAN ROW-BASED DETAIL LAYOUT
+   Matching Expense Detail Design
+   =================================== */
+
+/* Main Content Container */
+.detail-content-single {
+    margin: 0 auto;
+    padding: 0 var(--spacing-3xl);
+}
+
+/* Section Card */
+.detail-section-card {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-2xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Section Title */
+.section-title-simple {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: 20px 24px;
+    margin: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Detail Rows Container */
+.detail-rows {
+    padding: 0;
+}
+
+/* Individual Detail Row */
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px !important;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+    min-height: 57px;
+    /* Ensure consistent height */
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row:hover {
+    background: var(--surface);
+}
+
+/* Row Label (Left Side) */
+.row-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    min-width: 150px;
+    /* Ensure alignment */
+    max-width: 40%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Row Value (Right Side) */
+.row-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: right;
+    word-break: break-word;
+    flex: 1;
+    margin-left: 24px;
+}
+
+/* Total Row Styling */
+.detail-row-total {
+    background: var(--surface);
+    border-top: 2px solid var(--border);
+}
+
+.detail-row-total .row-label {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.detail-row-total .row-value-total {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* Responsive Design for Row Layout */
+@media (max-width: 768px) {
+    .detail-content-single {
+        padding: 0 var(--spacing-sm);
+    }
+
+    .detail-row {
+        padding: 16px 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        min-height: auto;
+    }
+
+    .row-label {
+        min-width: auto;
+        max-width: 100%;
+        margin-bottom: 4px;
+    }
+
+    .row-value {
+        text-align: left;
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .section-title-simple {
+        padding: 16px 20px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    .detail-content-single {
+        margin: 0 var(--spacing-md);
+        padding: 0;
+    }
+}

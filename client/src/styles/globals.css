@@ -1,0 +1,191 @@
+:root {
+  --primary-color: #6366f1;
+  --primary-dark: #4f46e5;
+  --primary-light: #818cf8;
+  --secondary-color: #8b5cf6;
+  --background: #ffffff;
+  --surface: #f9fafb;
+  --surface-hover: #f3f4f6;
+  --border: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --transition: all 0.2s ease-in-out;
+}
+
+[data-theme='dark'] {
+  /* Main backgrounds */
+  --bg-main: #0f0f0f;
+  --bg-surface: #181818;
+  --bg-sidebar: #111111;
+
+  /* Override existing variables for compatibility */
+  --background: #0f0f0f;
+  --surface: #181818;
+  --surface-hover: #1a1a1a;
+  --border: rgba(255, 255, 255, 0.08);
+
+  /* Card backgrounds */
+  --card-bg-1: #c5d8f3;
+  /* light blue card */
+  --card-bg-2: #2a2a2a;
+  /* dark card */
+  --card-bg-3: #d3cdfc;
+  /* lavender card */
+
+  /* Text colors */
+  --text-primary: #ffffff;
+  --text-secondary: #cfcfcf;
+  --text-muted: #9c9c9c;
+  --text-tertiary: #9c9c9c;
+
+  /* Sidebar colors */
+  --sidebar-text: #e1e1e1;
+  --sidebar-text-active: #ffffff;
+  --sidebar-icon: #bfbfbf;
+  --sidebar-bg-hover: #1a1a1a;
+
+  /* Borders */
+  --border-light: rgba(255, 255, 255, 0.08);
+  --border-heavy: rgba(255, 255, 255, 0.15);
+
+  /* Status colors */
+  --status-green: #3ddc91;
+  --status-red: #ff6b6b;
+  --status-yellow: #fdbf50;
+  --success: #3ddc91;
+  --error: #ff6b6b;
+  --warning: #fdbf50;
+
+  /* Chart colors */
+  --chart-bar-1: #9ec9ff;
+  --chart-bar-2: #4d6b92;
+  --chart-grid: rgba(255, 255, 255, 0.1);
+  --chart-axis: rgba(255, 255, 255, 0.8);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--surface);
+  color: var(--text-primary);
+  transition: var(--transition);
+  /* Prevent horizontal scrolling across the app */
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+html {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Constrain dashboard containers to avoid horizontal overflow */
+.dashboard-layout,
+.dashboard-layout-container,
+.main-content,
+.page-content,
+.dashboard-main-content {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  outline: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Utility Classes */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

@@ -1,0 +1,40 @@
+--- AVAILABLE ROLES ---
+Role: Super Admin (super_admin)
+Modules: dashboard, employee, finance, sales, hrm, settings
+---
+Role: Admin (admin)
+Modules: dashboard, employee, finance, sales, hrm, settings
+---
+Role: Sales Employee (sales_employee)
+Modules: dashboard, employee, sales, marketing
+---
+Role: Sales Manager (sales_manager)
+Modules: dashboard, employee, sales, marketing
+---
+Role: HRM Employee (hrm_employee)
+Modules: dashboard, employee, hrm
+---
+Role: HRM Admin (hrm_admin)
+Modules: dashboard, employee, hrm
+---
+Role: Finance Employee (finance_employee)
+Modules: dashboard, employee, finance
+---
+Role: Finance Manager (finance_manager)
+Modules: dashboard, employee, finance
+---
+Role: Employee (employee)
+Modules: dashboard, employee
+---
+Role: Operations Employee (operations_employee)
+Modules: dashboard, employee, inventory
+---
+Role: Operations Manager (operations_manager)
+Modules: dashboard, employee, inventory
+---
+Role: Management Employee (management_employee)
+Modules: dashboard, employee, support
+---
+Role: Management Admin (management_admin)
+Modules: dashboard, employee, support, settings
+---

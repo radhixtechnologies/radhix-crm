@@ -1,0 +1,300 @@
+/* Onboarding Styles */
+.onboarding-tasks-page,
+.new-hire-checklist-page {
+  padding: 24px;
+}
+
+.progress-indicator {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.progress-bar {
+  width: 200px;
+  height: 8px;
+  background: var(--surface);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.progress-summary {
+  display: flex;
+  align-items: center;
+}
+
+.progress-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.progress-value {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.progress-total {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.task-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  transition: var(--transition);
+}
+
+.task-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.task-card.task-completed {
+  border-color: var(--success);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.task-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.task-status {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.task-status.task-status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.task-status.task-status-in-progress {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.task-status.task-status-completed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.task-status.task-status-blocked {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.task-body {
+  margin-bottom: 16px;
+}
+
+.task-body p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.task-meta {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.task-actions {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.task-completed {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--success);
+}
+
+.employee-info-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.employee-info-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.checklist-section {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.checklist-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.tasks-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checklist-item {
+  padding: 16px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--border);
+  transition: var(--transition);
+}
+
+.checklist-item.completed {
+  background: rgba(16, 185, 129, 0.05);
+  border-left-color: var(--success);
+}
+
+.checklist-item-content {
+  display: flex;
+  gap: 16px;
+}
+
+.checklist-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-hover);
+}
+
+.checklist-item.completed .checklist-icon {
+  background: var(--success);
+  color: white;
+}
+
+.icon-check {
+  width: 18px;
+  height: 18px;
+}
+
+.icon-pending {
+  width: 18px;
+  height: 18px;
+  color: var(--text-tertiary);
+}
+
+.checklist-details {
+  flex: 1;
+}
+
+.checklist-details h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.checklist-details p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.checklist-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.priority-badge {
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.priority-badge.priority-low {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.priority-badge.priority-medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.priority-badge.priority-high {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.priority-badge.priority-urgent {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.due-date {
+  color: var(--text-tertiary);
+}
+
+.completed-info {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--success);
+}
+

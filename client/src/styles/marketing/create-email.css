@@ -1,0 +1,408 @@
+/* create-email.css - CRM Grade Polish */
+.create-email-page {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 32px;
+    position: relative;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #101828;
+}
+
+/* Sticky Header Implementation */
+.email-page-header {
+    /* Positioning to break out of container padding */
+    margin: -32px -32px 32px -32px;
+    padding: 16px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    /* Visual Styling */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #eaecf0;
+    /* Subtle Divider */
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 8px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #667085;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+    background: #f2f4f7;
+    color: #101828;
+}
+
+.back-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Vertical Separator between Back and Title */
+.header-left::after {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 20px;
+    background: #eaecf0;
+    margin: 0 8px;
+    display: none;
+    /* Hidden for cleaner look, widely preferred */
+}
+
+.page-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #101828;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Button Hierarchy */
+.btn-secondary {
+    height: 40px;
+    padding: 0 16px;
+    background: white;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    color: #344054;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+    /* Soft Shadow */
+}
+
+.btn-secondary:hover {
+    background: #f9fafb;
+    border-color: #b2b8c2;
+    color: #1d2939;
+}
+
+.btn-primary {
+    height: 40px;
+    padding: 0 20px;
+    background: #2563eb;
+    border: 1px solid #2563eb;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+    /* Soft Shadow */
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    /* Lift effect */
+    transform: translateY(-1px);
+    /* Micro-interaction */
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Layout Grid */
+.layout-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1.1fr;
+    gap: 32px;
+    align-items: start;
+    margin-top: 8px;
+}
+
+@media (max-width: 1024px) {
+    .layout-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #eaecf0;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05);
+    /* Soft Card Shadow */
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.card-header {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f2f4f7;
+}
+
+.card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #eef2ff;
+    color: #4338ca;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #101828;
+    margin: 0;
+}
+
+/* Inputs */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #344054;
+    margin-bottom: 6px;
+}
+
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #667085;
+    pointer-events: none;
+    font-size: 18px;
+    z-index: 5;
+}
+
+.form-input,
+.form-select {
+    width: 100%;
+    padding: 10px 14px 10px 44px !important;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: white;
+    color: #101828;
+    box-sizing: border-box;
+    height: 44px;
+    /* Standard CRM Input Height */
+    line-height: 24px;
+}
+
+.form-select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23667085' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 14px center;
+    background-repeat: no-repeat;
+    background-size: 20px 20px;
+    padding-right: 40px !important;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    /* Focus Ring */
+    border-color: #2563eb;
+}
+
+.form-textarea {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    font-size: 14px;
+    min-height: 200px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+    background: white;
+    box-sizing: border-box;
+}
+
+/* Two Col Row */
+.row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 640px) {
+    .row-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Preview Card Style */
+.preview-container {
+    background: #f2f4f7;
+    border-radius: 12px;
+    padding: 4px;
+}
+
+.mock-window {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -2px rgba(16, 24, 40, 0.05), 0 12px 16px -4px rgba(16, 24, 40, 0.1);
+}
+
+.mock-header {
+    background: #f9fafb;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eaecf0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.window-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    opacity: 0.8;
+}
+
+.red {
+    background: #f04438;
+}
+
+.yellow {
+    background: #f79009;
+}
+
+.green {
+    background: #12b76a;
+}
+
+.mock-content {
+    padding: 24px;
+}
+
+.preview-field {
+    margin-bottom: 12px;
+    border-bottom: 1px solid #f2f4f7;
+    padding-bottom: 8px;
+}
+
+.preview-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #98a2b3;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.preview-value {
+    font-size: 14px;
+    color: #101828;
+    font-weight: 500;
+}
+
+.preview-body-content {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #344054;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Sticky Action Bar (Right Col) */
+.sticky-actions {
+    position: sticky;
+    top: 100px;
+    /* Offset for header */
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f2f4f7;
+    font-size: 14px;
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+}
+
+.summary-label {
+    color: #667085;
+}
+
+.summary-value {
+    font-weight: 500;
+    color: #101828;
+}
+
+.badge-draft {
+    background: #f2f4f7;
+    color: #344054;
+    padding: 2px 8px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid #d0d5dd;
+}

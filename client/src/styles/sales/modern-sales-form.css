@@ -1,0 +1,564 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Premium Sales Form Design System */
+:root {
+    --ms-primary: #2563eb;
+    --ms-primary-dark: #1e40af;
+    --ms-primary-light: #eff6ff;
+    --ms-success: #059669;
+    --ms-danger: #dc2626;
+    --ms-bg: #f1f5f9;
+    --ms-card-bg: #ffffff;
+    --ms-border: #e2e8f0;
+    --ms-text-main: #0f172a;
+    --ms-text-secondary: #64748b;
+    --ms-radius: 12px;
+    --ms-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --ms-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.ms-container {
+    background-color: var(--ms-bg);
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: var(--ms-text-main);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.ms-header {
+    background: var(--ms-card-bg);
+    border-bottom: 1px solid var(--ms-border);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: var(--ms-shadow-sm);
+}
+
+.ms-header-content {
+    max-width: 1000px;
+    width: 100%;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ms-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ms-text-main);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ms-badge {
+    padding: 2px 10px;
+    background: var(--ms-primary-light);
+    color: var(--ms-primary);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.ms-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--ms-text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ms-close-btn:hover {
+    background: #f1f5f9;
+    color: var(--ms-text-main);
+}
+
+/* Document Wizard Wrapper */
+.ms-wizard-wrapper {
+    max-width: 900px;
+    width: 100%;
+    margin: 32px auto;
+    padding: 0 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 60px;
+}
+
+/* Stepper */
+.ms-stepper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    position: relative;
+    padding: 0 10px;
+}
+
+.ms-stepper::before {
+    content: '';
+    position: absolute;
+    top: 18px;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    background: var(--ms-border);
+    z-index: 0;
+}
+
+.ms-step-item {
+    position: relative;
+    z-index: 1;
+    background: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    min-width: 80px;
+    padding: 0 10px;
+}
+
+.ms-step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--ms-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--ms-text-secondary);
+    transition: all 0.3s ease;
+    box-shadow: var(--ms-shadow-sm);
+    font-size: 14px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 2;
+}
+
+.ms-step-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ms-text-secondary);
+    transition: all 0.3s;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.ms-step-item.active .ms-step-circle {
+    border-color: var(--ms-primary);
+    color: white;
+    background: var(--ms-primary);
+    box-shadow: 0 0 0 4px var(--ms-primary-light);
+    transform: scale(1.05);
+}
+
+.ms-step-item.active .ms-step-label {
+    color: var(--ms-primary);
+    font-weight: 700;
+}
+
+.ms-step-item.completed .ms-step-circle {
+    border-color: var(--ms-success);
+    background: var(--ms-success);
+    color: white;
+}
+
+.ms-step-item.completed .ms-step-label {
+    color: var(--ms-success);
+}
+
+/* Card Content */
+.ms-card {
+    background: white;
+    border-radius: var(--ms-radius);
+    box-shadow: var(--ms-shadow-md);
+    border: 1px solid white;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.ms-card-content {
+    padding: 40px;
+}
+
+.section-head {
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--ms-border);
+    padding-bottom: 16px;
+}
+
+.section-head h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ms-text-main);
+    margin: 0;
+}
+
+.section-head p {
+    font-size: 14px;
+    color: var(--ms-text-secondary);
+    margin: 4px 0 0 0;
+}
+
+/* Footer (Inside Card) */
+.ms-card-footer {
+    padding: 20px 40px;
+    background: #f8fafc;
+    border-top: 1px solid var(--ms-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Grid System */
+.ms-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+.ms-col-span-2 {
+    grid-column: span 2;
+}
+
+/* Inputs */
+.ms-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ms-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ms-text-main);
+}
+
+.ms-input {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--ms-border);
+    font-size: 14px;
+    background: white;
+    transition: all 0.2s;
+    width: 100%;
+    color: var(--ms-text-main);
+    height: 42px;
+    max-width: 100%;
+    /* Safety */
+}
+
+.ms-input:focus {
+    outline: none;
+    border-color: var(--ms-primary);
+    box-shadow: 0 0 0 3px var(--ms-primary-light);
+}
+
+.ms-textarea {
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--ms-border);
+    font-size: 14px;
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+    font-family: inherit;
+    max-width: 100%;
+}
+
+.ms-textarea:focus {
+    outline: none;
+    border-color: var(--ms-primary);
+    box-shadow: 0 0 0 3px var(--ms-primary-light);
+}
+
+/* Table */
+.ms-premium-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--ms-border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.ms-premium-table th {
+    background: #f8fafc;
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ms-text-secondary);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--ms-border);
+}
+
+.ms-premium-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--ms-border);
+    background: white;
+    vertical-align: middle;
+}
+
+.ms-premium-table tr:last-child td {
+    border-bottom: none;
+}
+
+.ms-btn-ghost {
+    background: transparent;
+    border: 1px dashed var(--ms-border);
+    color: var(--ms-primary);
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.ms-btn-ghost:hover {
+    background: var(--ms-primary-light);
+    border-color: var(--ms-primary);
+}
+
+.ms-icon-btn {
+    border: none;
+    background: transparent;
+    color: var(--ms-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ms-icon-btn:hover {
+    background: #fee2e2;
+    color: var(--ms-danger);
+}
+
+/* Buttons */
+.ms-btn-secondary {
+    padding: 10px 20px;
+    background: white;
+    border: 1px solid var(--ms-border);
+    border-radius: 8px;
+    font-weight: 600;
+    color: var(--ms-text-main);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.ms-btn-secondary:hover {
+    background: #f1f5f9;
+}
+
+.ms-btn-primary {
+    padding: 10px 24px;
+    background: var(--ms-primary);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+    white-space: nowrap;
+}
+
+.ms-btn-primary:hover {
+    background: var(--ms-primary-dark);
+    transform: translateY(-1px);
+}
+
+/* Summary Box */
+.ms-summary-box {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid var(--ms-border);
+}
+
+.ms-summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--ms-text-secondary);
+}
+
+.ms-summary-total {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--ms-border);
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ms-text-main);
+}
+
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    .ms-wizard-wrapper {
+        margin: 16px auto;
+        padding: 0 12px;
+    }
+
+    .ms-card-content {
+        padding: 16px;
+        /* Reduced from 20 */
+    }
+
+    /* Footer: Strict Row */
+    .ms-card-footer {
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .ms-card-footer>div {
+        display: flex;
+        gap: 8px;
+    }
+
+    /* Smaller Actions */
+    .ms-btn-secondary,
+    .ms-btn-primary {
+        padding: 8px 12px;
+        font-size: 12px;
+        height: 36px;
+        min-width: 0;
+        /* Allow shrinking */
+    }
+
+    .ms-btn-primary svg,
+    .ms-btn-secondary svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Stack Grids */
+    .ms-grid-2 {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    /* Stepper Mobile */
+    .ms-stepper {
+        justify-content: space-between;
+        padding: 0;
+        margin-bottom: 24px;
+    }
+
+    .ms-stepper::before {
+        top: 14px;
+    }
+
+    .ms-step-item {
+        min-width: auto;
+        padding: 0 4px;
+        flex-shrink: 0;
+    }
+
+    .ms-step-circle {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+        margin-bottom: 4px;
+        border-width: 2px;
+    }
+
+    .ms-step-label {
+        font-size: 10px;
+    }
+
+    /* Input Responsiveness */
+    .ms-input,
+    .ms-textarea {
+        font-size: 16px;
+        /* Prevent zoom on iOS */
+    }
+
+    /* Responsive Table: STACKED view */
+    .ms-premium-table tr {
+        margin-bottom: 16px;
+        border: 1px solid var(--ms-border);
+        border-radius: 8px;
+        background: white;
+        padding: 12px;
+        box-shadow: var(--ms-shadow-sm);
+    }
+
+    /* Stacked cells: Label top, Input bottom */
+    .ms-premium-table td {
+        display: flex;
+        flex-direction: column;
+        /* STACK! */
+        align-items: flex-start;
+        gap: 4px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f5f9;
+        text-align: left;
+    }
+
+    .ms-premium-table td:last-child {
+        border-bottom: none;
+        flex-direction: row;
+        /* Trash icon can stay row */
+        justify-content: flex-end;
+    }
+
+    .ms-premium-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        font-size: 11px;
+        color: var(--ms-text-secondary);
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .ms-input {
+        text-align: left;
+        /* Reset text align */
+        width: 100%;
+        /* Full width */
+    }
+
+    /* Small inputs inside table rows should be full now */
+}

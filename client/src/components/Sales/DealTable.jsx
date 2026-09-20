@@ -1,0 +1,238 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FiEye, FiEdit, FiTrash2, FiMail, FiPhone, FiCalendar, FiDollarSign } from 'react-icons/fi';
+import { formatDate } from '../../utils/format';
+import Modal from '../common/Modal';
+import '../../styles/employee/employees.css';
+
+const getInitials = (name) => {
+    if (!name) return '?';
+    return name
+        .split(' ')
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+};
+
+const DealTable = ({ deals, onDelete, pagination, onPageChange }) => {
+    const navigate = useNavigate();
+    const [deleteModal, setDeleteModal] = useState({ open: false, deal: null });
+
+    const handleDelete = (deal) => {
+        setDeleteModal({ open: true, deal });
+    };
+
+    const confirmDelete = async () => {
+        if (deleteModal.deal) {
+            await onDelete(deleteModal.deal._id);
+            setDeleteModal({ open: false, deal: null });
+        }
+    };
+
+    const getStageColor = (stage) => {
+        switch (stage) {
+            case 'new-deal': return '#3b82f6';
+            case 'proposal': return '#8b5cf6';
+            case 'quotation': return '#ec4899';
+            case 'negotiation': return '#f59e0b';
+            case 'closed-won': return '#10b981';
+            case 'closed-lost': return '#ef4444';
+            default: return '#6b7280';
+        }
+    };
+
+    const getCurrencySymbol = (currency) => {
+        const symbols = {
+            'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AUD': 'A$', 'CAD': 'C$'
+        };
+        return symbols[currency] || '₹';
+    };
+
+    const formatStageName = (stage) => {
+        const names = {
+            'new-deal': 'New Deal',
+            'proposal': 'Proposal',
+            'quotation': 'Quotation',
+            'negotiation': 'Negotiation',
+            'closed-won': 'Closed Won',
+            'closed-lost': 'Closed Lost'
+        };
+        return names[stage] || stage;
+    };
+
+    return (
+        <div className="table-container-responsive">
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th>Deal Name</th>
+                        <th>Company</th>
+                        <th>Contact Info</th>
+                        <th>Source</th>
+                        <th>Stage</th>
+                        <th>Value</th>
+                        <th>Owner</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {deals.length > 0 ? (
+                        deals.map((deal) => (
+                            <tr key={deal._id}>
+                                <td>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div className="employee-avatar-table">
+                                            <span>{getInitials(deal.name || deal.title)}</span>
+                                        </div>
+                                        <span style={{ fontWeight: '500' }}>{deal.name || deal.title || 'N/A'}</span>
+                                    </div>
+                                </td>
+                                <td>{deal.company || 'N/A'}</td>
+                                <td>
+                                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                                        {deal.phone && (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                                <FiPhone size={12} />
+                                                <span>{deal.phone}</span>
+                                            </div>
+                                        )}
+                                        {deal.email && (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <FiMail size={12} />
+                                                <span>{deal.email}</span>
+                                            </div>
+                                        )}
+                                        {!deal.phone && !deal.email && 'N/A'}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span
+                                        className="badge"
+                                        style={{
+                                            backgroundColor: '#3b82f6' + '20',
+                                            color: '#3b82f6',
+                                            border: `1px solid ${'#3b82f6'}40`,
+                                            padding: '4px 12px',
+                                            borderRadius: '6px',
+                                            fontSize: '12px',
+                                            fontWeight: '500',
+                                            textTransform: 'capitalize'
+                                        }}
+                                    >
+                                        {deal.source || 'Direct'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span
+                                        className="badge"
+                                        style={{
+                                            backgroundColor: getStageColor(deal.stage) + '20',
+                                            color: getStageColor(deal.stage),
+                                            border: `1px solid ${getStageColor(deal.stage)}40`,
+                                            padding: '4px 12px',
+                                            borderRadius: '6px',
+                                            fontSize: '12px',
+                                            fontWeight: '500'
+                                        }}
+                                    >
+                                        {formatStageName(deal.stage)}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>
+                                            {getCurrencySymbol(deal.currency)} {deal.value?.toLocaleString() || 0}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span style={{ fontSize: '13px' }}>
+                                        {deal.assignedTo?.name || 'Unassigned'}
+                                    </span>
+                                </td>
+                                <td>
+                                    {deal.createdAt ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}>
+                                            <FiCalendar size={14} />
+                                            {formatDate(deal.createdAt)}
+                                        </div>
+                                    ) : 'N/A'}
+                                </td>
+                                <td>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button
+                                            className="btn btn-sm btn-secondary"
+                                            onClick={() => navigate(`/sales/deals/${deal._id}`)}
+                                            title="View"
+                                        >
+                                            <FiEye />
+                                        </button>
+                                        <button
+                                            className="btn btn-sm btn-secondary"
+                                            onClick={() => navigate(`/sales/deals/${deal._id}/update`)}
+                                            title="Edit"
+                                        >
+                                            <FiEdit />
+                                        </button>
+                                        <button
+                                            className="btn btn-sm"
+                                            style={{ background: '#fee2e2', color: '#ef4444', border: '1px solid #fecaca' }}
+                                            onClick={() => handleDelete(deal)}
+                                            title="Delete"
+                                        >
+                                            <FiTrash2 />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                                No deals found
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
+
+            {pagination && pagination.pages > 1 && (
+                <div className="pagination" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '20px', borderTop: '1px solid var(--border)' }}>
+                    <button
+                        className="btn btn-sm btn-secondary"
+                        disabled={pagination.page === 1}
+                        onClick={() => onPageChange(pagination.page - 1)}
+                    >
+                        Previous
+                    </button>
+                    <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                        Page {pagination.page} of {pagination.pages}
+                    </span>
+                    <button
+                        className="btn btn-sm btn-secondary"
+                        disabled={pagination.page === pagination.pages}
+                        onClick={() => onPageChange(pagination.page + 1)}
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
+
+            <Modal isOpen={deleteModal.open} onClose={() => setDeleteModal({ open: false, deal: null })} title="Delete Deal">
+                <p>Are you sure you want to delete this deal?</p>
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
+                    <button className="btn btn-secondary" onClick={() => setDeleteModal({ open: false, deal: null })}>
+                        Cancel
+                    </button>
+                    <button className="btn" style={{ background: '#ef4444', color: 'white' }} onClick={confirmDelete}>
+                        Delete
+                    </button>
+                </div>
+            </Modal>
+        </div>
+    );
+};
+
+export default DealTable;

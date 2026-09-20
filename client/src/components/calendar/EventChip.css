@@ -1,0 +1,299 @@
+/* Event Chip Component */
+.event-chip {
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: white;
+    font-size: 12px;
+    line-height: 1.3;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2px;
+}
+
+.event-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    filter: brightness(1.1);
+}
+
+.event-chip-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 2px;
+}
+
+.event-chip-icon {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+}
+
+.event-chip-time {
+    font-size: 10px;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.event-chip-urgent {
+    margin-left: auto;
+    background: #dc2626;
+    color: white;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.event-chip-title {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.event-chip-assigned {
+    font-size: 10px;
+    opacity: 0.8;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Calendar Grid Enhancements */
+.rbc-calendar {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.rbc-month-view {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.rbc-header {
+    padding: 12px 8px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #374151;
+    background: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.rbc-date-cell {
+    padding: 6px 8px;
+    text-align: right;
+}
+
+.rbc-date-cell>a {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.rbc-today {
+    background-color: #eff6ff !important;
+}
+
+.rbc-today .rbc-date-cell>a {
+    background: #3b82f6;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rbc-off-range {
+    background-color: #fafafa;
+}
+
+.rbc-off-range .rbc-date-cell>a {
+    color: #d1d5db;
+}
+
+.rbc-day-bg {
+    border-left: 1px solid #f3f4f6;
+}
+
+.rbc-month-row {
+    border-top: 1px solid #f3f4f6;
+    min-height: 100px;
+}
+
+.rbc-event {
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+}
+
+.rbc-event-content {
+    padding: 0;
+}
+
+.rbc-show-more {
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-top: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.rbc-show-more:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+/* Weekend styling */
+.rbc-day-bg:nth-child(1),
+.rbc-day-bg:nth-child(7) {
+    background-color: #fafafa;
+}
+
+/* Event labels */
+.rbc-event-label {
+    display: none;
+}
+
+/* Toolbar styling */
+.rbc-toolbar {
+    padding: 16px;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 0;
+}
+
+.rbc-toolbar button {
+    color: #374151;
+    border: 1px solid #d1d5db;
+    background: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.rbc-toolbar button:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.rbc-toolbar button.rbc-active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+/* Drag and drop styles */
+.rbc-addons-dnd-dragging {
+    opacity: 0.5;
+}
+
+.rbc-addons-dnd-over {
+    background-color: #eff6ff !important;
+}
+
+.rbc-addons-dnd-resizable {
+    position: relative;
+}
+
+.rbc-addons-dnd-resize-anchor {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 8px;
+    cursor: ns-resize;
+}
+
+/* Week and Day view enhancements */
+.rbc-time-view {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.rbc-time-header {
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.rbc-time-content {
+    border-top: none;
+}
+
+.rbc-time-slot {
+    border-top: 1px solid #f3f4f6;
+}
+
+.rbc-current-time-indicator {
+    background-color: #ef4444;
+    height: 2px;
+}
+
+/* Agenda view */
+.rbc-agenda-view {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.rbc-agenda-table {
+    border: none;
+}
+
+.rbc-agenda-date-cell,
+.rbc-agenda-time-cell {
+    padding: 12px;
+    font-size: 13px;
+}
+
+.rbc-agenda-event-cell {
+    padding: 12px;
+}
+
+/* Loading state */
+.calendar-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+/* Empty state */
+.calendar-empty-state {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #9ca3af;
+    z-index: 5;
+}
+
+.calendar-empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.calendar-empty-state-text {
+    font-size: 14px;
+    font-weight: 500;
+}

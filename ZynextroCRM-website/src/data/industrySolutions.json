@@ -1,0 +1,42 @@
+[
+  {
+    "id": "ecommerce",
+    "name": "Retail & E-Commerce",
+    "headline": "The complete operating system for",
+    "highlightedWord": "retail growth",
+    "description": "Sync inventory with sales, manage customer relationships, handle support tickets, and run targeted marketing campaigns to boost repeat purchases.",
+    "image": "/src/assets/image.png"
+  },
+  {
+    "id": "b2b",
+    "name": "B2B Enterprises",
+    "headline": "The complete operating system for",
+    "highlightedWord": "B2B scale",
+    "description": "Manage long sales cycles, automate complex invoicing, track employee expenses, and ensure your workforce is performing at peak efficiency.",
+    "image": "/src/assets/image copy .png"
+  },
+  {
+    "id": "realestate",
+    "name": "Real Estate",
+    "headline": "The complete operating system for",
+    "highlightedWord": "agencies",
+    "description": "Track property leads, manage agent commissions via payroll, schedule viewings with the calendar, and store all client documents securely.",
+    "image": "/src/assets/image copy 2.png"
+  },
+  {
+    "id": "saas",
+    "name": "Tech & SaaS",
+    "headline": "The complete operating system for",
+    "highlightedWord": "tech startups",
+    "description": "Handle subscription billing, recruit top talent with the HR module, manage support tickets, and track ARR/MRR with financial analytics.",
+    "image": "/src/assets/image copy 3.png"
+  },
+  {
+    "id": "professional",
+    "name": "Consulting Firms",
+    "headline": "The complete operating system for",
+    "highlightedWord": "consultancies",
+    "description": "Track billable hours, generate professional invoices instantly, manage consultant leave/attendance, and maintain a unified client database.",
+    "image": "/src/assets/image copy 4.png"
+  }
+]

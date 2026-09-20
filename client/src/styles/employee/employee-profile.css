@@ -1,0 +1,316 @@
+/* ============================================
+   Employee Profile - Structure V3 (Clean & Balanced)
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --ep-primary: #4F46E5;
+    --ep-bg-surface: #ffffff;
+    --ep-bg-body: #F3F4F6;
+    /* Lighter gray for contrast */
+    --ep-border: #E5E7EB;
+    --ep-text-main: #111827;
+    --ep-text-sec: #6B7280;
+
+    --ep-radius: 8px;
+    /* Tighter radius */
+    --ep-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.employee-profile-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Inter', sans-serif;
+    color: var(--ep-text-main);
+    /* background-color: var(--ep-bg-body); */
+    min-height: 100vh;
+}
+
+/* 1. Compact Header */
+.ep-header {
+    background: var(--ep-bg-surface);
+    border: 1px solid var(--ep-border);
+    border-radius: var(--ep-radius);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--ep-shadow);
+    margin-bottom: 20px;
+}
+
+.ep-identity {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.ep-avatar {
+    width: 56px;
+    /* Smaller, compact */
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--ep-border);
+}
+
+.ep-avatar-placeholder {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #E0E7FF;
+    color: #4F46E5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 20px;
+}
+
+.ep-info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ep-name-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ep-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ep-text-main);
+}
+
+.ep-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--ep-text-sec);
+}
+
+.ep-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ep-status-badge {
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.status-active {
+    background: #ECFDF5;
+    color: #059669;
+}
+
+.status-inactive {
+    background: #F3F4F6;
+    color: #6B7280;
+}
+
+/* 2. Tabs Navigation */
+.ep-tabs-container {
+    background: var(--ep-bg-surface);
+    border: 1px solid var(--ep-border);
+    border-radius: var(--ep-radius);
+    padding: 0 4px;
+    margin-bottom: 20px;
+    box-shadow: var(--ep-shadow);
+    overflow-x: auto;
+}
+
+.ep-tabs-list {
+    display: flex;
+    gap: 24px;
+    padding: 0 20px;
+    min-width: max-content;
+}
+
+.ep-tab-btn {
+    padding: 14px 0;
+    background: none;
+    border: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ep-text-sec);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s;
+}
+
+.ep-tab-btn:hover {
+    color: var(--ep-primary);
+}
+
+.ep-tab-btn.active {
+    color: var(--ep-primary);
+    border-bottom-color: var(--ep-primary);
+    font-weight: 600;
+}
+
+/* 3. Content Area */
+.ep-content-area {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Grid Layouts - Overview is special */
+.ep-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Cards */
+.ep-card {
+    background: var(--ep-bg-surface);
+    border: 1px solid var(--ep-border);
+    border-radius: var(--ep-radius);
+    box-shadow: var(--ep-shadow);
+    overflow: hidden;
+    height: 100%;
+    /* Fill height for balance */
+}
+
+.ep-card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--ep-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #FAFAFA;
+}
+
+.ep-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ep-text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ep-card-body {
+    padding: 20px;
+}
+
+/* Key-Value Lists */
+.ep-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #F3F4F6;
+    font-size: 13px;
+}
+
+.ep-detail-row:last-child {
+    border-bottom: none;
+}
+
+.ep-label {
+    color: var(--ep-text-sec);
+}
+
+.ep-value {
+    font-weight: 500;
+    color: var(--ep-text-main);
+    text-align: right;
+}
+
+/* Tables */
+.ep-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.ep-table th {
+    text-align: left;
+    padding: 12px 20px;
+    background: #FAFAFA;
+    color: var(--ep-text-sec);
+    font-weight: 600;
+    border-bottom: 1px solid var(--ep-border);
+}
+
+.ep-table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid #F3F4F6;
+    color: var(--ep-text-main);
+}
+
+.ep-table tr:hover {
+    background: #FAFAFA;
+}
+
+/* Utilities */
+.text-cap {
+    text-transform: capitalize;
+}
+
+.btn-primary-sm {
+    background: var(--ep-primary);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-outline-sm {
+    background: white;
+    border: 1px solid var(--ep-border);
+    color: var(--ep-text-main);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .ep-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .ep-header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+
+    .ep-identity {
+        flex-direction: column;
+    }
+
+    .ep-meta-row {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

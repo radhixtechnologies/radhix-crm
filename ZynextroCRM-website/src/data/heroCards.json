@@ -1,0 +1,41 @@
+[
+  {
+    "id": 6,
+    "title": "Enterprise CRM",
+    "description": "Powerful tools for enterprise-level growth, management, and scalability.",
+    "features": [
+      "Custom Workflow",
+      "Advanced Analytics",
+      "Role-based Access",
+      "Global Scale"
+    ],
+    "image": "../assets/hero1.jpg",
+    "icon": "🏢"
+  },
+  {
+    "id": 7,
+    "title": "Smart Operations",
+    "description": "Optimize your business processes with data-driven insights and automation.",
+    "features": [
+      "Real-time Data",
+      "Process Automation",
+      "Resource Mgmt",
+      "KPI Tracking"
+    ],
+    "image": "../assets/hero2.jpg",
+    "icon": "⚙️"
+  },
+  {
+    "id": 8,
+    "title": "Future Growth",
+    "description": "Empower your team with the next generation of business management software.",
+    "features": [
+      "Future-ready",
+      "Seamless Integration",
+      "Cloud-native",
+      "Team Synergy"
+    ],
+    "image": "../assets/hero3.jpg",
+    "icon": "📈"
+  }
+]

@@ -1,0 +1,121 @@
+/* Sales Table Styles - Responsive & Clean */
+
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --surface: #ffffff;
+    --bg-page: #f8fafc;
+    --border: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --danger: #ef4444;
+}
+
+/* Wrapper to enable horizontal scroll on small screens */
+.table-container-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scroll on iOS */
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Base */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+    /* Force scroll on small screens */
+}
+
+.table thead {
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+}
+
+.table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    /* Keep headers single line */
+}
+
+.table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+}
+
+.table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.table td {
+    padding: 16px;
+    font-size: 14px;
+    color: var(--text-main);
+    vertical-align: middle;
+}
+
+/* Specific Columns Styling */
+.table .col-actions {
+    white-space: nowrap;
+    width: 1%;
+    /* Shrinks to fit content */
+}
+
+.table .col-status {
+    width: 120px;
+}
+
+.table .col-date {
+    width: 140px;
+}
+
+.table .col-amount {
+    font-weight: 600;
+    font-feature-settings: "tnum";
+    /* Monospaced numbers */
+}
+
+/* Action Buttons Group */
+.action-buttons-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    white-space: nowrap;
+    /* Prevent wrapping */
+}
+
+/* Badge Styles */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Button Adjustments for tables */
+.btn-sm {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}

@@ -1,0 +1,630 @@
+/* ============================================
+   Modern Lead Form - Professional Design
+   Matching ContactList & LeadList Pages
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ============================================
+   CSS Variables
+   ============================================ */
+:root {
+  --bg-page: #f8f9fa;
+  --bg-surface: #ffffff;
+  --border-color: #e1e4e8;
+  --border-light: #f0f1f3;
+
+  --text-primary: #1a1f36;
+  --text-secondary: #697386;
+  --text-muted: #9ca3af;
+
+  --blue-600: #3b82f6;
+  --blue-700: #2563eb;
+  --blue-50: #eff6ff;
+
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+
+  --transition: all 0.15s ease;
+}
+
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.alert-warning {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a4d00;
+}
+
+.add-lead-page .lead-form-content {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.add-lead-page .lead-form {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  padding: 28px 26px 20px;
+}
+
+.add-lead-page .form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  max-width: 640px;
+  margin: 0 auto 12px;
+  gap: 18px;
+}
+
+.add-lead-page .form-group {
+  gap: 8px;
+}
+
+.add-lead-page .form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.add-lead-page .form-input,
+.add-lead-page .form-select {
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid #d8dfe8;
+  background: #ffffff;
+  padding: 0 14px;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.add-lead-page .form-input:focus,
+.add-lead-page .form-select:focus {
+  border-color: var(--blue-600);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+  outline: none;
+}
+
+.add-lead-page .form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.add-lead-page .form-actions {
+  max-width: 640px;
+  margin: 18px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
+}
+
+.add-lead-page .btn {
+  min-width: 118px;
+  border-radius: 12px;
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.add-lead-page .btn-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.2);
+}
+
+.add-lead-page .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.24);
+}
+
+@media (max-width: 768px) {
+  .add-lead-page .lead-form {
+    padding: 20px 16px 16px;
+  }
+
+  .add-lead-page .form-grid,
+  .add-lead-page .form-actions {
+    max-width: 100%;
+  }
+}
+
+/* ============================================
+   Page Wrapper - OPTIMIZED FOR NO SCROLLING
+   ============================================ */
+.lead-form-page-wrapper {
+  padding: 20px 40px;
+  background: var(--bg-page);
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================
+   Compact Professional Header - REDUCED SPACING
+   ============================================ */
+.lead-form-page-wrapper .page-header-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.lead-form-page-wrapper .header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.btn-back svg {
+  width: 20px;
+  height: 20px;
+  color: var(--gray-700);
+  stroke-width: 2.5;
+}
+
+.btn-back:hover {
+  background: var(--gray-50);
+  border-color: var(--blue-600);
+  color: var(--blue-600);
+}
+
+.btn-back:hover svg {
+  color: var(--blue-600);
+}
+
+.header-title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.page-title-compact {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.page-subtitle-compact {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ============================================
+   Form Content Container
+   ============================================ */
+.lead-form-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ============================================
+   Lead Form Styling - COMPACT LAYOUT
+   ============================================ */
+.lead-form {
+  background: var(--bg-surface);
+  padding: 24px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Form Grid - 3-column layout for better space utilization */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px 20px;
+  margin-bottom: 16px;
+}
+
+/* Form Group - REDUCED SPACING */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+}
+
+/* Form Inputs - COMPACT SIZE */
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+  transition: var(--transition);
+  font-family: 'Inter', sans-serif;
+  height: 36px;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--blue-600);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 14px;
+  padding-right: 32px;
+}
+
+.form-select:hover {
+  border-color: var(--text-secondary);
+}
+
+/* Textarea - REDUCED HEIGHT */
+.form-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+  transition: var(--transition);
+  font-family: 'Inter', sans-serif;
+  resize: vertical;
+  min-height: 60px;
+  max-height: 80px;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--blue-600);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Lead Temperature Selector - Enhanced Styling */
+.lead-temperature-select {
+  font-weight: 500;
+}
+
+.lead-temperature-select option {
+  padding: 8px;
+}
+
+.form-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: -2px;
+}
+
+
+/* Form Actions - REDUCED SPACING */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+  margin-top: 4px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: 'Inter', sans-serif;
+  border: none;
+}
+
+.btn-primary {
+  background-color: #4c7cf3;
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #3d6ee3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(76, 124, 243, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background-color: var(--gray-50);
+  border-color: var(--gray-500);
+  color: var(--text-primary);
+}
+
+/* ============================================
+   Responsive Design - OPTIMIZED BREAKPOINTS
+   ============================================ */
+
+/* Tablets - 2 columns */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px 18px;
+  }
+
+  .lead-form {
+    padding: 20px;
+  }
+}
+
+/* Mobile - 1 column */
+@media (max-width: 768px) {
+  .lead-form-page-wrapper {
+    padding: 16px;
+    max-height: none;
+  }
+
+  .lead-form {
+    padding: 20px 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .page-header-compact {
+    padding: 10px 0;
+    margin-bottom: 16px;
+  }
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lead-form-page-wrapper {
+  animation: fadeIn 0.25s ease-out;
+}
+
+/* ============================================
+   Legacy Styles (Keep for compatibility)
+   ============================================ */
+.add-lead-page {
+  background: var(--bg-page);
+  padding: 24px;
+  border-radius: 8px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.page-content {
+  max-width: 900px;
+}
+
+.lead-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.info-section {
+  padding: 16px;
+  background: var(--bg-surface);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.info-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.info-section p {
+  margin: 8px 0;
+  color: var(--text-primary);
+}
+
+.info-section strong {
+  color: var(--text-secondary);
+  margin-right: 8px;
+}
+
+.status-change {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.status-change label {
+  font-weight: 500;
+}
+
+.note-form {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.note-form button {
+  margin-top: 12px;
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.note-item {
+  padding: 12px;
+  background: var(--bg-surface);
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+}
+
+.note-item p {
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+}
+
+.note-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.communication-history {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+.communication-history h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.comm-item {
+  padding: 12px;
+  background: var(--bg-surface);
+  border-radius: 6px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border-light);
+}
+
+.comm-type {
+  display: inline-block;
+  padding: 4px 8px;
+  background: var(--blue-600);
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.comm-item p {
+  margin: 8px 0;
+  color: var(--text-primary);
+}
+
+.comm-date {
+  font-size: 12px;
+  color: var(--text-secondary);
+}

@@ -1,0 +1,497 @@
+/* Enterprise Calendar - Premium SaaS Style */
+
+:root {
+    --cal-bg: #ffffff;
+    --cal-surface: #ffffff;
+    --cal-border: #f3f4f6;
+    /* Very subtle */
+    --cal-text-primary: #111827;
+    --cal-text-secondary: #6b7280;
+    --cal-text-muted: #9ca3af;
+    --cal-header-text: #6b7280;
+    --cal-selected-bg: #eff6ff;
+    --cal-selected-border: #3b82f6;
+    --cal-today-highlight: #eff6ff;
+
+    /* Event Gradients */
+    --evt-call-bg: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --evt-email-bg: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    --evt-meeting-bg: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    --evt-followup-bg: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    --evt-default-bg: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+[data-theme='dark'] {
+    --cal-bg: #1f2937;
+    --cal-surface: #111827;
+    --cal-border: #374151;
+    --cal-text-primary: #f9fafb;
+    --cal-text-secondary: #d1d5db;
+    --cal-text-muted: #6b7280;
+    --cal-header-text: #9ca3af;
+    --cal-selected-bg: rgba(59, 130, 246, 0.15);
+}
+
+/* Container */
+.modern-calendar-container {
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--cal-bg);
+    font-family: 'Inter', sans-serif;
+    /* Ensure premium font */
+}
+
+/* Calendar Grid Wrapper */
+.calendar-grid-wrapper {
+    flex: 1;
+    background: var(--cal-bg);
+    overflow: hidden;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* Override React Big Calendar Styles */
+.rbc-calendar {
+    font-family: inherit;
+    height: 100%;
+}
+
+/* HEADER Custom Component Styling */
+.custom-header-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Center for enterprise grid look, or left if prefer */
+    justify-content: center;
+    padding: 8px 4px;
+    gap: 4px;
+    height: 100%;
+    transition: background-color 0.2s ease;
+}
+
+.custom-header-cell.header-today {
+    background-color: var(--cal-today-highlight);
+    /* Subtle highlight for whole header cell */
+    border-bottom: none !important;
+    /* Force remove accent line */
+}
+
+.header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cal-text-secondary);
+}
+
+.header-dayname {
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--cal-text-muted);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.header-date {
+    font-size: 16px;
+    color: var(--cal-text-primary);
+}
+
+/* Circle for Today's Date Number */
+.date-today-circle {
+    color: var(--cal-selected-border);
+    font-weight: 700;
+}
+
+.header-badge {
+    background: #f3f4f6;
+    color: var(--cal-text-secondary);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    border: 1px solid #e5e7eb;
+}
+
+.header-today .header-badge {
+    background: #dbeafe;
+    color: #1e40af;
+    border-color: #bfdbfe;
+}
+
+
+/* RBC Defaults Override */
+.rbc-header {
+    padding: 0;
+    /* Let custom component handle padding */
+    border-bottom: 1px solid var(--cal-border);
+    border-left: 1px solid var(--cal-border);
+    background: var(--cal-surface);
+}
+
+.rbc-header+.rbc-header {
+    border-left: 1px solid var(--cal-border);
+}
+
+/* All Day Section - FORCE HIDE */
+.rbc-allday-cell {
+    display: none !important;
+}
+
+.rbc-time-view .rbc-allday-cell {
+    display: none !important;
+}
+
+.rbc-row-segment .rbc-event {
+    /* For multi-day spanning events in header */
+    border-radius: 4px;
+    background-color: var(--evt-default-bg);
+}
+
+/* Week View (Time Grid) */
+.rbc-time-view {
+    border: 1px solid var(--cal-border);
+    border-top: none;
+}
+
+.rbc-time-header {
+    border-bottom: 1px solid var(--cal-border);
+    background-color: var(--cal-surface);
+}
+
+.rbc-time-header-content {
+    border-left: 1px solid var(--cal-border);
+}
+
+/* Time Gutter (Left Column) */
+.rbc-time-gutter {
+    min-width: 72px !important;
+    /* Wider for clear AM/PM */
+    max-width: 72px !important;
+    background: #f8fafc;
+    /* Very light gray separation */
+    border-right: 1px solid var(--cal-border);
+    z-index: 10;
+}
+
+.rbc-timeslot-group {
+    border-bottom: 1px solid var(--cal-border);
+    min-height: 60px;
+    /* Taller rows for readability */
+}
+
+.rbc-time-gutter .rbc-timeslot-group {
+    border-bottom: 1px solid var(--cal-border);
+    display: flex;
+    align-items: center;
+    /* Vertically center the time label */
+    justify-content: flex-end;
+    /* Right align */
+}
+
+.rbc-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: #94a3b8;
+    /* Muted slate */
+    padding-right: 8px;
+    text-align: right;
+    margin: 0;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+}
+
+/* Grid Slots - very light lines */
+.rbc-day-slot {
+    background: var(--cal-bg);
+    border-left: 1px solid var(--cal-border);
+}
+
+.rbc-day-slot .rbc-time-slot {
+    border-top: 1px dotted #e2e8f0;
+    /* Subtle dotted line */
+}
+
+/* Alternating Hour Backgrounds */
+.rbc-timeslot-group:nth-child(even) {
+    background-color: #f8fafc;
+    /* Very light slate for alternating rows */
+}
+
+/* Current Time Indicator - Red Line */
+.rbc-current-time-indicator {
+    background-color: #ef4444;
+    height: 2px;
+    position: relative;
+}
+
+.rbc-current-time-indicator::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+}
+
+/* ENTERPRISE EVENT STYLING */
+.rbc-event {
+    background: var(--evt-default-bg);
+    /* Gradient fallback */
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    /* Soft shadow */
+    border-radius: 6px;
+    padding: 6px 10px;
+    /* Increased padding */
+    color: white !important;
+    margin: 1px 3px !important;
+    /* Gap between stacked events */
+    /* Left accent border effect via gradient or actual border */
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 40px !important;
+    /* Force minimum height for readability */
+}
+
+.rbc-event:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 50 !important;
+}
+
+/* Event Time Label (e.g., 9:00 AM) */
+.rbc-event-label {
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.95;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+}
+
+/* Event Title Content */
+.rbc-event-content {
+    font-size: 13px;
+    /* Larger readable font */
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: normal;
+    /* Allow wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    /* Limit to 2 lines */
+    -webkit-box-orient: vertical;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Month View Overrides */
+.rbc-month-view {
+    border: 1px solid var(--cal-border);
+    border-radius: 8px;
+    background: white;
+}
+
+.rbc-month-header {
+    background: var(--cal-surface);
+}
+
+.rbc-month-view .rbc-header {
+    border-bottom: 1px solid var(--cal-border);
+    border-left: 1px solid var(--cal-border);
+    padding: 10px 0;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--cal-header-text);
+    text-align: center;
+}
+
+.rbc-month-row {
+    border-bottom: 1px solid var(--cal-border);
+    min-height: 120px;
+    /* Ensure tall rows */
+}
+
+.rbc-day-bg {
+    border-left: 1px solid var(--cal-border);
+}
+
+/* Date Date Cell (Top Right Number) */
+.rbc-date-cell {
+    padding: 8px 8px 0 0;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--cal-text-primary);
+}
+
+.rbc-date-cell>a {
+    color: inherit;
+    text-decoration: none;
+    cursor: default;
+}
+
+/* Off Range (Next/Prev Month) */
+.rbc-off-range-bg {
+    background: #f9fafb !important;
+}
+
+.rbc-off-range .rbc-date-cell {
+    color: #d1d5db !important;
+}
+
+/* Month View Events (Pills) */
+.rbc-month-view .rbc-event {
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin: 2px 5px !important;
+    min-height: 24px !important;
+    font-size: 11px;
+    line-height: 18px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    background: var(--evt-default-bg);
+    display: block;
+    text-align: left;
+    box-shadow: none;
+    color: white !important;
+}
+
+.rbc-month-view .rbc-event-content {
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Selected Slot override */
+.rbc-slot-selection {
+    background-color: var(--cal-selected-bg) !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Ensure default RBC selection doesn't show */
+.rbc-selected-cell {
+    border: none !important;
+}
+
+.rbc-today {
+    background-color: transparent !important;
+    border: none !important;
+}
+
+/* Hide scrollbar mostly but keep functionality */
+.rbc-time-content::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.rbc-time-content::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 3px;
+}
+
+.rbc-time-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+/* --- NEW: Search Bar & Header Actions (Matching LeadList) --- */
+
+.search-bar-section {
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.toolbar-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 280px;
+}
+
+.toolbar-search input {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px 0 38px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #ffffff;
+    color: #1e293b;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toolbar-search input:focus {
+    background: #fff;
+    border-color: var(--cal-selected-border);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.toolbar-search input::placeholder {
+    color: #94a3b8;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    pointer-events: none;
+    width: 16px;
+    height: 16px;
+    z-index: 10;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-dayname {
+        font-size: 10px;
+    }
+
+    .header-date {
+        font-size: 14px;
+    }
+
+    .rbc-time-gutter {
+        min-width: 45px !important;
+        max-width: 45px !important;
+    }
+
+    /* Mobile Calendar Adjustments */
+    .calendar-grid-wrapper {
+        border-radius: 0;
+    }
+
+    .toolbar-search {
+        max-width: 100%;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .header-actions .btn {
+        flex: 1;
+    }
+}

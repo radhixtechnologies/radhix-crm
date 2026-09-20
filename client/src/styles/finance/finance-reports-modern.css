@@ -1,0 +1,330 @@
+/* ===================================
+   FINANCE REPORTS - MODERN DEDICATED STYLES
+   =================================== */
+
+:root {
+    --report-primary: #2563eb;
+    --report-primary-hover: #1d4ed8;
+    --report-surface: #ffffff;
+    --report-background: #f8fafc;
+    --report-border: #e2e8f0;
+    --report-text-main: #0f172a;
+    --report-text-sub: #64748b;
+    --report-radius: 12px;
+}
+
+/* Page Container */
+.reports-page {
+    padding: 24px;
+    background: var(--report-background);
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--report-text-main);
+    animation: fade-in 0.3s ease-out;
+}
+
+.reports-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header (Matching Payment/Tax Settings Style) */
+.reports-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.reports-header-content h1 {
+    font-size: 28px;
+    font-weight: 800;
+    margin: 0 0 4px 0;
+    color: var(--report-text-main);
+    letter-spacing: -0.5px;
+}
+
+.reports-header-content p {
+    margin: 0;
+    color: var(--report-text-sub);
+    font-size: 14px;
+}
+
+.reports-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+/* Header Buttons */
+.report-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.report-btn-white {
+    background: white;
+    border: 1px solid var(--report-border);
+    color: var(--report-text-main);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.report-btn-white:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.report-btn-primary {
+    background: var(--report-primary);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.report-btn-primary:hover {
+    background: var(--report-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3);
+}
+
+.report-count-badge {
+    background: var(--report-primary);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Filter Panel (Dropdown style) */
+.filter-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 320px;
+    background: white;
+    padding: 20px;
+    margin-top: 8px;
+    border: 1px solid var(--report-border);
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: slide-down 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--report-text-sub);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-select_wrapper {
+    position: relative;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 10px 32px 10px 12px;
+    border: 1px solid var(--report-border);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--report-text-main);
+    appearance: none;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-select:focus,
+.filter-date-input:focus {
+    border-color: var(--report-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    outline: none;
+}
+
+.filter-date-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1px solid var(--report-border);
+    border-radius: 8px;
+    padding: 0 12px;
+    height: 40px;
+}
+
+.filter-date-input {
+    border: none;
+    font-size: 13px;
+    color: var(--report-text-main);
+    background: transparent;
+    width: 100%;
+    outline: none;
+}
+
+.filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.filter-btn-reset {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--report-text-sub);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.filter-btn-reset:hover {
+    background: #f1f5f9;
+    color: var(--report-text-main);
+}
+
+.filter-btn-apply {
+    background: var(--report-primary);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.filter-btn-apply:hover {
+    background: var(--report-primary-hover);
+}
+
+/* Report Content */
+.report-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.report-card {
+    background: var(--report-surface);
+    border-radius: var(--report-radius);
+    border: 1px solid var(--report-border);
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.report-card-header {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.report-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--report-text-main);
+    margin: 0;
+}
+
+.chart-container {
+    height: 400px;
+    width: 100%;
+}
+
+/* Empty State */
+.report-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: var(--report-text-sub);
+    text-align: center;
+}
+
+.report-empty svg {
+    margin-bottom: 16px;
+    opacity: 0.3;
+}
+
+/* Animations */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .reports-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .reports-header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .filter-panel {
+        width: 100%;
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+        margin-top: 0;
+        animation: slide-up 0.3s ease-out;
+    }
+
+    @keyframes slide-up {
+        from {
+            transform: translateY(100%);
+        }
+
+        to {
+            transform: translateY(0);
+        }
+    }
+}

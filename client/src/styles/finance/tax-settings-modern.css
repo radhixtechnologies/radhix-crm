@@ -1,0 +1,561 @@
+/* ===================================
+   TAX SETTINGS - MODERN DEDICATED STYLES
+   =================================== */
+
+:root {
+    --tax-primary: #2563eb;
+    --tax-primary-hover: #1d4ed8;
+    --tax-success: #10b981;
+    --tax-danger: #ef4444;
+    --tax-surface: #ffffff;
+    --tax-background: #f8fafc;
+    --tax-border: #e2e8f0;
+    --tax-text-main: #0f172a;
+    --tax-text-sub: #64748b;
+    --tax-radius: 12px;
+}
+
+/* Page Container */
+.tax-settings-page {
+    padding: 24px;
+    background: var(--tax-background);
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--tax-text-main);
+}
+
+.tax-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Breadcrumbs */
+.tax-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--tax-text-sub);
+}
+
+.tax-breadcrumb-link {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.tax-breadcrumb-link:hover {
+    color: var(--tax-primary);
+}
+
+.tax-breadcrumb-current {
+    color: var(--tax-text-main);
+    font-weight: 500;
+}
+
+/* Header */
+/* Header */
+.tax-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    background: transparent;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+}
+
+.tax-header-content h1 {
+    font-size: 28px;
+    font-weight: 800;
+    /* Extra bold like in image */
+    margin: 0 0 4px 0;
+    color: #1e293b;
+    /* Darker slate color */
+    letter-spacing: -0.5px;
+}
+
+.tax-header-content p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.tax-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Header Buttons */
+.tax-btn-white {
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tax-btn-white:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.tax-btn-primary {
+    background: #2563eb;
+    color: white;
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    transition: all 0.2s;
+}
+
+.tax-btn-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3);
+}
+
+.tax-search-wrapper {
+    position: relative;
+}
+
+.tax-search-input {
+    padding: 10px 16px 10px 36px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 240px;
+    outline: none;
+    transition: all 0.2s;
+    background: white;
+}
+
+.tax-search-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.tax-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+/* Buttons */
+.tax-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.tax-btn-primary {
+    background: var(--tax-primary);
+    color: white;
+}
+
+.tax-btn-primary:hover {
+    background: var(--tax-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.tax-btn-icon {
+    padding: 8px;
+    border-radius: 6px;
+    color: var(--tax-text-sub);
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+.tax-btn-icon:hover {
+    background: #f1f5f9;
+    color: var(--tax-primary);
+}
+
+.tax-btn-danger-icon {
+    color: var(--tax-danger);
+}
+
+.tax-btn-danger-icon:hover {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+/* Card */
+.tax-card {
+    background: var(--tax-surface);
+    border-radius: var(--tax-radius);
+    border: 1px solid var(--tax-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+/* Table */
+.tax-table-container {
+    overflow-x: auto;
+}
+
+.tax-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.tax-table th {
+    text-align: left;
+    padding: 16px 24px;
+    background: #f8fafc;
+    color: var(--tax-text-sub);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--tax-border);
+}
+
+.tax-table td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--tax-border);
+    vertical-align: middle;
+}
+
+.tax-table tr:last-child td {
+    border-bottom: none;
+}
+
+.tax-table tr:hover td {
+    background: #f8fafc;
+}
+
+/* Badges & Pills */
+.tax-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tax-badge-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.tax-badge-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.tax-badge-info {
+    background: #eff6ff;
+    color: #1e40af;
+}
+
+.tax-rate-pill {
+    background: #eff6ff;
+    color: #2563eb;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-family: 'Monaco', monospace;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Modal form styles */
+.tax-form-group {
+    margin-bottom: 20px;
+}
+
+.tax-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--tax-text-main);
+}
+
+.tax-input,
+.tax-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--tax-border);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.tax-input:focus,
+.tax-textarea:focus {
+    border-color: var(--tax-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.tax-checkbox-group {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid var(--tax-border);
+}
+
+.tax-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    user-select: none;
+}
+
+.tax-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--tax-primary);
+    cursor: pointer;
+}
+
+.tax-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--tax-border);
+}
+
+.tax-btn-secondary {
+    background: white;
+    border: 1px solid var(--tax-border);
+    color: var(--tax-text-main);
+}
+
+.tax-btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+/* Empty State */
+.tax-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--tax-text-sub);
+}
+
+/* Input Styles for Groups */
+.tax-input-group {
+    position: relative;
+}
+
+.tax-input-with-suffix {
+    padding-right: 42px !important;
+}
+
+.tax-input-suffix {
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    bottom: 1px;
+    width: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    border-left: 1px solid var(--tax-border);
+    color: var(--tax-text-sub);
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    font-weight: 500;
+    font-size: 13px;
+    user-select: none;
+}
+
+/* Inactive Row State */
+.tax-row-inactive {
+    opacity: 0.6;
+    background: #fdfdfd;
+}
+
+.tax-row-inactive:hover {
+    opacity: 0.8;
+}
+
+/* ===================================
+   MODAL STYLES (Self-Contained)
+   =================================== */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: taxFadeIn 0.2s ease-out;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    animation: taxSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+    padding: 0 0 10px !important;
+    border-bottom: 1px solid var(--tax-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff !important;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    margin-bottom: 20px !important;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--tax-text-main);
+    letter-spacing: -0.01em;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    color: var(--tax-text-sub);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: #f1f5f9;
+    color: var(--tax-text-main);
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+@keyframes taxFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes taxSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ===================================
+   RESPONSIVE DESIGN (Header Handling)
+   =================================== */
+
+@media (max-width: 768px) {
+    .tax-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 0;
+    }
+
+    .tax-header-content {
+        width: 100%;
+    }
+
+    .tax-header-content h1 {
+        font-size: 24px;
+    }
+
+    .tax-header-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        /* Two buttons per row */
+        gap: 10px;
+    }
+
+    /* Make Add New Tax take full width on very small screens or separate row */
+    .tax-header-actions .tax-btn-primary {
+        grid-column: span 2;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .tax-btn-white {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .tax-header-actions {
+        grid-template-columns: 1fr;
+        /* Stack all buttons on very small screens */
+    }
+
+    .tax-header-actions .tax-btn-primary {
+        grid-column: span 1;
+    }
+}

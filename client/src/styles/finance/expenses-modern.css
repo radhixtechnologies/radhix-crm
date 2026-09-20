@@ -1,0 +1,43 @@
+/* ===================================
+   EXPENSES - MODERN DESIGN
+   Extends payments-modern.css styles
+   =================================== */
+
+/* Import filter panel styles from payments */
+@import './payments-modern.css';
+
+/* Expense-specific overrides if needed */
+.expense-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+@media (max-width: 1280px) {
+    .expense-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .expense-stats {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+/* Spin animation for refresh button */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
