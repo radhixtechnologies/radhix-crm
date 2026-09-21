@@ -1,12 +1,12 @@
 import api from './api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://radhix-crm.onrender.com/api' : 'http://localhost:5000/api');
 
 export const financeService = {
   // Client services (for invoice creation) - returns ALL clients without pagination
   getClients: (params) => {
     // Remove pagination params to ensure we get all clients
-    const { page, limit, ...otherParams } = params || {};
+    const { page: _page, limit: _limit, ...otherParams } = params || {};
     return api.get('/finance/clients', { params: otherParams });
   },
 

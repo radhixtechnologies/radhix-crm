@@ -126,14 +126,14 @@ export const employeeService = {
     return api.put(`/performance/reviews/${id}`, data);
   },
   addGoal: (employeeId, data) => api.post('/performance/goals', { ...data, employeeId }),
-  updateGoal: (employeeId, goalId, data) => api.put(`/performance/goals/${goalId}`, data),
+  updateEmployeeGoal: (employeeId, goalId, data) => api.put(`/performance/goals/${goalId}`, data),
   deleteGoal: (employeeId, goalId) => api.delete(`/performance/goals/${goalId}`),
 
   // Payroll
   getSalarySlips: (params) => api.get('/employees/salary-slips', { params }),
   getSalarySlip: (id) => api.get(`/employees/salary-slips/${id}`),
   downloadSalarySlip: (pdfUrl) => {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://radhix-crm.onrender.com/api' : 'http://localhost:5000/api');
     window.open(`${API_URL}${pdfUrl}`, '_blank');
   },
   getReimbursements: (params) => api.get('/employees/reimbursements', { params }),
