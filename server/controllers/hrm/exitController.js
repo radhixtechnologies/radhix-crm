@@ -206,7 +206,6 @@ exports.approveExitRequest = async (req, res) => {
 
       if (status === 'approved') {
         exitRequest.status = 'approved';
-        exitRequest.status = 'under_review'; // Move to exit process
       } else if (status === 'rejected') {
         exitRequest.status = 'rejected';
       }
@@ -226,6 +225,19 @@ exports.approveExitRequest = async (req, res) => {
       message: error.message,
     });
   }
+};
+
+exports.requestEarlyRelease = async (req, res) => {
+  try {
+    const request = await ExitRequest.findByIdAndUpdate(req.params.id, { $set: { earlyRelease: { requested: true, requestedAt: new Date(), reason: req.body.reason || '' } } }, { new: true });
+    if (!request) return res.status(404).json({ success: false, message: 'Exit request not found' });
+    res.json({ success: true, data: request });
+  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
+};
+
+exports.getPendingApprovals = async (req, res) => {
+  try { res.json({ success: true, data: await ExitRequest.find({ status: { $in: ['submitted', 'under_review'] } }).populate('employee', 'employeeId user').sort({ submittedAt: -1 }) }); }
+  catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };
 
 // @desc    Conduct exit interview

@@ -191,6 +191,8 @@ const {
   getExitRequests,
   getExitRequest,
   approveExitRequest,
+  requestEarlyRelease,
+  getPendingApprovals,
   conductExitInterview,
   updateExitChecklist,
   calculateFinalSettlement,
@@ -291,21 +293,22 @@ router.get('/skills/my', getMySkills);
 router.post('/skill-requests', createSkillRequest);
 router.get('/skill-requests/my', getMySkillRequests);
 
-router.get('/skill-requests/:id', getSkillRequest);
 router.post('/skill-requests/:id/evidence', addEvidence);
 router.put('/skill-requests/:id/withdraw', withdrawRequest);
 router.get('/skills/matrix', getSkillMatrix); // Must be before /:id
-router.get('/skills/:id', getSkill); // View single skill details
 
 // ========== EXIT MANAGEMENT ROUTES (Accessible to Employees) ==========
 router.route('/exit')
   .get(getExitRequests)
   .post(submitExitRequest);
 
+router.get('/exit/pending-approvals', authorize('super_admin', 'admin'), getPendingApprovals);
+
 router.route('/exit/:id')
   .get(getExitRequest);
 
 router.put('/exit/:id/approve', authorize('super_admin', 'admin'), approveExitRequest);
+router.post('/exit/:id/early-release', requestEarlyRelease);
 
 // New Admin Exit Routes
 router.post('/exit/:id/documents', authorize('super_admin', 'admin'), generateExitDocuments);
@@ -440,6 +443,8 @@ router.put('/interviews/:id/reschedule', authorize('super_admin', 'admin'), resc
 router.route('/onboard/:employeeId')
   .get(getOnboardingTasks)
   .post(authorize('super_admin', 'admin'), createOnboardingTasks);
+
+router.post('/onboard/:employeeId/tasks', authorize('super_admin', 'admin'), createOnboardingTasks);
 
 router.get('/onboard/:employeeId/checklist', getNewHireChecklist);
 router.post('/onboard/:employeeId/complete', authorize('super_admin', 'admin'), completeOnboarding);

@@ -4,6 +4,8 @@ const SkillLibrary = require('../../models/SkillLibrary');
 const SkillAuditLog = require('../../models/SkillAuditLog');
 const Employee = require('../../models/Employee');
 const SkillConfiguration = require('../../models/SkillConfiguration');
+const User = require('../../models/User');
+const { createNotification } = require('../../utils/notification');
 const logActivity = require('../../utils/activityLogger');
 
 // @desc    Create skill request (Employee)
@@ -163,7 +165,8 @@ exports.createSkillRequest = async (req, res) => {
             `Created ${requestType} request for skill: ${skillLibraryItem.skillName}`
         );
 
-        // TODO: Send notification to admin/manager
+        const reviewers = await User.find({ role: { $in: ['admin', 'super_admin'] }, isActive: true }).select('_id');
+        await Promise.all(reviewers.map((reviewer) => createNotification(reviewer._id, 'info', 'New skill request', `${req.user.name || 'An employee'} requested ${skillLibraryItem.skillName}`, `/hrm/skill-requests/${skillRequest._id}`)));
 
         res.status(201).json({
             success: true,
@@ -379,7 +382,8 @@ exports.reviewSkillRequest = async (req, res) => {
             `${status} skill request: ${request.skillName}`
         );
 
-        // TODO: Send notification to employee
+        const employee = await Employee.findById(request.employee).populate('user', '_id');
+        await createNotification(employee?.user?._id, status === 'approved' ? 'success' : 'warning', `Skill request ${status}`, `Your request for ${request.skillName} was ${status}.`, `/hrm/skill-requests/${request._id}`);
 
         res.status(200).json({
             success: true,
