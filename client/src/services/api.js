@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || (
+  import.meta.env.PROD ? 'https://radhix-crm.onrender.com/api' : 'http://localhost:5000/api'
+);
 
 // Create axios instance
 const api = axios.create({
@@ -39,7 +41,7 @@ api.interceptors.response.use(
       // Show user-friendly error message
       if (error.config && !error.config._retry) {
         error.config._retry = true;
-        const errorMessage = 'Cannot connect to server. Please ensure the backend server is running on http://localhost:5000';
+        const errorMessage = `Cannot connect to server at ${API_URL}`;
         // You can show a toast notification here if you have a toast system
         console.error(errorMessage);
       }
