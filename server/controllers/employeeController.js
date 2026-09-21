@@ -4,6 +4,7 @@ const employeeService = require('../services/employeeService');
 const { asyncHandler } = require('../utils/asyncHandler');
 const leaveController = require('./leaveController');
 const taskController = require('./taskController');
+const attendanceController = require('./attendanceController');
 
 const getUser = (req) => req.user;
 
@@ -81,15 +82,15 @@ exports.uploadAvatar = asyncHandler(async (req, res) => {
 });
 
 exports.checkIn = asyncHandler(async (req, res) => {
-  res.status(501).json({ success: false, message: 'Employee check-in is handled by the attendance module' });
+  return attendanceController.checkIn(req, res, (error) => { throw error; });
 });
 
 exports.checkOut = asyncHandler(async (req, res) => {
-  res.status(501).json({ success: false, message: 'Employee check-out is handled by the attendance module' });
+  return attendanceController.checkOut(req, res, (error) => { throw error; });
 });
 
 exports.getAttendance = asyncHandler(async (req, res) => {
-  res.status(501).json({ success: false, message: 'Employee attendance is handled by the attendance module' });
+  return attendanceController.getAttendance(req, res, (error) => { throw error; });
 });
 
 exports.createLeave = leaveController.createLeave;

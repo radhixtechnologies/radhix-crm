@@ -1,7 +1,8 @@
-const unavailable = (message) => async (req, res) => res.status(501).json({ success: false, message });
-exports.getSalaryStructures = unavailable('Salary structures are not configured');
-exports.getSalaryStructure = unavailable('Salary structures are not configured');
-exports.getSalaryStructureByEmployee = unavailable('Salary structures are not configured');
-exports.createSalaryStructure = unavailable('Salary structures are not configured');
-exports.updateSalaryStructure = unavailable('Salary structures are not configured');
-exports.deleteSalaryStructure = unavailable('Salary structures are not configured');
+const SalaryStructure = require('../../models/SalaryStructure');
+const fail = (res, e) => res.status(500).json({ success: false, message: e.message });
+exports.getSalaryStructures = async (req, res) => { try { res.json({ success: true, data: await SalaryStructure.find({ isActive: true }).populate('employee') }); } catch (e) { fail(res, e); } };
+exports.getSalaryStructure = async (req, res) => { try { res.json({ success: true, data: await SalaryStructure.findById(req.params.id).populate('employee') }); } catch (e) { fail(res, e); } };
+exports.getSalaryStructureByEmployee = async (req, res) => { try { res.json({ success: true, data: await SalaryStructure.findOne({ employee: req.params.employeeId, isActive: true }).sort({ effectiveFrom: -1 }) }); } catch (e) { fail(res, e); } };
+exports.createSalaryStructure = async (req, res) => { try { const basic = Number(req.body.basic || req.body.basicSalary || 0); const allowances = Number(req.body.allowances || 0); const deductions = Number(req.body.deductions || 0); res.status(201).json({ success: true, data: await SalaryStructure.create({ ...req.body, basic, allowances, deductions, grossSalary: basic + allowances, annualCTC: (basic + allowances - deductions) * 12 }) }); } catch (e) { res.status(400).json({ success: false, message: e.message }); } };
+exports.updateSalaryStructure = async (req, res) => { try { res.json({ success: true, data: await SalaryStructure.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }) }); } catch (e) { res.status(400).json({ success: false, message: e.message }); } };
+exports.deleteSalaryStructure = async (req, res) => { try { res.json({ success: true, data: await SalaryStructure.findByIdAndUpdate(req.params.id, { isActive: false }, { new: true }) }); } catch (e) { fail(res, e); } };
