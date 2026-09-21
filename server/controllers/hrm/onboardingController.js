@@ -1,0 +1,8 @@
+const OnboardingTask = require('../../models/OnboardingTask');
+
+const fail = (res, error) => res.status(500).json({ success: false, message: error.message });
+exports.getOnboardingTasks = async (req, res) => { try { res.json({ success: true, data: await OnboardingTask.find(req.query.employee ? { employee: req.query.employee } : {}).sort({ dueDate: 1 }) }); } catch (e) { fail(res, e); } };
+exports.createOnboardingTasks = async (req, res) => { try { const tasks = Array.isArray(req.body.tasks) ? req.body.tasks : [req.body]; res.status(201).json({ success: true, data: await OnboardingTask.insertMany(tasks) }); } catch (e) { res.status(400).json({ success: false, message: e.message }); } };
+exports.updateOnboardingTask = async (req, res) => { try { res.json({ success: true, data: await OnboardingTask.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }) }); } catch (e) { fail(res, e); } };
+exports.completeOnboarding = async (req, res) => { try { await OnboardingTask.updateMany({ employee: req.params.employeeId, status: { $ne: 'completed' } }, { status: 'completed', completedAt: new Date() }); res.json({ success: true, message: 'Onboarding completed' }); } catch (e) { fail(res, e); } };
+exports.getNewHireChecklist = async (req, res) => { try { res.json({ success: true, data: await OnboardingTask.find({ employee: req.params.employeeId }).sort({ dueDate: 1 }) }); } catch (e) { fail(res, e); } };

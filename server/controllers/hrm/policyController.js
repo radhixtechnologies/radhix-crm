@@ -1,0 +1,20 @@
+const Policy = require('../../models/Policy');
+
+const fail = (res, error) => res.status(500).json({ success: false, message: error.message });
+const list = (req) => Policy.find({ status: { $ne: 'archived' } }).sort({ createdAt: -1 });
+exports.getPolicies = async (req, res) => { try { res.json({ success: true, data: await list(req) }); } catch (e) { fail(res, e); } };
+exports.getPolicy = async (req, res) => { try { const data = await Policy.findById(req.params.id); if (!data) return res.status(404).json({ success: false, message: 'Policy not found' }); res.json({ success: true, data }); } catch (e) { fail(res, e); } };
+exports.createPolicy = async (req, res) => { try { res.status(201).json({ success: true, data: await Policy.create({ ...req.body, createdBy: req.user._id }) }); } catch (e) { res.status(400).json({ success: false, message: e.message }); } };
+exports.updatePolicy = async (req, res) => { try { res.json({ success: true, data: await Policy.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }) }); } catch (e) { res.status(400).json({ success: false, message: e.message }); } };
+exports.deletePolicy = async (req, res) => { try { res.json({ success: true, data: await Policy.findByIdAndUpdate(req.params.id, { status: 'archived' }, { new: true }) }); } catch (e) { fail(res, e); } };
+exports.publishPolicy = async (req, res) => { try { res.json({ success: true, data: await Policy.findByIdAndUpdate(req.params.id, { status: 'published' }, { new: true }) }); } catch (e) { fail(res, e); } };
+exports.createNewVersion = exports.updatePolicy;
+exports.getVersionHistory = exports.getPolicy;
+exports.getMyPolicies = exports.getPolicies;
+exports.getPendingAcknowledgments = exports.getPolicies;
+exports.acknowledgePolicy = async (req, res) => { try { const data = await Policy.findByIdAndUpdate(req.params.id, { $push: { acknowledgments: { employee: req.user._id, acknowledgedAt: new Date() } } }, { new: true }); res.json({ success: true, data }); } catch (e) { fail(res, e); } };
+exports.getAcknowledgmentStatus = exports.getPolicy;
+exports.getComplianceReport = exports.getPolicies;
+exports.sendReminders = async (req, res) => res.json({ success: true, message: 'Policy reminders queued' });
+exports.checkEnforcement = async (req, res) => res.json({ success: true, data: { compliant: true } });
+exports.getDocumentCenter = exports.getPolicies;

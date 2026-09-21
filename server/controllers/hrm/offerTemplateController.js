@@ -1,0 +1,8 @@
+const OfferTemplate = require('../../models/OfferTemplate');
+
+exports.getTemplates = async (req, res) => { try { res.json({ success: true, data: await OfferTemplate.find({ isActive: true }).sort({ name: 1 }) }); } catch (e) { res.status(500).json({ success: false, message: e.message }); } };
+exports.getTemplate = async (req, res) => { try { res.json({ success: true, data: await OfferTemplate.findById(req.params.id) }); } catch (e) { res.status(500).json({ success: false, message: e.message }); } };
+exports.createTemplate = async (req, res) => { try { res.status(201).json({ success: true, data: await OfferTemplate.create({ ...req.body, createdBy: req.user._id }) }); } catch (e) { res.status(400).json({ success: false, message: e.message }); } };
+exports.updateTemplate = async (req, res) => { try { res.json({ success: true, data: await OfferTemplate.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }) }); } catch (e) { res.status(400).json({ success: false, message: e.message }); } };
+exports.deleteTemplate = async (req, res) => { try { await OfferTemplate.findByIdAndUpdate(req.params.id, { isActive: false }); res.json({ success: true }); } catch (e) { res.status(500).json({ success: false, message: e.message }); } };
+exports.getDefaultTemplate = async (req, res) => { try { res.json({ success: true, data: await OfferTemplate.findOne({ isDefault: true, isActive: true }) }); } catch (e) { res.status(500).json({ success: false, message: e.message }); } };

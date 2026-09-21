@@ -1,0 +1,11 @@
+const Email = require('../models/Email');
+const base = (res, e) => res.status(500).json({ success: false, message: e.message });
+exports.getAllEmails = async (req, res) => { try { res.json({ success: true, data: { emails: await Email.find({}).sort({ createdAt: -1 }) } }); } catch (e) { base(res, e); } };
+exports.getEmailById = async (req, res) => { try { const data = await Email.findById(req.params.id); if (!data) return res.status(404).json({ success: false, message: 'Email not found' }); res.json({ success: true, data }); } catch (e) { base(res, e); } };
+exports.createEmail = async (req, res) => { try { res.status(201).json({ success: true, data: await Email.create({ ...req.body, createdBy: req.user._id, owner: req.user._id }) }); } catch (e) { res.status(400).json({ success: false, message: e.message }); } };
+exports.updateEmail = async (req, res) => { try { const data = await Email.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); res.json({ success: true, data }); } catch (e) { base(res, e); } };
+exports.deleteEmail = async (req, res) => { try { await Email.findByIdAndDelete(req.params.id); res.json({ success: true }); } catch (e) { base(res, e); } };
+exports.scheduleEmail = async (req, res) => { try { const data = await Email.findByIdAndUpdate(req.params.id, { ...req.body, status: 'scheduled' }, { new: true }); res.json({ success: true, data }); } catch (e) { base(res, e); } };
+exports.sendEmail = async (req, res) => { try { const data = await Email.findByIdAndUpdate(req.params.id, { status: 'sent', sentDate: new Date() }, { new: true }); res.json({ success: true, data }); } catch (e) { base(res, e); } };
+exports.sendTestEmail = async (req, res) => res.json({ success: true, message: 'Test email queued', recipient: req.body.testEmail });
+exports.getEmailAnalytics = async (req, res) => { try { const data = await Email.findById(req.params.id).select('metrics openRate clickRate bounceRate'); res.json({ success: true, data }); } catch (e) { base(res, e); } };

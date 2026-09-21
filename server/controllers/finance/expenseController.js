@@ -1,0 +1,2 @@
+const finance = require('../financeController');
+module.exports = { getExpenses: finance.getExpenses, getExpense: async (req, res) => finance.getExpenses(req, res), createExpense: finance.createExpense, updateExpense: finance.updateExpense, deleteExpense: finance.deleteExpense };
