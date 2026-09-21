@@ -5,7 +5,6 @@ import { useAuth } from '../../context/AuthContext';
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiUsers, FiCheckCircle, FiXCircle, FiBriefcase } from 'react-icons/fi';
 import Loader from '../../components/common/Loader';
 import EmployeeTable from '../../components/Employees/EmployeeTable';
-import { formatDate } from '../../utils/format';
 import '../../styles/employees.css';
 import '../../styles/tables.css';
 import '../../styles/sales/leads.css';
@@ -59,9 +58,12 @@ const EmployeeList = () => {
       console.log('Fetching employees with params:', params);
       const response = await employeeService.getEmployees(params);
       if (response.data.success) {
-        setEmployees(response.data.data);
+        const employeeRows = Array.isArray(response.data.data)
+          ? response.data.data
+          : response.data.data?.employees || response.data.employees || [];
+        setEmployees(employeeRows);
         // Apply client-side filters if needed (search is handled server-side but can also be done client-side)
-        applyFiltersAndSort(response.data.data);
+        applyFiltersAndSort(employeeRows);
       } else {
         console.error('Failed to fetch employees:', response.data);
       }
@@ -98,7 +100,7 @@ const EmployeeList = () => {
     }, search ? 500 : 300); // Longer debounce for search
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [departmentFilter, statusFilter, sortBy, sortOrder, search]);
+  }, [activeFilters.department, activeFilters.status, activeFilters.sortBy, activeFilters.sortOrder, search]);
 
   const applyFiltersAndSort = (data) => {
     let filtered = [...data];
@@ -177,7 +179,7 @@ const EmployeeList = () => {
       setLoading(true);
       await employeeService.deleteEmployee(id);
       await fetchEmployees();
-    } catch (error) {
+    } catch {
       alert('Error deleting employee');
     } finally {
       setLoading(false);
