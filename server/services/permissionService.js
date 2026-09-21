@@ -2,6 +2,11 @@ const Permission = require('../models/Permission');
 const Role = require('../models/Role');
 const User = require('../models/User');
 
+const getRoleSlug = (user) => {
+  if (typeof user?.role === 'string') return user.role;
+  return user?.role?.slug;
+};
+
 /**
  * Permission Service
  * Centralized service for all permission-related operations
@@ -22,7 +27,7 @@ async function hasPermission(user, module, action, resource = null) {
   if (!user.populated('role')) {
     await user.populate('role');
   }
-  if (!user.populated('customPermissions')) {
+  if (user.schema?.path('customPermissions')?.options?.ref && !user.populated('customPermissions')) {
     await user.populate('customPermissions');
   }
 
@@ -184,22 +189,25 @@ async function getUserPermissions(userId) {
 async function getPermissionScope(user, module, action, resource) {
   if (!user) return 'own';
 
+  const roleSlug = getRoleSlug(user);
+  if (roleSlug === 'super_admin') return 'all';
+
   // Populate role and permissions if not already populated
-  if (!user.populated('role')) {
+  if (user.schema?.path('role')?.options?.ref && !user.populated('role')) {
     await user.populate('role');
   }
-  if (!user.populated('customPermissions')) {
+  if (user.schema?.path('customPermissions')?.options?.ref && !user.populated('customPermissions')) {
     await user.populate('customPermissions');
   }
 
   // Super Admin has 'all' scope
-  if (user.role && user.role.slug === 'super_admin') {
+  if (getRoleSlug(user) === 'super_admin') {
     return 'all';
   }
 
   // Admins have 'all' scope for their assigned modules
-  if (user.role && (user.role.slug === 'admin' || user.role.slug.includes('_admin'))) {
-    if (user.role.modules && user.role.modules.includes(module)) {
+  if (roleSlug === 'admin' || roleSlug?.includes('_admin') || roleSlug?.includes('_manager')) {
+    if (typeof user.role === 'string' || user.role.modules?.includes(module)) {
       return 'all';
     }
   }
@@ -306,7 +314,12 @@ async function isSuperAdmin(user) {
 async function isAdmin(user) {
   if (!user) return false;
 
-  if (!user.populated('role')) {
+  const roleSlug = getRoleSlug(user);
+  if (roleSlug) {
+    return roleSlug === 'super_admin' || roleSlug === 'admin' || roleSlug.includes('_admin') || roleSlug.includes('_manager');
+  }
+
+  if (user.schema?.path('role')?.options?.ref && !user.populated('role')) {
     await user.populate('role');
   }
 
