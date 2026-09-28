@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SidebarProvider, useSidebar } from './context/SidebarContext';
 import { QuickActionsProvider } from './context/QuickActionsContext';
@@ -8,161 +9,158 @@ import Navbar from './components/common/Navbar';
 import Breadcrumbs from './components/common/Breadcrumbs';
 
 // Auth
-import Login from './pages/auth/Login';
-import ForgotPassword from './pages/auth/ForgotPassword';
-import ResetPassword from './pages/auth/ResetPassword';
-import ChangePassword from './pages/auth/ChangePassword';
+const Login = lazy(() => import('./pages/auth/Login'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
+const ChangePassword = lazy(() => import('./pages/auth/ChangePassword'));
 
 // Dashboard
-import Dashboard from './pages/Dashboard';
-import ReportsDashboard from './pages/reports/ReportsDashboard';
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const ReportsDashboard = lazy(() => import('./pages/reports/ReportsDashboard'));
 
 // Employee
+const EmployeeProfile = lazy(() => import('./pages/employee/EmployeeProfile'));
+const Attendance = lazy(() => import('./pages/employee/Attendance'));
+const MyAttendance = lazy(() => import('./pages/employee/MyAttendance'));
+const MyLeaves = lazy(() => import('./pages/employee/MyLeaves'));
+const HRMLeaves = lazy(() => import('./pages/hrm/HRMLeaves'));
+const Leaves = lazy(() => import('./pages/employee/Leaves'));
+const Tasks = lazy(() => import('./pages/employee/Tasks'));
+const Timesheets = lazy(() => import('./pages/employee/Timesheets'));
+const LeaveBalance = lazy(() => import('./pages/employee/LeaveBalance'));
+const Performance = lazy(() => import('./pages/employee/MyPerformanceReview'));
+const Payroll = lazy(() => import('./pages/employee/Payroll'));
+const Assets = lazy(() => import('./pages/employee/Assets'));
+const ExitProcess = lazy(() => import('./pages/employee/ExitProcess'));
+const ActivityLogs = lazy(() => import('./pages/employee/ActivityLogs'));
+const MySalarySlips = lazy(() => import('./pages/employee/MySalarySlips'));
+const Reimbursements = lazy(() => import('./pages/employee/Reimbursements'));
+const EmployeeReports = lazy(() => import('./pages/employee/EmployeeReports'));
+const EmployeeStatistics = lazy(() => import('./pages/employee/EmployeeStatistics'));
+const EmployeeImportExport = lazy(() => import('./pages/employee/EmployeeImportExport'));
 
-import EmployeeProfile from './pages/employee/EmployeeProfile';
-import Attendance from './pages/employee/Attendance';
-import MyAttendance from './pages/employee/MyAttendance';
-import MyLeaves from './pages/employee/MyLeaves';
-import HRMLeaves from './pages/hrm/HRMLeaves'; // New Import
-import Leaves from './pages/employee/Leaves';
-import Tasks from './pages/employee/Tasks';
-import Timesheets from './pages/employee/Timesheets';
-import LeaveBalance from './pages/employee/LeaveBalance';
-import Performance from './pages/employee/MyPerformanceReview';
-import Payroll from './pages/employee/Payroll';
-import Assets from './pages/employee/Assets';
-import ExitProcess from './pages/employee/ExitProcess';
-import ActivityLogs from './pages/employee/ActivityLogs';
-import MySalarySlips from './pages/employee/MySalarySlips';
-import Reimbursements from './pages/employee/Reimbursements';
-import EmployeeReports from './pages/employee/EmployeeReports';
-import EmployeeStatistics from './pages/employee/EmployeeStatistics';
-import EmployeeImportExport from './pages/employee/EmployeeImportExport';
+// Add Employee
+const AddEmployee = lazy(() => import('./pages/Employees/AddEmployee'));
+const EditEmployee = lazy(() => import('./pages/Employees/EditEmployee'));
 
-// Add Employee (correct folder)
-import AddEmployee from './pages/Employees/AddEmployee';
-import EditEmployee from './pages/Employees/EditEmployee';
-
-// Finance (FIXED: finance, not Finance)
-import FinanceDashboard from './pages/finance/FinanceDashboard';
-import InvoiceList from './pages/finance/InvoiceList.jsx';
-import AddInvoice from './pages/finance/AddInvoice';
-import InvoiceDetails from './pages/finance/InvoiceDetails';
-import ExpenseList from './pages/finance/ExpenseList';
-import AddExpense from './pages/finance/AddExpense';
-import ExpenseDetail from './pages/finance/ExpenseDetail';
-import PayrollList from './pages/finance/PayrollList';
-import GeneratePayroll from './pages/finance/GeneratePayroll';
-import GenerateSalarySlip from './pages/finance/GenerateSalarySlip';
-import SalarySlipList from './pages/finance/SalarySlipList';
-import SalaryStructureList from './pages/finance/SalaryStructureList';
-import SalaryStructureForm from './pages/finance/SalaryStructureForm';
-import SalaryStructureDetail from './pages/finance/SalaryStructureDetail';
-import FinanceReports from './pages/finance/FinanceReports';
-import TaxSettings from './pages/finance/TaxSettings';
-// Payment Management
-import Payments from './pages/finance/Payments';
-import RecordPayment from './pages/finance/RecordPayment';
-import PaymentDetails from './pages/finance/PaymentDetails';
+// Finance
+const FinanceDashboard = lazy(() => import('./pages/finance/FinanceDashboard'));
+const InvoiceList = lazy(() => import('./pages/finance/InvoiceList.jsx'));
+const AddInvoice = lazy(() => import('./pages/finance/AddInvoice'));
+const InvoiceDetails = lazy(() => import('./pages/finance/InvoiceDetails'));
+const ExpenseList = lazy(() => import('./pages/finance/ExpenseList'));
+const AddExpense = lazy(() => import('./pages/finance/AddExpense'));
+const ExpenseDetail = lazy(() => import('./pages/finance/ExpenseDetail'));
+const PayrollList = lazy(() => import('./pages/finance/PayrollList'));
+const GeneratePayroll = lazy(() => import('./pages/finance/GeneratePayroll'));
+const GenerateSalarySlip = lazy(() => import('./pages/finance/GenerateSalarySlip'));
+const SalarySlipList = lazy(() => import('./pages/finance/SalarySlipList'));
+const SalaryStructureList = lazy(() => import('./pages/finance/SalaryStructureList'));
+const SalaryStructureForm = lazy(() => import('./pages/finance/SalaryStructureForm'));
+const SalaryStructureDetail = lazy(() => import('./pages/finance/SalaryStructureDetail'));
+const FinanceReports = lazy(() => import('./pages/finance/FinanceReports'));
+const TaxSettings = lazy(() => import('./pages/finance/TaxSettings'));
+const Payments = lazy(() => import('./pages/finance/Payments'));
+const RecordPayment = lazy(() => import('./pages/finance/RecordPayment'));
+const PaymentDetails = lazy(() => import('./pages/finance/PaymentDetails'));
 
 // Inventory
-import ProductList from './pages/inventory/ProductList';
-import AddProduct from './pages/inventory/AddProduct';
+const ProductList = lazy(() => import('./pages/inventory/ProductList'));
+const AddProduct = lazy(() => import('./pages/inventory/AddProduct'));
 
-// Sales (FIXED: sales, not Sales)
-import SalesDashboard from './pages/sales/SalesDashboard';
-import LeadList from './pages/sales/LeadList';
-import AddLead from './pages/sales/AddLead';
-import LeadDetails from './pages/sales/LeadDetails';
-import LeadTracking from './pages/sales/LeadTracking';
-import ClientList from './pages/sales/ClientList';
-import AddClient from './pages/sales/AddClient';
-import ClientDetails from './pages/sales/ClientDetails';
-import SalesPipeline from './pages/sales/SalesPipeline';
-import Deals from './pages/sales/Deals';
-import DealDetails from './pages/sales/DealDetails';
-import UpdateDeal from './pages/sales/UpdateDeal';
-import SalesDocuments from './pages/sales/SalesDocuments';
-import AddProposal from './pages/sales/AddProposal';
-import ProposalDetails from './pages/sales/ProposalDetails';
-import CreateQuotation from './pages/sales/CreateQuotation';
-import FollowupList from './pages/sales/FollowupList';
+// Sales
+const SalesDashboard = lazy(() => import('./pages/sales/SalesDashboard'));
+const LeadList = lazy(() => import('./pages/sales/LeadList'));
+const AddLead = lazy(() => import('./pages/sales/AddLead'));
+const LeadDetails = lazy(() => import('./pages/sales/LeadDetails'));
+const LeadTracking = lazy(() => import('./pages/sales/LeadTracking'));
+const ClientList = lazy(() => import('./pages/sales/ClientList'));
+const AddClient = lazy(() => import('./pages/sales/AddClient'));
+const ClientDetails = lazy(() => import('./pages/sales/ClientDetails'));
+const SalesPipeline = lazy(() => import('./pages/sales/SalesPipeline'));
+const Deals = lazy(() => import('./pages/sales/Deals'));
+const DealDetails = lazy(() => import('./pages/sales/DealDetails'));
+const UpdateDeal = lazy(() => import('./pages/sales/UpdateDeal'));
+const SalesDocuments = lazy(() => import('./pages/sales/SalesDocuments'));
+const AddProposal = lazy(() => import('./pages/sales/AddProposal'));
+const ProposalDetails = lazy(() => import('./pages/sales/ProposalDetails'));
+const CreateQuotation = lazy(() => import('./pages/sales/CreateQuotation'));
+const FollowupList = lazy(() => import('./pages/sales/FollowupList'));
 
 // Contact Management
-import ContactList from './pages/contacts/ContactList';
-import AddContact from './pages/contacts/AddContact';
-import ContactDetails from './pages/contacts/ContactDetails';
+const ContactList = lazy(() => import('./pages/contacts/ContactList'));
+const AddContact = lazy(() => import('./pages/contacts/AddContact'));
+const ContactDetails = lazy(() => import('./pages/contacts/ContactDetails'));
 
 // Marketing Module
-import CampaignList from './pages/marketing/CampaignList';
-import AddCampaign from './pages/marketing/AddCampaign';
-import CampaignDetails from './pages/marketing/CampaignDetails';
-import MarketingDashboard from './pages/marketing/MarketingDashboard';
-import EmailList from './pages/marketing/EmailList';
-import SegmentList from './pages/marketing/SegmentList';
-import CreateEmail from './pages/marketing/CreateEmail';
-import AddSegment from './pages/marketing/AddSegment';
-import SegmentDetails from './pages/marketing/SegmentDetails';
-import AutomationList from './pages/marketing/AutomationList';
-import AddAutomation from './pages/marketing/AddAutomation';
-import MarketingReports from './pages/marketing/MarketingReports';
+const CampaignList = lazy(() => import('./pages/marketing/CampaignList'));
+const AddCampaign = lazy(() => import('./pages/marketing/AddCampaign'));
+const CampaignDetails = lazy(() => import('./pages/marketing/CampaignDetails'));
+const MarketingDashboard = lazy(() => import('./pages/marketing/MarketingDashboard'));
+const EmailList = lazy(() => import('./pages/marketing/EmailList'));
+const SegmentList = lazy(() => import('./pages/marketing/SegmentList'));
+const CreateEmail = lazy(() => import('./pages/marketing/CreateEmail'));
+const AddSegment = lazy(() => import('./pages/marketing/AddSegment'));
+const SegmentDetails = lazy(() => import('./pages/marketing/SegmentDetails'));
+const AutomationList = lazy(() => import('./pages/marketing/AutomationList'));
+const AddAutomation = lazy(() => import('./pages/marketing/AddAutomation'));
+const MarketingReports = lazy(() => import('./pages/marketing/MarketingReports'));
 
 // Support Module
-import TicketList from './pages/support/TicketList';
-import AddTicket from './pages/support/AddTicket';
-import TicketDetails from './pages/support/TicketDetails';
+const TicketList = lazy(() => import('./pages/support/TicketList'));
+const AddTicket = lazy(() => import('./pages/support/AddTicket'));
+const TicketDetails = lazy(() => import('./pages/support/TicketDetails'));
 
-import CalendarView from './pages/activities/CalendarView';
+const CalendarView = lazy(() => import('./pages/activities/CalendarView'));
 
-
-// HRM (unchanged)
-import HRMDashboard from './pages/hrm/HRMDashboard';
-import HRMAttendance from './pages/hrm/HRMAttendance';
-import HRAnalyticsDashboard from './pages/hrm/Analytics/HRAnalyticsDashboard';
-import PolicyCenter from './pages/hrm/Policies/PolicyCenter';
-import PolicyList from './pages/hrm/Policies/PolicyList';
-import PolicyDetails from './pages/hrm/Policies/PolicyDetails';
-import EmployeePolicyView from './pages/hrm/Policies/EmployeePolicyView';
-import PolicyForm from './pages/hrm/Policies/PolicyForm';
-import SkillMatrix from './pages/hrm/Skills/SkillMatrix';
-import MySkills from './pages/hrm/Skills/MySkills'; // Import MySkills
-import AddEditSkill from './pages/hrm/Skills/AddEditSkill';
-import SkillDetails from './pages/hrm/Skills/SkillDetails'; // New import
-import EmployeeSkillProfile from './pages/hrm/Skills/EmployeeSkillProfile';
-import ExitManagement from './pages/hrm/Exit/ExitManagement';
-import SubmitResignation from './pages/hrm/Exit/SubmitResignation';
-import ExitDashboard from './pages/hrm/Exit/ExitDashboard';
-import ExitRequestDetails from './pages/hrm/Exit/ExitRequestDetails';
-import PerformanceDashboard from './pages/hrm/Performance/PerformanceDashboard';
-import SelfAssessment from './pages/hrm/Performance/SelfAssessment';
-import ManagerReview from './pages/hrm/Performance/ManagerReview';
-import GoalsList from './pages/hrm/Performance/GoalsList';
-import OnboardingDashboard from './pages/hrm/Onboarding/OnboardingDashboard';
-import OnboardingTasks from './pages/hrm/Onboarding/OnboardingTasks';
-import NewHireChecklist from './pages/hrm/Onboarding/NewHireChecklist';
-import JobList from './pages/hrm/Recruitment/JobList';
-import AddJob from './pages/hrm/Recruitment/AddJob';
-import JobDetails from './pages/hrm/Recruitment/JobDetails';
-import ApplicantsList from './pages/hrm/Recruitment/ApplicantsList';
-import ApplicantDetails from './pages/hrm/Recruitment/ApplicantDetails';
-import InterviewScheduling from './pages/hrm/Recruitment/InterviewScheduling';
-import OfferList from './pages/hrm/Recruitment/OfferList';
-import OfferForm from './pages/hrm/Recruitment/OfferForm';
-import SelectApplicantForOffer from './pages/hrm/Recruitment/SelectApplicantForOffer';
-import TrainingCatalog from './pages/hrm/Training/TrainingCatalog';
-import TrainingDetails from './pages/hrm/Training/TrainingDetails';
-import HRReports from './pages/hrm/Reports/HRReports';
-import EmployeeTimeline from './pages/hrm/Lifecycle/EmployeeTimeline';
-import EmployeeDirectory from './pages/hrm/EmployeeDirectory';
+// HRM
+const HRMDashboard = lazy(() => import('./pages/hrm/HRMDashboard'));
+const HRMAttendance = lazy(() => import('./pages/hrm/HRMAttendance'));
+const HRAnalyticsDashboard = lazy(() => import('./pages/hrm/Analytics/HRAnalyticsDashboard'));
+const PolicyCenter = lazy(() => import('./pages/hrm/Policies/PolicyCenter'));
+const PolicyList = lazy(() => import('./pages/hrm/Policies/PolicyList'));
+const PolicyDetails = lazy(() => import('./pages/hrm/Policies/PolicyDetails'));
+const EmployeePolicyView = lazy(() => import('./pages/hrm/Policies/EmployeePolicyView'));
+const PolicyForm = lazy(() => import('./pages/hrm/Policies/PolicyForm'));
+const SkillMatrix = lazy(() => import('./pages/hrm/Skills/SkillMatrix'));
+const MySkills = lazy(() => import('./pages/hrm/Skills/MySkills'));
+const AddEditSkill = lazy(() => import('./pages/hrm/Skills/AddEditSkill'));
+const SkillDetails = lazy(() => import('./pages/hrm/Skills/SkillDetails'));
+const EmployeeSkillProfile = lazy(() => import('./pages/hrm/Skills/EmployeeSkillProfile'));
+const ExitManagement = lazy(() => import('./pages/hrm/Exit/ExitManagement'));
+const SubmitResignation = lazy(() => import('./pages/hrm/Exit/SubmitResignation'));
+const ExitDashboard = lazy(() => import('./pages/hrm/Exit/ExitDashboard'));
+const ExitRequestDetails = lazy(() => import('./pages/hrm/Exit/ExitRequestDetails'));
+const PerformanceDashboard = lazy(() => import('./pages/hrm/Performance/PerformanceDashboard'));
+const SelfAssessment = lazy(() => import('./pages/hrm/Performance/SelfAssessment'));
+const ManagerReview = lazy(() => import('./pages/hrm/Performance/ManagerReview'));
+const GoalsList = lazy(() => import('./pages/hrm/Performance/GoalsList'));
+const OnboardingDashboard = lazy(() => import('./pages/hrm/Onboarding/OnboardingDashboard'));
+const OnboardingTasks = lazy(() => import('./pages/hrm/Onboarding/OnboardingTasks'));
+const NewHireChecklist = lazy(() => import('./pages/hrm/Onboarding/NewHireChecklist'));
+const JobList = lazy(() => import('./pages/hrm/Recruitment/JobList'));
+const AddJob = lazy(() => import('./pages/hrm/Recruitment/AddJob'));
+const JobDetails = lazy(() => import('./pages/hrm/Recruitment/JobDetails'));
+const ApplicantsList = lazy(() => import('./pages/hrm/Recruitment/ApplicantsList'));
+const ApplicantDetails = lazy(() => import('./pages/hrm/Recruitment/ApplicantDetails'));
+const InterviewScheduling = lazy(() => import('./pages/hrm/Recruitment/InterviewScheduling'));
+const OfferList = lazy(() => import('./pages/hrm/Recruitment/OfferList'));
+const OfferForm = lazy(() => import('./pages/hrm/Recruitment/OfferForm'));
+const SelectApplicantForOffer = lazy(() => import('./pages/hrm/Recruitment/SelectApplicantForOffer'));
+const TrainingCatalog = lazy(() => import('./pages/hrm/Training/TrainingCatalog'));
+const TrainingDetails = lazy(() => import('./pages/hrm/Training/TrainingDetails'));
+const HRReports = lazy(() => import('./pages/hrm/Reports/HRReports'));
+const EmployeeTimeline = lazy(() => import('./pages/hrm/Lifecycle/EmployeeTimeline'));
+const EmployeeDirectory = lazy(() => import('./pages/hrm/EmployeeDirectory'));
 
 // Settings & Admin
-import Settings from './pages/settings/Settings';
-import AllGoals from './pages/admin/AllGoals';
-import AllReviews from './pages/admin/AllReviews';
-import AppraisalCycles from './pages/admin/AppraisalCycles';
-import LeaveAllocation from './pages/admin/LeaveAllocation';
-import LeaveBalanceOverview from './pages/admin/LeaveBalanceOverview';
-import LeaveReports from './pages/admin/LeaveReports';
+const Settings = lazy(() => import('./pages/settings/Settings'));
+const AllGoals = lazy(() => import('./pages/admin/AllGoals'));
+const AllReviews = lazy(() => import('./pages/admin/AllReviews'));
+const AppraisalCycles = lazy(() => import('./pages/admin/AppraisalCycles'));
+const LeaveAllocation = lazy(() => import('./pages/admin/LeaveAllocation'));
+const LeaveBalanceOverview = lazy(() => import('./pages/admin/LeaveBalanceOverview'));
+const LeaveReports = lazy(() => import('./pages/admin/LeaveReports'));
 
 // Styles
 import './styles/design-system.css';
@@ -202,9 +200,10 @@ const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
 
   return (
-    <Routes>
-      <Route
-        path="/login"
+    <Suspense fallback={<div style={{ padding: 24, textAlign: 'center', color: '#64748b' }}>Loading CRM...</div>}>
+      <Routes>
+        <Route
+          path="/login"
         element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />}
       />
       <Route
@@ -529,6 +528,10 @@ const AppRoutes = () => {
         }
       />
 
+      <Route
+        path="/profile"
+        element={<Navigate to="/employees/me" replace />}
+      />
       <Route
         path="/employees/me"
         element={
@@ -1724,9 +1727,9 @@ const AppRoutes = () => {
         }
       />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   );
-
 };
 
 function App() {

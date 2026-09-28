@@ -18,37 +18,63 @@ async function getEmployeeByUser(userId) {
 }
 
 async function ensureEmployeeForUser(user) {
+  if (!user || !user._id) {
+    return null;
+  }
+
   let employee = await Employee.findOne({ user: user._id, deletedAt: null });
+  if (employee) return employee;
+
   const role = typeof user.role === 'object' ? user.role?.slug : user.role;
+  const normalizedRole = role || 'employee';
+  const department = user.department || (
+    normalizedRole.includes('sales') ? 'Sales' :
+    normalizedRole.includes('hr') ? 'HR' :
+    normalizedRole.includes('finance') ? 'Finance' :
+    normalizedRole.includes('ops') ? 'Operations' :
+    normalizedRole === 'admin' || normalizedRole === 'super_admin' ? 'Management' :
+    'IT'
+  );
 
-  if (!employee && (role === 'admin' || role === 'super_admin')) {
-    const department = 'Management';
-    employee = await Employee.create({
-      user: user._id,
-      employeeId: await generateEmployeeId(department),
-      department,
-      designation: role === 'super_admin' ? 'Super Administrator' : 'Administrator',
-      status: 'active',
-      employmentType: 'full-time',
-      joiningDate: new Date(),
-    });
+  const designationMap = {
+    super_admin: 'Super Administrator',
+    admin: 'Administrator',
+    employee: 'Employee',
+    sales_employee: 'Sales Executive',
+    hrm_employee: 'HR Executive',
+    finance_employee: 'Finance Executive',
+    operations_employee: 'Operations Executive',
+    management_employee: 'Management Executive',
+  };
 
-    await LeaveBalance.updateOne(
-      { employee: employee._id, year: new Date().getFullYear() },
-      {
-        $setOnInsert: {
-          employee: employee._id,
-          year: new Date().getFullYear(),
-          balances: {
-            casual: { total: 12, used: 0, available: 12, pending: 0 },
-            sick: { total: 10, used: 0, available: 10, pending: 0 },
-            annual: { total: 15, used: 0, available: 15, pending: 0 },
-          },
+  const designation = designationMap[normalizedRole] || 'Employee';
+
+  employee = await Employee.create({
+    user: user._id,
+    employeeId: await generateEmployeeId(department),
+    department,
+    designation,
+    status: 'active',
+    employmentType: 'full-time',
+    joiningDate: new Date(),
+    workLocation: 'office',
+  });
+
+  await LeaveBalance.updateOne(
+    { employee: employee._id, year: new Date().getFullYear() },
+    {
+      $setOnInsert: {
+        employee: employee._id,
+        year: new Date().getFullYear(),
+        balances: {
+          casual: { total: 12, used: 0, available: 12, pending: 0 },
+          sick: { total: 10, used: 0, available: 10, pending: 0 },
+          annual: { total: 15, used: 0, available: 15, pending: 0 },
         },
       },
-      { upsert: true }
-    );
-  }
+    },
+    { upsert: true }
+  );
 
   return employee;
 }

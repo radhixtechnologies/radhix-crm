@@ -17,7 +17,8 @@ import '../../styles/employee/employee-profile.css';
 const EmployeeProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, isAdmin, isSuperAdmin } = useAuth();
+  const { user, isAdmin, isSuperAdmin, loading: authLoading } = useAuth();
+  const profileId = (!id || id === 'undefined') ? 'me' : id;
 
   const [employee, setEmployee] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +38,11 @@ const EmployeeProfile = () => {
     skill: { name: '', proficiency: 'intermediate' }
   });
 
-  useEffect(() => { fetchEmployee(); }, [id]);
+  useEffect(() => {
+    if (authLoading) return;
+    fetchEmployee();
+  }, [profileId, authLoading, user?._id]);
+
   useEffect(() => { if (employee) fetchRelatedData(); }, [employee]);
 
   const [error, setError] = useState(null);
@@ -45,9 +50,9 @@ const EmployeeProfile = () => {
   const fetchEmployee = async () => {
     try {
       setError(null);
-      const res = id === 'me'
+      const res = profileId === 'me'
         ? await employeeService.getMyProfile()
-        : await employeeService.getEmployee(id);
+        : await employeeService.getEmployee(profileId);
 
       if (res.data.success) {
         setEmployee(res.data.data);
@@ -57,9 +62,69 @@ const EmployeeProfile = () => {
             address: res.data.data.address || {},
           }
         }));
+        return;
+      }
+
+      if (id === 'me' && user) {
+        const fallbackEmployee = {
+          _id: user._id,
+          user: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            role: user.role,
+          },
+          department: user.department || 'IT',
+          designation: 'Employee',
+          status: 'active',
+          joiningDate: new Date(),
+          workLocation: 'office',
+          phone: '',
+          address: {},
+        };
+        setEmployee(fallbackEmployee);
+        setForms(prev => ({
+          ...prev,
+          profile: {
+            phone: '',
+            address: {},
+          },
+        }));
+        return;
       }
     } catch (e) {
       console.error(e);
+
+      if (id === 'me' && user) {
+        const fallbackEmployee = {
+          _id: user._id,
+          user: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            role: user.role,
+          },
+          department: user.department || 'IT',
+          designation: 'Employee',
+          status: 'active',
+          joiningDate: new Date(),
+          workLocation: 'office',
+          phone: '',
+          address: {},
+        };
+        setEmployee(fallbackEmployee);
+        setForms(prev => ({
+          ...prev,
+          profile: {
+            phone: '',
+            address: {},
+          },
+        }));
+        return;
+      }
+
       if (e.response?.status === 404) {
         setError('Employee record not found. This could mean the employee has been deleted or the profile doesn\'t exist.');
       } else if (e.response?.status === 403) {
@@ -71,18 +136,23 @@ const EmployeeProfile = () => {
   };
 
   const fetchRelatedData = async () => {
+    if (!employee) return;
+
+    const employeeId = employee._id || (profileId === 'me' ? user?._id : profileId);
+    if (!employeeId) return;
+
     try {
       const responses = await Promise.allSettled([
-        employeeService.getAttendance(id, { startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), endDate: new Date().toISOString() }),
+        employeeService.getAttendance(employeeId, { startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), endDate: new Date().toISOString() }),
         employeeService.getLeaves(),
         employeeService.getTasks(),
-        employeeService.getAssets({ employeeId: id })
+        employeeService.getAssets({ employeeId })
       ]);
 
       const newData = { ...data };
       if (responses[0].status === 'fulfilled' && responses[0].value.data.success) newData.attendance = responses[0].value.data.data.slice(0, 5);
-      if (responses[1].status === 'fulfilled' && responses[1].value.data.success) newData.leaves = responses[1].value.data.data.filter(l => l.employee?._id === id).slice(0, 5);
-      if (responses[2].status === 'fulfilled' && responses[2].value.data.success) newData.tasks = responses[2].value.data.data.filter(t => t.assignedTo?._id === id).slice(0, 5);
+      if (responses[1].status === 'fulfilled' && responses[1].value.data.success) newData.leaves = responses[1].value.data.data.filter(l => l.employee?._id === employeeId).slice(0, 5);
+      if (responses[2].status === 'fulfilled' && responses[2].value.data.success) newData.tasks = responses[2].value.data.data.filter(t => t.assignedTo?._id === employeeId).slice(0, 5);
       if (responses[3].status === 'fulfilled' && responses[3].value.data.success) newData.assets = responses[3].value.data.data;
 
       setData(newData);
@@ -92,7 +162,8 @@ const EmployeeProfile = () => {
   const handleUpdate = async (formData) => {
     try {
       setLoading(true);
-      const res = await employeeService.updateEmployee(id, formData);
+      const targetId = employee?._id || profileId;
+      const res = await employeeService.updateEmployee(targetId, formData);
       if (res.data.success) {
         setEmployee(res.data.data);
         setModals(prev => ({ ...prev, edit: false }));
@@ -163,7 +234,7 @@ const EmployeeProfile = () => {
 
         <div style={{ display: 'flex', gap: '12px' }}>
           {canEdit && <button className="btn-outline-sm" onClick={() => setModals({ ...modals, edit: true })}><FiEdit /> Edit</button>}
-          <button className="btn-primary-sm" onClick={() => navigate(`/employees/reports?employeeId=${id}`)}>View Reports</button>
+          <button className="btn-primary-sm" onClick={() => navigate(`/employees/reports?employeeId=${employee?._id || id}`)}>View Reports</button>
         </div>
       </header>
 

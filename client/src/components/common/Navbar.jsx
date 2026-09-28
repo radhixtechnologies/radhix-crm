@@ -167,7 +167,7 @@ const Navbar = () => {
               <div
                 className="user-dropdown-item user-dropdown-profile"
                 onClick={() => {
-                  navigate('/profile');
+                  navigate('/employees/me');
                   setUserMenuOpen(false);
                 }}
               >
