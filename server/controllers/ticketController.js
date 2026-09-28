@@ -25,7 +25,10 @@ exports.getAllTickets = async (req, res) => {
 
         // Search
         if (search) {
-            query.subject = { $regex: search, $options: 'i' };
+            query.$or = [
+                { subject: { $regex: search, $options: 'i' } },
+                { ticketNumber: { $regex: search, $options: 'i' } },
+            ];
         }
 
         // Filter by status
@@ -326,15 +329,20 @@ exports.updateTicket = async (req, res) => {
 exports.addMessage = async (req, res) => {
     try {
         const { content, isInternal, attachments } = req.body;
+        if (!content?.trim()) {
+            return res.status(400).json({ success: false, message: 'Reply content is required' });
+        }
 
         const ticket = await Ticket.findById(req.params.id);
         if (!ticket) {
             return res.status(404).json({ success: false, message: 'Ticket not found' });
         }
 
+        ticket.sla ||= {};
         const newMessage = {
             messageType: isInternal ? 'internal' : 'agent',
-            content,
+            content: content.trim(),
+            body: content.trim(),
             attachments,
             sentBy: req.user._id,
             isInternal: isInternal || false,
@@ -354,6 +362,7 @@ exports.addMessage = async (req, res) => {
         }
 
         await ticket.save();
+        await ticket.populate({ path: 'assignedTo', populate: { path: 'user', select: 'name email' } });
 
         // Notify relevant parties
         const messageAuthorId = req.user._id.toString();
@@ -366,7 +375,7 @@ exports.addMessage = async (req, res) => {
                 ticket.createdBy,
                 'info',
                 'New Reply on Ticket',
-                `New reply on ticket #${ticket.ticketNumber || ticket._id}: ${content.substring(0, 50)}...`,
+                `New reply on ticket #${ticket.ticketNumber || ticket._id}: ${content.trim().substring(0, 50)}...`,
                 `/support/tickets/${ticket._id}`
             );
         }
@@ -377,7 +386,7 @@ exports.addMessage = async (req, res) => {
                 ticket.assignedTo.user,
                 'info',
                 'New Reply on Ticket',
-                `New reply on ticket #${ticket.ticketNumber || ticket._id}: ${content.substring(0, 50)}...`,
+                `New reply on ticket #${ticket.ticketNumber || ticket._id}: ${content.trim().substring(0, 50)}...`,
                 `/support/tickets/${ticket._id}`
             );
         }
@@ -423,17 +432,23 @@ exports.deleteTicket = async (req, res) => {
 // @access  Private
 exports.getTicketMetrics = async (req, res) => {
     try {
-        const totalTickets = await Ticket.countDocuments();
-        const openTickets = await Ticket.countDocuments({ status: { $in: ['new', 'open', 'in-progress'] } });
-        const resolvedTickets = await Ticket.countDocuments({ status: { $in: ['resolved', 'closed'] } });
-        const slaBreached = await Ticket.countDocuments({
-            $or: [{ 'sla.isFirstResponseBreached': true }, { 'sla.isResolutionBreached': true }]
-        });
+        const [totalTickets, newTickets, inProgressTickets, openTickets, resolvedTickets, slaBreached] = await Promise.all([
+            Ticket.countDocuments(),
+            Ticket.countDocuments({ status: { $in: ['new', 'open'] } }),
+            Ticket.countDocuments({ status: 'in-progress' }),
+            Ticket.countDocuments({ status: { $in: ['new', 'open', 'in-progress'] } }),
+            Ticket.countDocuments({ status: { $in: ['resolved', 'closed'] } }),
+            Ticket.countDocuments({
+                $or: [{ 'sla.isFirstResponseBreached': true }, { 'sla.isResolutionBreached': true }]
+            }),
+        ]);
 
         res.status(200).json({
             success: true,
             data: {
                 totalTickets,
+                newTickets,
+                inProgressTickets,
                 openTickets,
                 resolvedTickets,
                 slaBreached,

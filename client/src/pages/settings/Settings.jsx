@@ -5,13 +5,19 @@ import { FiPlus, FiSearch, FiUsers, FiCheckCircle, FiDollarSign, FiBriefcase } f
 import Modal from '../../components/common/Modal';
 import Loader from '../../components/common/Loader';
 import AdminTable from '../../components/Settings/AdminTable';
+import { ADMIN_MODULES } from '../../constants/adminModules';
 import '../../styles/employee/employees.css'; // Uses employee styles for consistency
 import '../../styles/forms.css';
 
+const getModuleAccess = (modulesAccess = {}) => Object.fromEntries(
+    ADMIN_MODULES.map(({ key }) => [key, modulesAccess[key] === true])
+);
+
 const Settings = () => {
-    const { user, isSuperAdmin } = useAuth();
+    const { isSuperAdmin } = useAuth();
     const [admins, setAdmins] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingAdmin, setEditingAdmin] = useState(null);
@@ -24,23 +30,13 @@ const Settings = () => {
         name: '',
         email: '',
         password: '',
-        modulesAccess: {
-            employee: false,
-            finance: false,
-            sales: false,
-            hrm: false,
-        },
+        modulesAccess: getModuleAccess(),
     });
     const [editForm, setEditForm] = useState({
         name: '',
         email: '',
         password: '',
-        modulesAccess: {
-            employee: false,
-            finance: false,
-            sales: false,
-            hrm: false,
-        },
+        modulesAccess: getModuleAccess(),
     });
 
     // Debounce Search
@@ -59,16 +55,19 @@ const Settings = () => {
     const fetchAdmins = async () => {
         try {
             setLoading(true);
+            setLoadError('');
             const params = { role: 'admin' };
             if (debouncedSearch) {
                 params.search = debouncedSearch;
             }
             const response = await userService.getUsers(params);
             if (response.data.success) {
-                setAdmins(response.data.data);
+                const users = Array.isArray(response.data.data) ? response.data.data : [];
+                setAdmins(users.filter((admin) => admin.role === 'admin' || admin.role?.slug === 'admin'));
             }
         } catch (error) {
             console.error('Error fetching admins:', error);
+            setLoadError(error.response?.data?.message || 'Unable to load admin settings.');
         } finally {
             setLoading(false);
         }
@@ -111,12 +110,7 @@ const Settings = () => {
                 name: '',
                 email: '',
                 password: '',
-                modulesAccess: {
-                    employee: false,
-                    finance: false,
-                    sales: false,
-                    hrm: false,
-                },
+                modulesAccess: getModuleAccess(),
             });
             fetchAdmins();
             alert('Admin created successfully!');
@@ -141,12 +135,7 @@ const Settings = () => {
             name: admin.name,
             email: admin.email,
             password: '', // Leave empty, only update if provided
-            modulesAccess: {
-                employee: admin.modulesAccess?.employee || false,
-                finance: admin.modulesAccess?.finance || false,
-                sales: admin.modulesAccess?.sales || false,
-                hrm: admin.modulesAccess?.hrm || false,
-            },
+            modulesAccess: getModuleAccess(admin.modulesAccess),
         });
         setShowEditModal(true);
     };
@@ -237,6 +226,12 @@ const Settings = () => {
                 </div>
             </div>
 
+            {loadError && (
+                <div role="alert" style={{ marginBottom: '16px', padding: '12px 16px', border: '1px solid #fecaca', borderRadius: '8px', background: '#fef2f2', color: '#991b1b' }}>
+                    {loadError}
+                </div>
+            )}
+
             {/* Stats Cards */}
             <div style={{
                 display: 'grid',
@@ -302,7 +297,7 @@ const Settings = () => {
                     </div>
                     <div>
                         <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-                            {admins.filter(a => a.status === 'active' || !a.status).length}
+                            {admins.filter(a => a.isActive !== false).length}
                         </div>
                         <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
                             Active
@@ -406,7 +401,7 @@ const Settings = () => {
             {/* Create Admin Modal */}
             {isSuperAdmin && (
                 <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create Admin">
-                    <form onSubmit={handleCreateAdmin}>
+                    <form className="settings-admin-form" onSubmit={handleCreateAdmin}>
                         <div className="form-group">
                             <label className="form-label">Name *</label>
                             <input
@@ -451,15 +446,15 @@ const Settings = () => {
                             <label className="form-label" style={{ marginBottom: '12px', display: 'block' }}>
                                 Module Access
                             </label>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {['employee', 'finance', 'sales', 'hrm'].map(module => (
-                                    <label key={module} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                            <div className="admin-module-access-list">
+                                {ADMIN_MODULES.map(({ key: module, label }) => (
+                                    <label key={module} className="admin-module-option">
                                         <input
                                             type="checkbox"
                                             checked={createForm.modulesAccess[module]}
                                             onChange={() => handleCreateModuleToggle(module)}
                                         />
-                                        <span style={{ textTransform: 'capitalize' }}>{module} Module</span>
+                                        <span>{label}</span>
                                     </label>
                                 ))}
                             </div>
@@ -468,7 +463,7 @@ const Settings = () => {
                             </small>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
+                        <div className="admin-modal-actions" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                             <button
                                 type="button"
                                 className="btn btn-secondary"
@@ -490,7 +485,7 @@ const Settings = () => {
                     setShowEditModal(false);
                     setEditingAdmin(null);
                 }} title="Edit Admin">
-                    <form onSubmit={handleUpdateAdmin}>
+                    <form className="settings-admin-form" onSubmit={handleUpdateAdmin}>
                         <div className="form-group">
                             <label className="form-label">Name *</label>
                             <input
@@ -531,21 +526,21 @@ const Settings = () => {
                             <label className="form-label" style={{ marginBottom: '12px', display: 'block' }}>
                                 Module Access
                             </label>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {['employee', 'finance', 'sales', 'hrm'].map(module => (
-                                    <label key={module} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                            <div className="admin-module-access-list">
+                                {ADMIN_MODULES.map(({ key: module, label }) => (
+                                    <label key={module} className="admin-module-option">
                                         <input
                                             type="checkbox"
                                             checked={editForm.modulesAccess[module]}
                                             onChange={() => handleEditModuleToggle(module)}
                                         />
-                                        <span style={{ textTransform: 'capitalize' }}>{module} Module</span>
+                                        <span>{label}</span>
                                     </label>
                                 ))}
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
+                        <div className="admin-modal-actions" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                             <button
                                 type="button"
                                 className="btn btn-secondary"

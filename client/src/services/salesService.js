@@ -1,5 +1,30 @@
 import api from './api';
 
+export const normalizeSalesListResponse = (response) => {
+  const payload = response?.data ?? {};
+  const data = Array.isArray(payload.data)
+    ? payload.data
+    : Array.isArray(payload.items)
+      ? payload.items
+      : [];
+
+  const meta = payload.meta ?? {};
+  const total = Number(payload.total ?? meta.total ?? data.length ?? 0) || 0;
+  const page = Number(payload.page ?? meta.page ?? 1) || 1;
+  const limit = Number(payload.limit ?? meta.limit ?? 10) || 10;
+  const pages = Number(payload.pages ?? meta.pages ?? (total > 0 ? Math.ceil(total / limit) : 0)) || 0;
+
+  return {
+    success: !!payload.success,
+    data,
+    total,
+    page,
+    limit,
+    pages,
+    meta,
+  };
+};
+
 export const salesService = {
   // Lead services
   getLeads: (params) => api.get('/sales/leads', { params }),

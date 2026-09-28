@@ -6,7 +6,35 @@ const list = async (req, res) => res.json({ success: true, data: await Payroll.f
 
 exports.getSalarySlips = list;
 exports.getSalarySlip = async (req, res) => res.json({ success: true, data: await Payroll.findById(req.params.id).populate('employee') });
-exports.createSalarySlip = async (req, res) => { const employee = await Employee.findById(req.body.employee); const structure = await SalaryStructure.findOne({ employee: req.body.employee, isActive: true }).sort({ effectiveFrom: -1 }); const basicSalary = structure?.basic || employee?.salary || 0; const deductions = Number(structure?.deductions || 0); const slip = await Payroll.findOneAndUpdate({ employee: req.body.employee, month: Number(req.body.month), year: Number(req.body.year) }, { employee: req.body.employee, month: Number(req.body.month), year: Number(req.body.year), basicSalary, grossSalary: basicSalary + Number(structure?.allowances || 0), deductions, netSalary: basicSalary - deductions, status: 'processed' }, { upsert: true, new: true }); res.status(201).json({ success: true, data: slip }); };
+exports.createSalarySlip = async (req, res) => {
+	try {
+		const employeeId = req.body.employee || req.body.employeeId;
+		const employee = await Employee.findById(employeeId);
+		if (!employee) return res.status(404).json({ success: false, message: 'Employee not found' });
+
+		const month = Number(req.body.month);
+		const year = Number(req.body.year);
+		const structure = await SalaryStructure.findOne({ employee: employeeId, isActive: true }).sort({ effectiveFrom: -1 });
+		const earnings = req.body.earnings;
+		const submittedDeductions = req.body.deductions;
+		const basicSalary = Number(earnings?.basic ?? structure?.basic ?? employee.salary ?? 0);
+		const grossSalary = earnings
+			? Object.values(earnings).reduce((total, value) => total + Number(value || 0), 0)
+			: basicSalary + Number(structure?.allowances || 0);
+		const deductions = submittedDeductions
+			? Object.values(submittedDeductions).reduce((total, value) => total + Number(value || 0), 0)
+			: Number(structure?.deductions || 0);
+
+		const slip = await Payroll.findOneAndUpdate(
+			{ employee: employeeId, month, year },
+			{ employee: employeeId, month, year, basicSalary, grossSalary, deductions, netSalary: grossSalary - deductions, status: 'processed' },
+			{ upsert: true, new: true, runValidators: true }
+		);
+		res.status(201).json({ success: true, data: slip });
+	} catch (error) {
+		res.status(400).json({ success: false, message: error.message });
+	}
+};
 exports.getReimbursements = async (req, res) => res.json({ success: true, data: [] });
 exports.getReimbursement = async (req, res) => res.status(404).json({ success: false, message: 'Reimbursement not found' });
 exports.createReimbursement = async (req, res) => res.status(201).json({ success: true, data: req.body });
@@ -15,7 +43,41 @@ exports.deleteReimbursement = async (req, res) => res.json({ success: true });
 
 exports.getPayrollEmployees = async (req, res) => res.json({ success: true, data: await Employee.find({ status: 'active' }).select('employeeId user salary salaryStructure').populate('user', 'name email') });
 exports.getAllSalarySlips = list;
-exports.getSalarySlipCalculation = async (req, res) => { const structure = await SalaryStructure.findOne({ employee: req.params.employeeId, isActive: true }).sort({ effectiveFrom: -1 }); res.json({ success: true, data: structure || {} }); };
+exports.getSalarySlipCalculation = async (req, res) => {
+	try {
+		const employee = await Employee.findById(req.params.employeeId);
+		if (!employee) return res.status(404).json({ success: false, message: 'Employee not found' });
+
+		const structure = await SalaryStructure.findOne({ employee: employee._id, isActive: true }).sort({ effectiveFrom: -1 });
+		const basic = Number(structure?.basic ?? employee.salaryStructure?.basic ?? employee.salary ?? 0);
+		const allowancesValue = structure?.allowances ?? employee.salaryStructure?.hra ?? 0;
+		const deductionsValue = structure?.deductions ?? {};
+		const allowances = typeof allowancesValue === 'object'
+			? Object.values(allowancesValue).reduce((total, value) => total + Number(value || 0), 0)
+			: Number(allowancesValue || 0);
+		const deductionItems = typeof deductionsValue === 'object'
+			? deductionsValue
+			: { tax: deductionsValue };
+
+		res.json({
+			success: true,
+			data: {
+				earnings: { basic, hra: 0, allowances, bonus: 0, overtime: 0 },
+				deductions: {
+					pf: Number(deductionItems.pf || 0),
+					tax: Number(deductionItems.tax || deductionItems.tds || 0),
+					esi: Number(deductionItems.esi || 0),
+					loan: Number(deductionItems.loan || 0),
+					unpaidLeave: Number(deductionItems.unpaidLeave || 0),
+					other: Number(deductionItems.other || 0),
+				},
+				attendance: {},
+			},
+		});
+	} catch (error) {
+		res.status(500).json({ success: false, message: error.message });
+	}
+};
 exports.deleteSalarySlip = async (req, res) => { await Payroll.findByIdAndDelete(req.params.id); res.json({ success: true }); };
 exports.updateSalarySlipStatus = async (req, res) => res.json({ success: true, data: await Payroll.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true }) });
 exports.sendSalarySlipEmail = async (req, res) => res.json({ success: true, message: 'Salary slip email queued' });

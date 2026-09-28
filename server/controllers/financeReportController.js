@@ -8,18 +8,20 @@ exports.getRevenueDashboard = async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
 
-        const dateFilter = {};
-        if (startDate && endDate) {
-            dateFilter.createdAt = {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate)
-            };
+        const dateRange = {};
+        if (startDate) dateRange.$gte = new Date(startDate);
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            dateRange.$lte = end;
         }
+        const invoiceDateFilter = Object.keys(dateRange).length ? { paymentDate: dateRange } : {};
+        const expenseDateFilter = Object.keys(dateRange).length ? { date: dateRange } : {};
 
         // Total Revenue (from paid invoices)
         const paidInvoices = await Invoice.find({
             status: 'paid',
-            ...dateFilter
+            ...invoiceDateFilter
         });
         const totalRevenue = paidInvoices.reduce((sum, inv) => sum + inv.total, 0);
 
@@ -31,22 +33,27 @@ exports.getRevenueDashboard = async (req, res) => {
 
         // Total Expenses
         const expenses = await Expense.find({
-            status: 'Paid',
-            ...dateFilter
+            status: { $in: ['paid', 'Paid'] },
+            ...expenseDateFilter
         });
-        const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+        const totalExpenses = expenses.reduce((sum, exp) => sum + (exp.total || exp.amount || 0), 0);
 
         // Profit
         const profit = totalRevenue - totalExpenses;
 
         // Revenue by Month (last 12 months)
-        const revenueByMonth = await Invoice.aggregate([
+        const trendRange = { ...dateRange };
+        if (!trendRange.$gte) {
+            const twelveMonthsAgo = new Date();
+            twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11, 1);
+            twelveMonthsAgo.setHours(0, 0, 0, 0);
+            trendRange.$gte = twelveMonthsAgo;
+        }
+        const [revenueByMonth, expensesByMonth] = await Promise.all([Invoice.aggregate([
             {
                 $match: {
                     status: 'paid',
-                    paymentDate: {
-                        $gte: new Date(new Date().setMonth(new Date().getMonth() - 12))
-                    }
+                    paymentDate: trendRange,
                 }
             },
             {
@@ -62,7 +69,21 @@ exports.getRevenueDashboard = async (req, res) => {
             {
                 $sort: { '_id.year': 1, '_id.month': 1 }
             }
-        ]);
+        ]), Expense.aggregate([
+            {
+                $match: {
+                    status: { $in: ['paid', 'Paid'] },
+                    date: trendRange,
+                }
+            },
+            {
+                $group: {
+                    _id: { year: { $year: '$date' }, month: { $month: '$date' } },
+                    expense: { $sum: { $ifNull: ['$total', '$amount'] } },
+                }
+            },
+            { $sort: { '_id.year': 1, '_id.month': 1 } },
+        ])]);
 
         // Invoice Status Breakdown
         const invoiceStats = await Invoice.aggregate([
@@ -75,7 +96,32 @@ exports.getRevenueDashboard = async (req, res) => {
             }
         ]);
 
-        res.json({
+        const trendByMonth = new Map();
+        const getTrendEntry = ({ year, month }) => {
+            const key = `${year}-${month}`;
+            if (!trendByMonth.has(key)) {
+                trendByMonth.set(key, {
+                    year,
+                    monthNumber: month,
+                    month: new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+                    income: 0,
+                    expense: 0,
+                });
+            }
+            return trendByMonth.get(key);
+        };
+        revenueByMonth.forEach(item => {
+            getTrendEntry(item._id).income = item.revenue;
+        });
+        expensesByMonth.forEach(item => {
+            getTrendEntry(item._id).expense = item.expense;
+        });
+
+        const incomeExpenseTrend = [...trendByMonth.values()]
+            .sort((left, right) => left.year - right.year || left.monthNumber - right.monthNumber)
+            .map(({ month, income, expense }) => ({ month, income, expense }));
+
+        const legacySummary = {
             totalRevenue,
             outstandingRevenue,
             totalExpenses,
@@ -88,6 +134,18 @@ exports.getRevenueDashboard = async (req, res) => {
                 paidInvoices: paidInvoices.length,
                 unpaidInvoices: unpaidInvoices.length
             }
+        };
+
+        res.json({
+            ...legacySummary,
+            success: true,
+            data: {
+                ...legacySummary,
+                invoices: { paid: totalRevenue, pending: outstandingRevenue, upcoming: outstandingRevenue },
+                expenses: { total: totalExpenses },
+                netProfit: profit,
+                incomeExpenseTrend,
+            },
         });
     } catch (error) {
         console.error('Error fetching revenue dashboard:', error);

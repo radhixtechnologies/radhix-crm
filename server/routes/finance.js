@@ -141,7 +141,7 @@ router.route('/payroll')
   .get(getPayrolls)
   .post(generatePayroll);
 
-// Payroll employees route (MUST come before /payroll/:id to avoid route conflict)
+// Keep the named employees route before the parameterized ID route.
 router.get('/payroll/employees', getPayrollEmployees);
 
 router.route('/payroll/:id')

@@ -1,4 +1,5 @@
 import { FiEdit, FiTrash2, FiUser, FiCheck, FiX } from 'react-icons/fi';
+import { ADMIN_MODULES } from '../../constants/adminModules';
 import '../../styles/employee/employees.css';
 
 const AdminTable = ({ admins, isSuperAdmin, onToggleModule, onEdit, onDelete }) => {
@@ -20,10 +21,9 @@ const AdminTable = ({ admins, isSuperAdmin, onToggleModule, onEdit, onDelete }) 
                     <tr>
                         <th style={{ width: '30%' }}>Admin Name</th>
                         <th style={{ width: '25%' }}>Email</th>
-                        <th className="text-center" style={{ width: '10%' }}>Employee</th>
-                        <th className="text-center" style={{ width: '10%' }}>Finance</th>
-                        <th className="text-center" style={{ width: '10%' }}>Sales</th>
-                        <th className="text-center" style={{ width: '10%' }}>HRM</th>
+                        {ADMIN_MODULES.map(({ key, label }) => (
+                            <th className="text-center" key={key}>{label}</th>
+                        ))}
                         {isSuperAdmin && <th style={{ width: '5%' }}>Actions</th>}
                     </tr>
                 </thead>
@@ -47,50 +47,19 @@ const AdminTable = ({ admins, isSuperAdmin, onToggleModule, onEdit, onDelete }) 
                                 <td>
                                     <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>{admin.email}</span>
                                 </td>
-                                <td className="text-center">
-                                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={admin.modulesAccess?.employee || false}
-                                            onChange={() => onToggleModule(admin._id, 'employee', admin.modulesAccess?.employee)}
-                                            style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--primary)' }}
-                                            title="Toggle Employee Access"
-                                        />
-                                    </div>
-                                </td>
-                                <td className="text-center">
-                                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={admin.modulesAccess?.finance || false}
-                                            onChange={() => onToggleModule(admin._id, 'finance', admin.modulesAccess?.finance)}
-                                            style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--primary)' }}
-                                            title="Toggle Finance Access"
-                                        />
-                                    </div>
-                                </td>
-                                <td className="text-center">
-                                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={admin.modulesAccess?.sales || false}
-                                            onChange={() => onToggleModule(admin._id, 'sales', admin.modulesAccess?.sales)}
-                                            style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--primary)' }}
-                                            title="Toggle Sales Access"
-                                        />
-                                    </div>
-                                </td>
-                                <td className="text-center">
-                                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={admin.modulesAccess?.hrm || false}
-                                            onChange={() => onToggleModule(admin._id, 'hrm', admin.modulesAccess?.hrm)}
-                                            style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--primary)' }}
-                                            title="Toggle HRM Access"
-                                        />
-                                    </div>
-                                </td>
+                                {ADMIN_MODULES.map(({ key, label }) => (
+                                    <td className="text-center" key={key}>
+                                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                            <input
+                                                type="checkbox"
+                                                checked={admin.modulesAccess?.[key] || false}
+                                                onChange={() => onToggleModule(admin._id, key, admin.modulesAccess?.[key])}
+                                                style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+                                                title={`Toggle ${label} Access`}
+                                            />
+                                        </div>
+                                    </td>
+                                ))}
                                 {isSuperAdmin && (
                                     <td>
                                         <div style={{ display: 'flex', gap: '8px' }}>
@@ -116,7 +85,7 @@ const AdminTable = ({ admins, isSuperAdmin, onToggleModule, onEdit, onDelete }) 
                         ))
                     ) : (
                         <tr>
-                            <td colSpan={isSuperAdmin ? 7 : 6} style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
+                            <td colSpan={ADMIN_MODULES.length + (isSuperAdmin ? 3 : 2)} style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                                     <FiUser size={32} style={{ opacity: 0.5 }} />
                                     <span>No admins found matching your search</span>

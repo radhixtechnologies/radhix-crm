@@ -2,13 +2,13 @@ import api from './api';
 
 export const reportService = {
     // Sales Reports
-    getSalesPerformance: () => api.get('/reports/sales/performance'),
+    getSalesPerformance: (params) => api.get('/reports/sales/performance', { params }),
 
     // Lead Reports
-    getLeadConversion: () => api.get('/reports/leads/conversion'),
+    getLeadConversion: (params) => api.get('/reports/leads/conversion', { params }),
 
     // Marketing Reports
-    getMarketingROI: () => api.get('/reports/marketing/roi'),
+    getMarketingROI: (params) => api.get('/reports/marketing/roi', { params }),
 
     // Existing Leave Reports (if migrated or referenced)
     getLeaveSummary: () => api.get('/reports/leaves/summary'),

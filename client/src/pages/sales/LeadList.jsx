@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiSearch, FiFilter, FiGrid, FiList, FiDownload, FiX, FiChevronDown, FiChevronUp, FiUsers, FiCheckCircle, FiTarget, FiTrendingUp } from 'react-icons/fi';
-import { salesService } from '../../services/salesService';
+import { salesService, normalizeSalesListResponse } from '../../services/salesService';
 import { marketingService } from '../../services/marketingService';
 import LeadTable from '../../components/Sales/LeadTable';
 import LeadKanban from '../../components/Sales/LeadKanban';
@@ -108,17 +108,21 @@ const LeadList = () => {
       };
 
       const res = await salesService.getLeads(params);
-      if (res.data.success) {
-        setLeads(res.data.data || []);
-        setPagination({ ...pagination, total: res.data.total || 0, pages: res.data.pages || 0 });
+      const normalized = normalizeSalesListResponse(res);
+      if (normalized.success) {
+        setLeads(normalized.data || []);
+        setPagination(prev => ({
+          ...prev,
+          page: normalized.page,
+          limit: normalized.limit,
+          total: normalized.total,
+          pages: normalized.pages,
+        }));
       }
     } catch (error) {
       console.error('Error fetching leads:', error);
-      // Mock Data
-      setLeads([
-        { _id: '1', name: 'Alice Johnson', email: 'alice@example.com', phone: '123-456-7890', company: 'Tech Corp', status: 'new', source: 'website', qualificationScore: 85, value: 5000, assignedTo: { user: { name: 'John Doe' } } },
-        { _id: '2', name: 'Bob Smith', email: 'bob@example.com', phone: '987-654-3210', company: 'Design Co', status: 'contacted', source: 'referral', qualificationScore: 60, value: 3000, assignedTo: { user: { name: 'Jane Smith' } } }
-      ]);
+      setLeads([]);
+      setPagination(prev => ({ ...prev, total: 0, pages: 0 }));
     } finally {
       if (isInitialLoad) setInitialLoading(false);
       else setLoading(false);

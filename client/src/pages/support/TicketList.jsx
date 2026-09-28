@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiSearch, FiFilter, FiChevronDown, FiChevronUp, FiX, FiMessageSquare, FiClock, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
-import { useRef } from 'react';
 import { supportService } from '../../services/supportService';
 import TicketTable from '../../components/Support/TicketTable';
 import Loader from '../../components/common/Loader';
@@ -10,8 +9,11 @@ import '../../styles/employee/timesheets.css';
 const TicketList = () => {
     const navigate = useNavigate();
     const [tickets, setTickets] = useState([]);
+    const [metrics, setMetrics] = useState(null);
     const [initialLoading, setInitialLoading] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
+    const initialFetch = useRef(true);
 
     const [showFilters, setShowFilters] = useState(false);
     const filterRef = useRef(null);
@@ -49,12 +51,20 @@ const TicketList = () => {
             // Combine active filters with search
             const params = {
                 search: debouncedSearch,
-                ...activeFilters
+                ...activeFilters,
+                page: pagination.page,
+                limit: pagination.limit,
             };
 
             const res = await supportService.getTickets(params);
             if (res.data.success) {
-                setTickets(res.data.data.tickets || []);
+                setTickets(res.data.data?.tickets || []);
+                const pageData = res.data.data?.pagination;
+                setPagination(current => ({
+                    ...current,
+                    total: pageData?.totalItems || 0,
+                    pages: pageData?.totalPages || 0,
+                }));
             }
         } catch (error) {
             console.error('Error fetching tickets:', error);
@@ -62,23 +72,30 @@ const TicketList = () => {
             if (isInitialLoad) setInitialLoading(false);
             else setLoading(false);
         }
-    }, [debouncedSearch, activeFilters]);
+    }, [debouncedSearch, activeFilters, pagination.limit, pagination.page]);
 
-    // Initial load
     useEffect(() => {
-        fetchTickets(true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const isInitialLoad = initialFetch.current;
+        initialFetch.current = false;
+        fetchTickets(isInitialLoad);
+    }, [fetchTickets]);
+
+    const fetchMetrics = useCallback(async () => {
+        try {
+            const res = await supportService.getMetrics();
+            if (res.data?.success) setMetrics(res.data.data);
+        } catch (error) {
+            console.error('Error fetching ticket metrics:', error);
+        }
     }, []);
 
-    // Fetch when Debounced Search OR Active Filters change
     useEffect(() => {
-        if (!initialLoading) {
-            fetchTickets(false);
-        }
-    }, [debouncedSearch, activeFilters, fetchTickets, initialLoading]);
+        fetchMetrics();
+    }, [fetchMetrics]);
 
     const handleApplyFilters = () => {
         setActiveFilters(filterInputs);
+        setPagination(current => ({ ...current, page: 1 }));
     };
 
     const handleClearFilters = () => {
@@ -86,6 +103,7 @@ const TicketList = () => {
         setFilterInputs(resetState);
         setActiveFilters(resetState);
         setSearchQuery('');
+        setPagination(current => ({ ...current, page: 1 }));
     };
 
     const getActiveCount = () => {
@@ -189,7 +207,7 @@ const TicketList = () => {
                     </div>
                     <div>
                         <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-                            {tickets.length}
+                            {metrics?.totalTickets ?? pagination.total}
                         </div>
                         <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
                             Total Tickets
@@ -222,7 +240,7 @@ const TicketList = () => {
                     </div>
                     <div>
                         <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-                            {tickets.filter(t => t.status === 'new' || t.status === 'open').length}
+                            {metrics?.newTickets ?? tickets.filter(t => t.status === 'new' || t.status === 'open').length}
                         </div>
                         <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
                             New/Open
@@ -255,7 +273,7 @@ const TicketList = () => {
                     </div>
                     <div>
                         <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-                            {tickets.filter(t => t.status === 'in-progress').length}
+                            {metrics?.inProgressTickets ?? tickets.filter(t => t.status === 'in-progress').length}
                         </div>
                         <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
                             In Progress
@@ -288,7 +306,7 @@ const TicketList = () => {
                     </div>
                     <div>
                         <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-                            {tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length}
+                            {metrics?.resolvedTickets ?? tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length}
                         </div>
                         <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
                             Resolved
@@ -496,6 +514,13 @@ const TicketList = () => {
                 {loading && <div style={{ padding: '20px', textAlign: 'center' }}><Loader /></div>}
 
                 <TicketTable tickets={tickets} />
+                {pagination.pages > 1 && (
+                    <div className="pagination-controls" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', padding: '16px' }}>
+                        <button className="btn" disabled={pagination.page <= 1} onClick={() => setPagination(current => ({ ...current, page: current.page - 1 }))}>Previous</button>
+                        <span>Page {pagination.page} of {pagination.pages} ({pagination.total} tickets)</span>
+                        <button className="btn" disabled={pagination.page >= pagination.pages} onClick={() => setPagination(current => ({ ...current, page: current.page + 1 }))}>Next</button>
+                    </div>
+                )}
             </div>
         </div>
     );

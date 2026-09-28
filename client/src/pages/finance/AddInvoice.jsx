@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 import { financeService } from '../../services/financeService';
@@ -11,9 +11,24 @@ const AddInvoice = () => {
   const location = useLocation();
   const { id } = useParams();
   const isEditMode = !!id;
-  const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEditMode);
   const [invoice, setInvoice] = useState(null);
+
+  const fetchInvoice = useCallback(async () => {
+    try {
+      setInitialLoading(true);
+      const res = await financeService.getInvoice(id);
+      if (res.data.success) {
+        setInvoice(res.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching invoice:', error);
+      alert('Failed to load invoice');
+      navigate('/finance/invoices');
+    } finally {
+      setInitialLoading(false);
+    }
+  }, [id, navigate]);
 
   useEffect(() => {
     if (isEditMode) {
@@ -36,27 +51,10 @@ const AddInvoice = () => {
       };
       setInvoice(prefilledData);
     }
-  }, [id, location.state]);
+  }, [fetchInvoice, id, isEditMode, location.state]);
 
-  const fetchInvoice = async () => {
+  const handleSubmit = async (data) => {
     try {
-      setInitialLoading(true);
-      const res = await financeService.getInvoice(id);
-      if (res.data.success) {
-        setInvoice(res.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching invoice:', error);
-      alert('Failed to load invoice');
-      navigate('/finance/invoices');
-    } finally {
-      setInitialLoading(false);
-    }
-  };
-
-  const handleSubmit = async (data, action = 'save') => {
-    try {
-      setLoading(true);
       if (isEditMode) {
         await financeService.updateInvoice(id, data);
       } else {
@@ -66,8 +64,6 @@ const AddInvoice = () => {
     } catch (error) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} invoice:`, error);
       alert(error.response?.data?.message || `Failed to ${isEditMode ? 'update' : 'create'} invoice`);
-    } finally {
-      setLoading(false);
     }
   };
 

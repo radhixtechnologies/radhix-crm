@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuickActions } from '../../context/QuickActionsContext';
 import {
   FiDollarSign,
@@ -27,7 +26,6 @@ import {
   FiArrowUp,
   FiArrowDown,
 } from 'react-icons/fi';
-import { useRef } from 'react';
 import { financeService } from '../../services/financeService';
 import { dashboardService } from '../../services/dashboardService';
 import Loader from '../../components/common/Loader';
@@ -58,7 +56,6 @@ import '../../styles/dashboard/superadmin-dashboard-new.css';
 import '../../styles/infinity-edition.css';
 
 const FinanceDashboard = () => {
-  const navigate = useNavigate();
   const { isOpen: quickActionsOpen, toggleQuickActions, closeQuickActions } = useQuickActions();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('summary');
@@ -76,18 +73,9 @@ const FinanceDashboard = () => {
   const [categoryData, setCategoryData] = useState([]);
   const [expenseStats, setExpenseStats] = useState(null);
   const [recentTransactions, setRecentTransactions] = useState([]);
-  const [notifications, setNotifications] = useState(null);
   const [activityLog, setActivityLog] = useState(null);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  useEffect(() => {
-    fetchActivityLog();
-  }, [activityPage]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       const [
@@ -100,7 +88,6 @@ const FinanceDashboard = () => {
         salarySlipsRes,
         taxesRes,
         remindersRes,
-        notificationsRes,
       ] = await Promise.all([
         financeService.getFinancialSummary().catch(err => { console.error('getFinancialSummary failed', err); return { data: { success: false } }; }),
         financeService.getInvoices({ limit: 100 }).catch(err => { console.error('getInvoices failed', err); return { data: { success: false } }; }),
@@ -111,7 +98,6 @@ const FinanceDashboard = () => {
         financeService.getSalarySlips({ limit: 50 }).catch(err => { console.error('getSalarySlips failed', err); return { data: { success: false } }; }),
         financeService.getTaxes().catch(err => { console.error('getTaxes failed', err); return { data: { success: false } }; }),
         financeService.getReminders({ limit: 20 }).catch(err => { console.error('getReminders failed', err); return { data: { success: false } }; }),
-        dashboardService.getNotifications().catch(err => { console.error('getNotifications failed', err); return { data: { success: false } }; }),
       ]);
 
       if (summaryRes.data?.success) {
@@ -142,10 +128,6 @@ const FinanceDashboard = () => {
         setReminders(remindersRes.data.data || []);
       }
 
-      if (notificationsRes.data?.success) {
-        setNotifications(notificationsRes.data.data);
-      }
-
       if (expenseStatsRes.data?.success) {
         setExpenseStats(expenseStatsRes.data.data);
         // Set category data for pie chart
@@ -171,15 +153,14 @@ const FinanceDashboard = () => {
         }))
       );
 
-      await fetchActivityLog();
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchActivityLog = async () => {
+  const fetchActivityLog = useCallback(async () => {
     try {
       const res = await dashboardService.getActivityLog({ page: activityPage, limit: 10 });
       if (res.data?.success) {
@@ -198,7 +179,15 @@ const FinanceDashboard = () => {
     } catch (error) {
       console.error('Error fetching activity log:', error);
     }
-  };
+  }, [activityPage]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  useEffect(() => {
+    fetchActivityLog();
+  }, [fetchActivityLog]);
 
   if (loading) return <Loader />;
 
@@ -208,7 +197,6 @@ const FinanceDashboard = () => {
   const netProfit = (summary?.netProfit || 0);
   const pendingInvoicesAmount = summary?.invoices?.pending || 0;
   const paidInvoicesAmount = summary?.invoices?.paid || 0;
-  const upcomingPayments = summary?.invoices?.upcoming || 0;
 
   // Get invoice counts
   const totalInvoicesCount = invoices.length || 0;
@@ -222,22 +210,18 @@ const FinanceDashboard = () => {
   const pendingExpensesCount = expenses.filter(exp => exp.status === 'pending').length || 0;
 
   // Get payroll counts
-  const totalPayrollsCount = payrolls.length || 0;
   const processedPayrollsCount = payrolls.filter(p => p.status === 'processed').length || 0;
   const pendingPayrollsCount = payrolls.filter(p => p.status === 'pending').length || 0;
 
   // Get salary slip counts
   const totalSalarySlipsCount = salarySlips.length || 0;
-  const paidSalarySlipsCount = salarySlips.filter(s => s.status === 'paid').length || 0;
-  const pendingSalarySlipsCount = salarySlips.filter(s => s.status === 'pending').length || 0;
 
   // Get tax and reminder counts
   const totalTaxesCount = taxes.length || 0;
   const activeRemindersCount = reminders.filter(r => r.status === 'active' || r.status === 'pending').length || 0;
 
   // Calculate totals
-  const totalPayrollAmount = payrolls.reduce((sum, p) => sum + (p.totalAmount || 0), 0);
-  const totalSalarySlipsAmount = salarySlips.reduce((sum, s) => sum + (s.netSalary || 0), 0);
+  const totalPayrollAmount = payrolls.reduce((sum, payroll) => sum + (payroll.grossSalary || payroll.netSalary || 0), 0);
 
   // Prepare revenue analysis data
   const revenueAnalysisData = summary?.incomeExpenseTrend?.map(item => ({
@@ -258,47 +242,6 @@ const FinanceDashboard = () => {
     { category: 'Pending', volume: pendingInvoicesCount, service: 0 },
     { category: 'Overdue', volume: overdueInvoicesCount, service: 0 },
   ].filter(item => item.volume > 0);
-
-  // Calculate real percentage changes
-  let incomeChange = '0%';
-  let expensesChange = '0%';
-  let profitChange = '0%';
-
-  if (chartData.length >= 2) {
-    const current = chartData[chartData.length - 1]; // Current/Latest month
-    const previous = chartData[chartData.length - 2]; // Previous month
-
-    // Income Change
-    if (previous.online > 0) {
-      const change = ((current.online - previous.online) / previous.online) * 100;
-      incomeChange = `${change > 0 ? '+' : ''}${change.toFixed(0)}%`;
-    } else if (current.online > 0) {
-      incomeChange = '+100%';
-    }
-
-    // Expense Change
-    if (previous.offline > 0) {
-      const change = ((current.offline - previous.offline) / previous.offline) * 100;
-      expensesChange = `${change > 0 ? '+' : ''}${change.toFixed(0)}%`;
-    } else if (current.offline > 0) {
-      expensesChange = '+100%';
-    }
-
-    // Profit Change
-    const currentProfit = current.online - current.offline;
-    const prevProfit = previous.online - previous.offline;
-    if (prevProfit !== 0) {
-      const change = ((currentProfit - prevProfit) / Math.abs(prevProfit)) * 100;
-      profitChange = `${change > 0 ? '+' : ''}${change.toFixed(0)}%`;
-    } else if (currentProfit !== 0) {
-      profitChange = currentProfit > 0 ? '+100%' : '-100%';
-    }
-  }
-
-  // Set invoices change to match income trend direction for now (approximation)
-  const invoicesChange = incomeChange;
-
-
 
   return (
     <div className="superadmin-dashboard-new">

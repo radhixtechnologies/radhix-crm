@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { financeService } from '../../services/financeService';
 import { payrollService } from '../../services/payrollService';
-import { employeeService } from '../../services/employeeService';
 import Loader from '../../components/common/Loader';
 import '../../styles/finance/salary-slip.css';
 import '../../styles/finance/payroll-ui.css';

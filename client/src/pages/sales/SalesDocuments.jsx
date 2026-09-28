@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FiPlus, FiSearch, FiFilter, FiChevronUp, FiChevronDown, FiFileText, FiClipboard, FiCheckCircle, FiClock } from 'react-icons/fi';
-import { salesService } from '../../services/salesService';
+import { salesService, normalizeSalesListResponse } from '../../services/salesService';
 import ProposalTable from '../../components/Sales/ProposalTable';
 import QuotationTable from '../../components/Sales/QuotationTable';
 import Loader from '../../components/common/Loader';
@@ -61,9 +61,16 @@ const SalesDocuments = () => {
                 res = await salesService.getQuotations(params);
             }
 
-            if (res.data.success) {
-                setDocuments(res.data.data || []);
-                setPagination({ ...pagination, total: res.data.total || 0, pages: res.data.pages || 0 });
+            const normalized = normalizeSalesListResponse(res);
+            if (normalized.success) {
+                setDocuments(normalized.data || []);
+                setPagination(prev => ({
+                    ...prev,
+                    page: normalized.page,
+                    limit: normalized.limit,
+                    total: normalized.total,
+                    pages: normalized.pages,
+                }));
             }
         } catch (error) {
             console.error(`Error fetching ${activeTab}:`, error);

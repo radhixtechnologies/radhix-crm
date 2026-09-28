@@ -108,12 +108,31 @@ const EmployeeDirectory = () => {
 
       const response = await employeeService.getEmployees(params);
       if (response.data?.success) {
-        const empList = response.data.data || [];
+        const payload = response.data || {};
+        const empList = Array.isArray(payload.data)
+          ? payload.data
+          : Array.isArray(payload.employees)
+            ? payload.employees
+            : [];
+
+        const totalEmployees = Number(
+          payload.meta?.total ??
+          payload.total ??
+          empList.length ??
+          0
+        );
+
+        const totalPages = Number(
+          payload.meta?.pages ??
+          payload.pages ??
+          (totalEmployees > 0 ? Math.ceil(totalEmployees / (pagination.limit || 10)) : 0)
+        );
+
         setEmployees(empList);
         setPagination(prev => ({
           ...prev,
-          total: response.data.total || 0,
-          pages: response.data.pages || 0
+          total: totalEmployees,
+          pages: totalPages
         }));
 
         // Extract unique designations
@@ -137,6 +156,7 @@ const EmployeeDirectory = () => {
   // Fetch when Debounced Search OR Active Filters change
   useEffect(() => {
     if (!initialLoading) {
+      setPagination(prev => (prev.page === 1 ? prev : { ...prev, page: 1 }));
       fetchEmployees(false);
     }
   }, [debouncedSearch, activeFilters, fetchEmployees, initialLoading]);
@@ -144,6 +164,7 @@ const EmployeeDirectory = () => {
   const handleApplyFilters = () => {
     setActiveFilters(filterInputs);
     setPagination(prev => ({ ...prev, page: 1 }));
+    setDebouncedSearch(searchQuery.trim());
   };
 
   const handleClearFilters = () => {
@@ -158,6 +179,7 @@ const EmployeeDirectory = () => {
     setFilterInputs(resetState);
     setActiveFilters(resetState);
     setSearchQuery('');
+    setDebouncedSearch('');
     setPagination(prev => ({ ...prev, page: 1 }));
   };
 

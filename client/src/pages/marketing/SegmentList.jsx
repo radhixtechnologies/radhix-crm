@@ -74,7 +74,7 @@ const SegmentList = () => {
 
                 <div className="header-right">
                     <select
-                        className="filter-select"
+                        className="segment-type-filter"
                         value={typeFilter}
                         onChange={(e) => setTypeFilter(e.target.value)}
                     >

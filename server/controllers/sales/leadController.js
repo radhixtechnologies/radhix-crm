@@ -4,6 +4,12 @@ const Deal = require('../../models/Deal');
 const Contact = require('../../models/Contact');
 
 const sendError = (res, error) => res.status(error.statusCode || 500).json({ success: false, message: error.message });
+const populateAssignedTo = (query) => query.populate({
+  path: 'assignedTo',
+  select: 'user employeeId department designation',
+  populate: { path: 'user', select: 'name email' }
+});
+
 const listQuery = (req) => {
   const { page = 1, limit = 50, search, status, source, campaign, owner, myLeads } = req.query;
   const query = { isDeleted: { $ne: true } };
@@ -16,8 +22,8 @@ const listQuery = (req) => {
   return { query, page: Math.max(1, Number(page)), limit: Math.min(100, Math.max(1, Number(limit))) };
 };
 
-exports.getLeads = async (req, res) => { try { const { query, page, limit } = listQuery(req); const [data, total] = await Promise.all([Lead.find(query).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).populate('assignedTo', 'name email').lean(), Lead.countDocuments(query)]); res.json({ success: true, data, total, page, pages: Math.ceil(total / limit) }); } catch (e) { sendError(res, e); } };
-exports.getLead = async (req, res) => { try { const data = await Lead.findById(req.params.id).populate('assignedTo', 'name email').populate('campaign', 'name'); if (!data) return res.status(404).json({ success: false, message: 'Lead not found' }); res.json({ success: true, data }); } catch (e) { sendError(res, e); } };
+exports.getLeads = async (req, res) => { try { const { query, page, limit } = listQuery(req); const [data, total] = await Promise.all([populateAssignedTo(Lead.find(query).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit)).lean(), Lead.countDocuments(query)]); res.json({ success: true, data, total, page, pages: Math.ceil(total / limit) }); } catch (e) { sendError(res, e); } };
+exports.getLead = async (req, res) => { try { const data = await populateAssignedTo(Lead.findById(req.params.id)).populate('campaign', 'name'); if (!data) return res.status(404).json({ success: false, message: 'Lead not found' }); res.json({ success: true, data }); } catch (e) { sendError(res, e); } };
 exports.createLead = async (req, res) => { try { const data = await Lead.create(req.body); res.status(201).json({ success: true, data }); } catch (e) { sendError(res, e); } };
 exports.updateLead = async (req, res) => { try { const data = await Lead.findByIdAndUpdate(req.params.id, { ...req.body, updatedAt: new Date() }, { new: true, runValidators: true }); if (!data) return res.status(404).json({ success: false, message: 'Lead not found' }); res.json({ success: true, data }); } catch (e) { sendError(res, e); } };
 exports.deleteLead = async (req, res) => { try { const data = await Lead.findByIdAndUpdate(req.params.id, { isDeleted: true, updatedAt: new Date() }, { new: true }); if (!data) return res.status(404).json({ success: false, message: 'Lead not found' }); res.json({ success: true, message: 'Lead deleted' }); } catch (e) { sendError(res, e); } };

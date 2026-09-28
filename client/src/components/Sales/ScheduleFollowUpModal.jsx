@@ -21,6 +21,11 @@ const ScheduleFollowUpModal = ({ isOpen, onClose, onSuccess, prefilledData = {} 
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
+    const getEmployeeLabel = (employee) => {
+        if (!employee) return 'Unassigned';
+        return employee.user?.name || employee.employeeId || 'Unknown Employee';
+    };
+
     // Initialize form data when modal opens with prefilled data
     useEffect(() => {
         if (isOpen) {
@@ -263,7 +268,7 @@ const ScheduleFollowUpModal = ({ isOpen, onClose, onSuccess, prefilledData = {} 
                         <option value="">Select employee</option>
                         {employees.map(emp => (
                             <option key={emp._id} value={emp._id}>
-                                {emp.user?.name || emp.employeeId}
+                                {getEmployeeLabel(emp)}
                             </option>
                         ))}
                     </select>

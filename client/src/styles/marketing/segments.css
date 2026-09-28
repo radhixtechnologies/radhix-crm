@@ -6,6 +6,32 @@
     padding: 24px;
 }
 
+.segment-list-page .segment-type-filter {
+    min-width: 140px;
+    width: auto;
+    height: 38px;
+    padding: 8px 32px 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #1f2937;
+    background-color: #ffffff;
+    color-scheme: light;
+    font-size: 13px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.segment-list-page .segment-type-filter option {
+    color: #1f2937;
+    background-color: #ffffff;
+}
+
+.segment-list-page .segment-type-filter:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
 /* ========== SEGMENT GRID ========== */
 .segment-grid {
     display: grid;

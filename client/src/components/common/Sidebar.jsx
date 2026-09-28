@@ -66,9 +66,15 @@ const Sidebar = () => {
       setActiveModule('dashboard');
       return;
     }
-    if (path.startsWith('/employees') && path !== '/employees') {
+    if (path === '/reports' || path.startsWith('/reports/')) {
+      if (activeModule !== 'reports_analytics') setActiveModule('reports_analytics');
+      return;
+    }
+    if (path === '/employees' || path.startsWith('/employees/')) {
       if (activeModule !== 'my-workspace') setActiveModule('my-workspace');
-    } else if (path.startsWith('/hrm')) {
+      return;
+    }
+    if (path.startsWith('/hrm')) {
       if (activeModule !== 'hrm') setActiveModule('hrm');
     } else if (path.startsWith('/finance')) {
       if (activeModule !== 'finance') setActiveModule('finance');
@@ -106,6 +112,7 @@ const Sidebar = () => {
         finance: '/finance',
         marketing: '/marketing',
         operations: '/support',
+        'reports_analytics': '/reports',
         'my-workspace': '/employees',
         dashboard: '/dashboard',
       }[moduleKey];
@@ -132,7 +139,7 @@ const Sidebar = () => {
       icon: FiUser,
       access: true, // Everyone has a workspace
       subItems: [
-        { path: `/employees/${user?.employeeId || 'me'}`, label: 'My Profile', icon: FiUser },
+        { path: '/employees/me', label: 'My Profile', icon: FiUser },
         { path: '/employees/my-attendance', label: 'My Attendance', icon: FiClock },
         { path: '/employees/my-leaves', label: 'My Leaves', icon: FiCalendar },
         { path: '/employees/tasks', label: 'My Tasks', icon: FiCheckCircle },

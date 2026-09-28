@@ -16,29 +16,48 @@ const MarketingReports = () => {
     const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
 
     useEffect(() => {
+        const fetchReports = async () => {
+            try {
+                setLoading(true);
+                const [overviewRes, campaignsRes, emailsRes, leadSourcesRes] = await Promise.all([
+                    marketingService.getMarketingOverview(dateRange),
+                    marketingService.getCampaignPerformanceReport(dateRange),
+                    marketingService.getEmailAnalyticsReport(dateRange),
+                    marketingService.getLeadSourceAnalysis(dateRange),
+                ]);
+
+                if (overviewRes.data?.success) setOverview(overviewRes.data.data);
+                if (campaignsRes.data?.success) {
+                    const data = campaignsRes.data.data;
+                    setCampaigns(Array.isArray(data) ? data : data?.report || []);
+                }
+                if (emailsRes.data?.success) {
+                    const data = emailsRes.data.data;
+                    setEmails(Array.isArray(data) ? data : data?.report || []);
+                }
+                if (leadSourcesRes.data?.success) {
+                    const data = leadSourcesRes.data.data;
+                    const sources = Array.isArray(data) ? data : data?.analysis || [];
+                    const totalLeads = sources.reduce((total, source) => total + Number(source.count || 0), 0);
+                    setLeadSources(sources.map(source => {
+                        const count = Number(source.count || 0);
+                        return {
+                            ...source,
+                            source: source.source || source._id || 'Unknown',
+                            count,
+                            percentage: totalLeads ? (count / totalLeads) * 100 : 0,
+                        };
+                    }));
+                }
+            } catch (error) {
+                console.error('Error fetching reports:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchReports();
     }, [dateRange]);
-
-    const fetchReports = async () => {
-        try {
-            setLoading(true);
-            const [overviewRes, campaignsRes, emailsRes, leadSourcesRes] = await Promise.all([
-                marketingService.getMarketingOverview(dateRange),
-                marketingService.getCampaignPerformanceReport(dateRange),
-                marketingService.getEmailAnalyticsReport(dateRange),
-                marketingService.getLeadSourceAnalysis(dateRange),
-            ]);
-
-            if (overviewRes.data?.success) setOverview(overviewRes.data.data);
-            if (campaignsRes.data?.success) setCampaigns(campaignsRes.data.data.report || []);
-            if (emailsRes.data?.success) setEmails(emailsRes.data.data.report || []);
-            if (leadSourcesRes.data?.success) setLeadSources(leadSourcesRes.data.data.analysis || []);
-        } catch (error) {
-            console.error('Error fetching reports:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleExport = async (reportType, format) => {
         try {
@@ -191,16 +210,16 @@ const MarketingReports = () => {
                                 </thead>
                                 <tbody>
                                     {campaigns.map((campaign) => (
-                                        <tr key={campaign.id}>
+                                        <tr key={campaign._id || campaign.id}>
                                             <td>{campaign.name}</td>
                                             <td><span className="type-badge">{campaign.type}</span></td>
                                             <td><span className={`status-badge status-${campaign.status}`}>{campaign.status}</span></td>
                                             <td>{formatCurrency(campaign.budget)}</td>
                                             <td>{formatCurrency(campaign.actualSpend)}</td>
-                                            <td>{formatNumber(campaign.metrics.totalLeads)}</td>
-                                            <td>{campaign.performance.conversionRate.toFixed(1)}%</td>
-                                            <td className={campaign.performance.roi >= 0 ? 'text-success' : 'text-danger'}>
-                                                {campaign.performance.roi.toFixed(1)}%
+                                            <td>{formatNumber(campaign.metrics?.totalLeads || 0)}</td>
+                                            <td>{Number(campaign.conversionRate || 0).toFixed(1)}%</td>
+                                            <td className={(campaign.roi || 0) >= 0 ? 'text-success' : 'text-danger'}>
+                                                {Number(campaign.roi || 0).toFixed(1)}%
                                             </td>
                                         </tr>
                                     ))}
@@ -228,15 +247,15 @@ const MarketingReports = () => {
                                 </thead>
                                 <tbody>
                                     {emails.map((email) => (
-                                        <tr key={email.id}>
+                                        <tr key={email._id || email.id}>
                                             <td>{email.subject}</td>
-                                            <td>{email.campaign}</td>
-                                            <td>{formatNumber(email.metrics.sent)}</td>
-                                            <td>{formatNumber(email.metrics.delivered)}</td>
-                                            <td>{formatNumber(email.metrics.opened)}</td>
-                                            <td>{formatNumber(email.metrics.clicked)}</td>
-                                            <td>{email.rates.openRate.toFixed(1)}%</td>
-                                            <td>{email.rates.clickRate.toFixed(1)}%</td>
+                                            <td>{email.campaign?.name || email.campaign || '—'}</td>
+                                            <td>{formatNumber(email.metrics?.sent || 0)}</td>
+                                            <td>{formatNumber(email.metrics?.delivered || 0)}</td>
+                                            <td>{formatNumber(email.metrics?.opened || 0)}</td>
+                                            <td>{formatNumber(email.metrics?.clicked || 0)}</td>
+                                            <td>{Number(email.openRate || 0).toFixed(1)}%</td>
+                                            <td>{Number(email.clickRate || 0).toFixed(1)}%</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -276,10 +295,6 @@ const MarketingReports = () => {
                                     <tr>
                                         <th>Source</th>
                                         <th>Total Leads</th>
-                                        <th>Qualified</th>
-                                        <th>Converted</th>
-                                        <th>Qualification Rate</th>
-                                        <th>Conversion Rate</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -291,10 +306,6 @@ const MarketingReports = () => {
                                                 </span>
                                             </td>
                                             <td>{formatNumber(source.count)}</td>
-                                            <td>{formatNumber(source.qualified)}</td>
-                                            <td>{formatNumber(source.converted)}</td>
-                                            <td>{source.qualificationRate.toFixed(1)}%</td>
-                                            <td>{source.conversionRate.toFixed(1)}%</td>
                                         </tr>
                                     ))}
                                 </tbody>

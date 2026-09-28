@@ -15,6 +15,11 @@ const FollowupTable = ({ followups, pagination, onPageChange }) => {
   const [editModal, setEditModal] = useState({ open: false, followup: null });
   const [completeModal, setCompleteModal] = useState({ open: false, followup: null });
 
+  const getOwnerName = (followup) => {
+    const assignedTo = followup?.assignedTo;
+    return assignedTo?.user?.name || assignedTo?.employeeId || 'N/A';
+  };
+
   const handleDelete = (followup) => {
     setDeleteModal({ open: true, followup });
   };
@@ -68,7 +73,9 @@ const FollowupTable = ({ followups, pagination, onPageChange }) => {
                   {followup.type === 'deal' && (followup.relatedId?.title || 'N/A')}
                 </td>
                 <td>{formatDate(followup.scheduledDate)} {followup.scheduledTime && `at ${followup.scheduledTime}`}</td>
-                <td>{followup.assignedTo?.user?.name || 'N/A'}</td>
+                <td>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{getOwnerName(followup)}</span>
+                </td>
                 <td>
                   <ReminderBadge status={followup.status} />
                 </td>

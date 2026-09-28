@@ -2,6 +2,7 @@ import api from './api';
 
 export const employeeService = {
   getEmployees: (params) => api.get('/employees', { params }),
+  getMyProfile: () => api.get('/employees/me'),
   getEmployee: (id) => api.get(`/employees/${id}`),
   createEmployee: async (data) => {
     console.log('Creating employee with data:', data);

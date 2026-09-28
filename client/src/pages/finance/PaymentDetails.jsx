@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../styles/finance/paymentDetails.css';
@@ -19,22 +19,26 @@ const PaymentDetails = () => {
 
     useEffect(() => {
         fetchPaymentDetails();
-    }, [id]);
+    }, [fetchPaymentDetails]);
 
-    const fetchPaymentDetails = async () => {
+    const fetchPaymentDetails = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.get(`${API_URL}/finance/payments/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setPayment(response.data);
-            setRefundData({ refundAmount: response.data.amount, refundReason: '' });
+            const paymentData = response.data?.data || response.data?.payment || response.data;
+            setPayment(paymentData);
+            setRefundData({
+                refundAmount: Math.max(0, paymentData.amount - (paymentData.refundedAmount || 0)),
+                refundReason: '',
+            });
             setLoading(false);
         } catch (error) {
             console.error('Error fetching payment details:', error);
             setLoading(false);
         }
-    };
+    }, [id]);
 
     const handleRefund = async () => {
         if (!refundData.refundAmount || parseFloat(refundData.refundAmount) <= 0) {
@@ -111,12 +115,12 @@ const PaymentDetails = () => {
 
     const getStatusBadgeClass = (status) => {
         const statusClasses = {
-            'Pending': 'status-pending',
-            'Completed': 'status-completed',
-            'Failed': 'status-failed',
-            'Refunded': 'status-refunded'
+            pending: 'status-pending',
+            completed: 'status-completed',
+            failed: 'status-failed',
+            refunded: 'status-refunded'
         };
-        return statusClasses[status] || 'status-default';
+        return statusClasses[status?.toLowerCase()] || 'status-default';
     };
 
     const getPaymentMethodIcon = (method) => {
@@ -143,6 +147,16 @@ const PaymentDetails = () => {
         return <div className="error-message">Payment not found</div>;
     }
 
+    const status = payment.status?.toLowerCase() || 'unknown';
+    const displayStatus = status === 'refunded'
+        ? 'Refunded'
+        : status === 'completed' && payment.refundedAmount > 0
+            ? 'Partially Refunded'
+            : `${status[0].toUpperCase()}${status.slice(1)}`;
+    const paymentNumber = payment.paymentNumber || `PAY-${payment._id.slice(-8).toUpperCase()}`;
+    const remainingRefundable = Math.max(0, payment.amount - (payment.refundedAmount || 0));
+    const paymentMethod = payment.method || payment.paymentMethod || 'Unknown';
+
     return (
         <div className="payment-details-container">
             {/* Header */}
@@ -151,13 +165,13 @@ const PaymentDetails = () => {
                     <button className="btn-back" onClick={() => navigate('/finance/payments')}>
                         ← Back to Payments
                     </button>
-                    <h1>Payment {payment.paymentNumber}</h1>
+                    <h1>Payment {paymentNumber}</h1>
                     <span className={`status-badge ${getStatusBadgeClass(payment.status)}`}>
-                        {payment.status}
+                        {displayStatus}
                     </span>
                 </div>
                 <div className="header-actions">
-                    {payment.status === 'Completed' && (
+                    {status === 'completed' && remainingRefundable > 0 && (
                         <button
                             className="btn-warning"
                             onClick={() => setShowRefundModal(true)}
@@ -182,13 +196,13 @@ const PaymentDetails = () => {
                     <h3>Payment Information</h3>
                     <div className="info-row">
                         <span className="label">Payment Number:</span>
-                        <span className="value">{payment.paymentNumber}</span>
+                        <span className="value">{paymentNumber}</span>
                     </div>
                     <div className="info-row">
                         <span className="label">Amount:</span>
                         <span className="value amount">{formatCurrency(payment.amount)}</span>
                     </div>
-                    {payment.status === 'Refunded' && payment.refundedAmount > 0 && (
+                    {payment.refundedAmount > 0 && (
                         <div className="info-row refund">
                             <span className="label">Refunded Amount:</span>
                             <span className="value">{formatCurrency(payment.refundedAmount)}</span>
@@ -196,18 +210,18 @@ const PaymentDetails = () => {
                     )}
                     <div className="info-row">
                         <span className="label">Payment Date:</span>
-                        <span className="value">{formatDate(payment.paymentDate)}</span>
+                        <span className="value">{formatDate(payment.paidAt || payment.paymentDate)}</span>
                     </div>
                     <div className="info-row">
                         <span className="label">Payment Method:</span>
                         <span className="value">
-                            {getPaymentMethodIcon(payment.paymentMethod)} {payment.paymentMethod}
+                            {getPaymentMethodIcon(paymentMethod)} {paymentMethod}
                         </span>
                     </div>
                     <div className="info-row">
                         <span className="label">Status:</span>
-                        <span className={`value ${payment.status.toLowerCase()}-text`}>
-                            {payment.status}
+                        <span className={`value ${status}-text`}>
+                            {displayStatus}
                         </span>
                     </div>
                 </div>
@@ -225,7 +239,7 @@ const PaymentDetails = () => {
                     </div>
                     <div className="info-row">
                         <span className="label">Customer:</span>
-                        <span className="value">{payment.account?.companyName || 'N/A'}</span>
+                        <span className="value">{payment.invoice?.client?.company || payment.invoice?.client?.name || 'N/A'}</span>
                     </div>
                     <div className="info-row">
                         <span className="label">Invoice Total:</span>
@@ -242,10 +256,10 @@ const PaymentDetails = () => {
             <div className="transaction-details">
                 <h3>Transaction Details</h3>
                 <div className="details-grid">
-                    {payment.referenceNumber && (
+                    {(payment.reference || payment.referenceNumber) && (
                         <div className="detail-item">
                             <span className="detail-label">Reference Number</span>
-                            <span className="detail-value">{payment.referenceNumber}</span>
+                            <span className="detail-value">{payment.reference || payment.referenceNumber}</span>
                         </div>
                     )}
                     {payment.transactionId && (
@@ -274,7 +288,7 @@ const PaymentDetails = () => {
             )}
 
             {/* Refund Information */}
-            {payment.status === 'Refunded' && (
+            {payment.refundedAmount > 0 && (
                 <div className="refund-info">
                     <h3>Refund Information</h3>
                     <div className="info-row">
@@ -307,10 +321,10 @@ const PaymentDetails = () => {
                                     type="number"
                                     value={refundData.refundAmount}
                                     onChange={(e) => setRefundData({ ...refundData, refundAmount: e.target.value })}
-                                    max={payment.amount}
+                                    max={remainingRefundable}
                                     step="0.01"
                                 />
-                                <span className="help-text">Maximum: {formatCurrency(payment.amount)}</span>
+                                <span className="help-text">Maximum: {formatCurrency(remainingRefundable)}</span>
                             </div>
                             <div className="form-group">
                                 <label>Refund Reason <span className="required">*</span></label>

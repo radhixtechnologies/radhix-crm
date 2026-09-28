@@ -13,7 +13,8 @@ const ProtectedRoute = ({ children, requiredRole, requiredModule }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && user.role?.slug !== requiredRole && user.role?.slug !== 'super_admin') {
+  const roleSlug = typeof user.role === 'string' ? user.role : user.role?.slug;
+  if (requiredRole && roleSlug !== requiredRole && roleSlug !== 'super_admin') {
     return <Navigate to="/dashboard" replace />;
   }
 

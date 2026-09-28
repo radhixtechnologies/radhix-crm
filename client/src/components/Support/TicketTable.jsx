@@ -52,7 +52,7 @@ const TicketTable = ({ tickets }) => {
                                     </div>
                                 </td>
                                 <td>
-                                    <span style={{ fontFamily: 'monospace', fontSize: '13px' }}>#{ticket.ticketNumber}</span>
+                                    <span style={{ fontFamily: 'monospace', fontSize: '13px' }}>#{ticket.ticketNumber || ticket._id.slice(-8).toUpperCase()}</span>
                                 </td>
                                 <td>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

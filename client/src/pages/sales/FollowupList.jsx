@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { FiPlus, FiSearch, FiCalendar, FiClock, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
-import { salesService } from '../../services/salesService';
+import { useState, useEffect, useMemo } from 'react';
+import { FiPlus, FiSearch, FiCalendar, FiClock, FiCheckCircle, FiAlertCircle, FiUsers, FiTrendingUp } from 'react-icons/fi';
+import { salesService, normalizeSalesListResponse } from '../../services/salesService';
 import FollowupTable from '../../components/Sales/FollowupTable';
 import ScheduleFollowUpModal from '../../components/Sales/ScheduleFollowUpModal';
 import Loader from '../../components/common/Loader';
@@ -13,6 +13,28 @@ const FollowupList = () => {
   const [filters, setFilters] = useState({ status: '', type: '', search: '' });
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+
+  const summaryStats = useMemo(() => {
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const weekStart = new Date(startOfToday);
+    weekStart.setDate(startOfToday.getDate() - 6);
+
+    const upcomingThisWeek = followups.filter((item) => {
+      if (!item.scheduledDate) return false;
+      const scheduledDate = new Date(item.scheduledDate);
+      return scheduledDate >= weekStart && scheduledDate <= new Date(startOfToday.getTime() + 86400000 * 7);
+    });
+
+    return {
+      total: followups.length,
+      pending: followups.filter(f => f.status === 'pending').length,
+      completed: followups.filter(f => f.status === 'completed').length,
+      overdue: followups.filter(f => f.status === 'overdue').length,
+      thisWeek: upcomingThisWeek.length,
+      owners: new Set(followups.filter(f => f.assignedTo?._id || f.assignedTo).map(f => f.assignedTo?._id || f.assignedTo)).size,
+    };
+  }, [followups]);
 
   // Initial load
   useEffect(() => {
@@ -40,9 +62,16 @@ const FollowupList = () => {
       }
       const params = { page: pagination.page, limit: pagination.limit, ...filters };
       const res = await salesService.getFollowUps(params);
-      if (res.data.success) {
-        setFollowups(res.data.data || []);
-        setPagination({ ...pagination, total: res.data.total || 0, pages: res.data.pages || 0 });
+      const normalized = normalizeSalesListResponse(res);
+      if (normalized.success) {
+        setFollowups(normalized.data || []);
+        setPagination(prev => ({
+          ...prev,
+          page: normalized.page,
+          limit: normalized.limit,
+          total: normalized.total,
+          pages: normalized.pages,
+        }));
       }
     } catch (error) {
       console.error('Error fetching follow-ups:', error);
@@ -68,6 +97,23 @@ const FollowupList = () => {
       </div>
 
       {/* Stats Cards */}
+      <div className="followup-pulse-panel">
+        <div className="pulse-copy">
+          <span className="pulse-kicker">Sales Pulse</span>
+          <h2>Follow-up momentum is {summaryStats.pending === 0 ? 'fully clear' : `${summaryStats.pending} item(s) still active`}</h2>
+        </div>
+        <div className="pulse-meta">
+          <div className="pulse-meta-item">
+            <FiTrendingUp />
+            <span>{summaryStats.thisWeek} due this week</span>
+          </div>
+          <div className="pulse-meta-item">
+            <FiUsers />
+            <span>{summaryStats.owners} owners active</span>
+          </div>
+        </div>
+      </div>
+
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -99,7 +145,7 @@ const FollowupList = () => {
           </div>
           <div>
             <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-              {followups.length}
+              {summaryStats.total}
             </div>
             <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
               Total Follow-ups

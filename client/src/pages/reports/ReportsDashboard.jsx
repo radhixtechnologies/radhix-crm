@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { reportService } from '../../services/reportService';
 import Loader from '../../components/common/Loader';
 import { FiBarChart2, FiPieChart, FiTrendingUp, FiCalendar, FiFilter, FiChevronDown, FiChevronUp, FiX } from 'react-icons/fi';
@@ -32,68 +32,46 @@ const ReportsDashboard = () => {
     const [salesData, setSalesData] = useState([]);
     const [leadData, setLeadData] = useState([]);
     const [marketingData, setMarketingData] = useState([]);
+    const [reportErrors, setReportErrors] = useState({});
 
-    useEffect(() => {
-        fetchReports();
-    }, []);
-
-    const fetchReports = async () => {
+    const fetchReports = useCallback(async (filters = activeFilters) => {
         try {
             setLoading(true);
-            console.log('📊 Fetching reports data...');
+            const params = {
+                ...(filters.dateFrom ? { startDate: filters.dateFrom } : {}),
+                ...(filters.dateTo ? { endDate: filters.dateTo } : {}),
+            };
 
             const [salesRes, leadsRes, marketingRes] = await Promise.all([
-                reportService.getSalesPerformance().catch(err => {
-                    console.error('❌ Sales Performance Error:', err.response?.data || err.message);
-                    return { data: { success: false } };
-                }),
-                reportService.getLeadConversion().catch(err => {
-                    console.error('❌ Lead Conversion Error:', err.response?.data || err.message);
-                    return { data: { success: false } };
-                }),
-                reportService.getMarketingROI().catch(err => {
-                    console.error('❌ Marketing ROI Error:', err.response?.data || err.message);
-                    return { data: { success: false } };
-                })
+                reportService.getSalesPerformance(params).catch(error => ({ data: { success: false, message: error.response?.data?.message || error.message } })),
+                reportService.getLeadConversion(params).catch(error => ({ data: { success: false, message: error.response?.data?.message || error.message } })),
+                reportService.getMarketingROI(params).catch(error => ({ data: { success: false, message: error.response?.data?.message || error.message } })),
             ]);
 
-            console.log('📈 Sales Response:', salesRes.data);
-            console.log('🎯 Leads Response:', leadsRes.data);
-            console.log('📢 Marketing Response:', marketingRes.data);
-
-            if (salesRes.data?.success) {
-                console.log('✅ Sales data loaded:', salesRes.data.data.length, 'items');
-                setSalesData(salesRes.data.data);
-            } else {
-                console.log('⚠️ No sales data available');
-            }
-
-            if (leadsRes.data?.success) {
-                console.log('✅ Lead data loaded:', leadsRes.data.data.length, 'items');
-                setLeadData(leadsRes.data.data);
-            } else {
-                console.log('⚠️ No lead data available');
-            }
-
-            if (marketingRes.data?.success) {
-                console.log('✅ Marketing data loaded:', marketingRes.data.data.length, 'items');
-                setMarketingData(marketingRes.data.data);
-            } else {
-                console.log('⚠️ No marketing data available');
-            }
-
+            const sales = Array.isArray(salesRes.data?.data) ? salesRes.data.data : [];
+            const leads = Array.isArray(leadsRes.data?.data) ? leadsRes.data.data : [];
+            const campaigns = Array.isArray(marketingRes.data?.data) ? marketingRes.data.data : [];
+            setSalesData(sales);
+            setLeadData(leads.map(source => ({ ...source, name: source.name || source._id })));
+            setMarketingData(campaigns);
+            setReportErrors({
+                sales: salesRes.data?.success ? '' : salesRes.data?.message || 'Sales report could not be loaded.',
+                leads: leadsRes.data?.success ? '' : leadsRes.data?.message || 'Lead report could not be loaded.',
+                marketing: marketingRes.data?.success ? '' : marketingRes.data?.message || 'Marketing report could not be loaded.',
+            });
         } catch (error) {
-            console.error("❌ Error fetching reports:", error);
+            console.error('Error fetching reports:', error);
         } finally {
             setLoading(false);
         }
-    };
+    }, [activeFilters]);
+
+    useEffect(() => {
+        fetchReports(activeFilters);
+    }, [activeFilters, fetchReports]);
 
     const handleApplyFilters = () => {
         setActiveFilters(filterInputs);
-        // Note: Actual filtering would happen here if API supported it, 
-        // or we could filter the existing data arrays client-side.
-        // For now, we just update the UI state to match the pattern.
     };
 
     const handleClearFilters = () => {
@@ -356,11 +334,10 @@ const ReportsDashboard = () => {
                                         }}>
                                             <FiBarChart2 style={{ fontSize: '64px', color: '#d1d5db', marginBottom: '16px' }} />
                                             <h4 style={{ fontSize: '18px', fontWeight: 600, color: '#374151', marginBottom: '8px' }}>
-                                                No Sales Data Available
+                                                {reportErrors.sales ? 'Sales Report Unavailable' : 'No Sales Data Available'}
                                             </h4>
                                             <p style={{ fontSize: '14px', color: '#6b7280', maxWidth: '400px', lineHeight: '1.6' }}>
-                                                Sales performance data will appear here once you have closed deals.
-                                                Create deals and mark them as "Closed Won" to see performance metrics.
+                                                {reportErrors.sales || 'Sales performance data will appear here once you have closed deals. Create deals and mark them as "Closed Won" to see performance metrics.'}
                                             </p>
                                         </div>
                                     )}
@@ -428,11 +405,10 @@ const ReportsDashboard = () => {
                                         }}>
                                             <FiPieChart style={{ fontSize: '64px', color: '#d1d5db', marginBottom: '16px' }} />
                                             <h4 style={{ fontSize: '18px', fontWeight: 600, color: '#374151', marginBottom: '8px' }}>
-                                                No Lead Data Available
+                                                {reportErrors.leads ? 'Lead Report Unavailable' : 'No Lead Data Available'}
                                             </h4>
                                             <p style={{ fontSize: '14px', color: '#6b7280', maxWidth: '400px', lineHeight: '1.6' }}>
-                                                Lead conversion data will appear here once you have leads in your system.
-                                                Add leads from different sources to see conversion metrics.
+                                                {reportErrors.leads || 'Lead conversion data will appear here once you have leads in your system. Add leads from different sources to see conversion metrics.'}
                                             </p>
                                         </div>
                                     )}
@@ -470,11 +446,10 @@ const ReportsDashboard = () => {
                                         }}>
                                             <FiTrendingUp style={{ fontSize: '64px', color: '#d1d5db', marginBottom: '16px' }} />
                                             <h4 style={{ fontSize: '18px', fontWeight: 600, color: '#374151', marginBottom: '8px' }}>
-                                                No Campaign Data Available
+                                                {reportErrors.marketing ? 'Marketing Report Unavailable' : 'No Campaign Data Available'}
                                             </h4>
                                             <p style={{ fontSize: '14px', color: '#6b7280', maxWidth: '400px', lineHeight: '1.6' }}>
-                                                Marketing campaign ROI data will appear here once you create campaigns.
-                                                Create marketing campaigns to track budget, spend, and ROI metrics.
+                                                {reportErrors.marketing || 'Marketing campaign ROI data will appear here once you create campaigns. Create marketing campaigns to track budget, spend, and ROI metrics.'}
                                             </p>
                                         </div>
                                     )}

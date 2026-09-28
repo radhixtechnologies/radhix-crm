@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 import { marketingService } from '../../services/marketingService';
@@ -14,6 +14,7 @@ const AddCampaign = () => {
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(!!id);
     const [employees, setEmployees] = useState([]);
+    const [segments, setSegments] = useState([]);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -25,6 +26,7 @@ const AddCampaign = () => {
         budget: 0,
         currency: 'INR',
         owner: '',
+        segment: '',
         targetAudience: {
             industry: '',
             location: '',
@@ -39,10 +41,11 @@ const AddCampaign = () => {
 
     useEffect(() => {
         fetchEmployees();
+        fetchSegments();
         if (id) {
             fetchCampaign();
         }
-    }, [id]);
+    }, [id, fetchCampaign]);
 
     const fetchEmployees = async () => {
         try {
@@ -55,8 +58,19 @@ const AddCampaign = () => {
         }
     };
 
+    const fetchSegments = async () => {
+        try {
+            const res = await marketingService.getSegments();
+            if (res.data?.success) {
+                setSegments(res.data.data?.segments || []);
+            }
+        } catch (error) {
+            console.error('Error fetching campaign segments:', error);
+        }
+    };
 
-    const fetchCampaign = async () => {
+
+    const fetchCampaign = useCallback(async () => {
         try {
             setFetching(true);
             const res = await marketingService.getCampaign(id);
@@ -69,6 +83,7 @@ const AddCampaign = () => {
                     budget: campaign.budget || 0,
                     currency: campaign.currency || 'INR',
                     owner: campaign.owner?._id || campaign.owner || '',
+                    segment: campaign.segment?._id || campaign.segment || '',
                     targetAudience: {
                         industry: campaign.targetAudience?.industry?.join(', ') || '',
                         location: campaign.targetAudience?.location?.join(', ') || '',
@@ -88,7 +103,7 @@ const AddCampaign = () => {
         } finally {
             setFetching(false);
         }
-    };
+    }, [id, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -98,6 +113,7 @@ const AddCampaign = () => {
             // Process target audience array fields
             const payload = {
                 ...formData,
+                budget: Number(formData.budget) || 0,
                 targetAudience: {
                     ...formData.targetAudience,
                     industry: formData.targetAudience.industry.split(',').map(s => s.trim()).filter(Boolean),
@@ -115,10 +131,14 @@ const AddCampaign = () => {
             } else {
                 await marketingService.createCampaign(payload);
             }
-            navigate('/marketing');
+            navigate('/marketing/campaigns');
         } catch (error) {
             console.error(`Error ${id ? 'updating' : 'creating'} campaign:`, error);
-            alert(`Failed to ${id ? 'update' : 'create'} campaign`);
+            const message = error.response?.data?.error?.details
+                || error.response?.data?.error?.message
+                || error.response?.data?.message
+                || error.message;
+            alert(`Failed to ${id ? 'update' : 'create'} campaign: ${message}`);
         } finally {
             setLoading(false);
         }
@@ -267,6 +287,26 @@ const AddCampaign = () => {
                                     </option>
                                 ))}
                             </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label>Target Segment *</label>
+                            <select
+                                className="form-select"
+                                value={formData.segment}
+                                onChange={(e) => setFormData({ ...formData, segment: e.target.value })}
+                                required
+                            >
+                                <option value="">Select a target segment</option>
+                                {segments.map(segment => (
+                                    <option key={segment._id} value={segment._id}>{segment.name}</option>
+                                ))}
+                            </select>
+                            {segments.length === 0 && (
+                                <small className="text-muted">
+                                    No segments available. Create a segment before creating a campaign.
+                                </small>
+                            )}
                         </div>
                     </div>
 

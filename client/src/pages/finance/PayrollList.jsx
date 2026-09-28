@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiDownload, FiSearch, FiFilter, FiChevronDown, FiChevronUp, FiRefreshCw, FiUsers, FiDollarSign, FiCheckCircle, FiCreditCard } from 'react-icons/fi';
 import { financeService } from '../../services/financeService';
@@ -35,7 +35,7 @@ const PayrollList = () => {
 
   useEffect(() => {
     fetchPayrolls();
-  }, [activeFilters]);
+  }, [fetchPayrolls]);
 
   // Handle outside click for filters
   useEffect(() => {
@@ -55,7 +55,7 @@ const PayrollList = () => {
     };
   }, []);
 
-  const fetchPayrolls = async () => {
+  const fetchPayrolls = useCallback(async () => {
     try {
       setLoading(true);
       const res = await financeService.getPayrolls(activeFilters);
@@ -67,13 +67,13 @@ const PayrollList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeFilters]);
 
   const handleDownload = async (id) => {
     try {
       await financeService.generatePayrollPDF(id);
       financeService.downloadPayslip(id);
-    } catch (error) {
+    } catch {
       alert('Failed to generate payslip');
     }
   };

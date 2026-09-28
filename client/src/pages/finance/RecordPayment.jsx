@@ -42,7 +42,7 @@ const RecordPayment = () => {
                 setFormData(prev => ({ ...prev, amount: invoice.balanceDue }));
             }
         }
-    }, [formData.invoice, invoices]);
+    }, [formData.invoice, formData.amount, invoices]);
 
     const fetchUnpaidInvoices = async () => {
         try {
@@ -211,7 +211,7 @@ const RecordPayment = () => {
                                 <option value="">-- Select an invoice --</option>
                                 {invoices.map(invoice => (
                                     <option key={invoice._id} value={invoice._id}>
-                                        {invoice.invoiceNumber} - {invoice.client?.companyName || 'N/A'} -
+                                        {invoice.invoiceNumber} - {invoice.client?.company || invoice.client?.name || 'N/A'} -
                                         Balance: {formatCurrency(invoice.balanceDue)}
                                     </option>
                                 ))}
@@ -227,7 +227,7 @@ const RecordPayment = () => {
                                 </div>
                                 <div className="detail-row">
                                     <span className="label">Customer:</span>
-                                    <span className="value">{selectedInvoice.client?.companyName || 'N/A'}</span>
+                                    <span className="value">{selectedInvoice.client?.company || selectedInvoice.client?.name || 'N/A'}</span>
                                 </div>
                                 <div className="detail-row">
                                     <span className="label">Invoice Total:</span>

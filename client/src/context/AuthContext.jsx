@@ -3,6 +3,7 @@ import { authService } from '../services/authService';
 
 const AuthContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -29,7 +30,7 @@ export const AuthProvider = ({ children }) => {
             setUser(response.data);
             localStorage.setItem('user', JSON.stringify(response.data));
           }
-        } catch (error) {
+        } catch {
           // Token invalid → clear storage
           localStorage.removeItem('token');
           localStorage.removeItem('user');
@@ -144,6 +145,13 @@ export const AuthProvider = ({ children }) => {
       ? user.role.modules
       : [];
 
+    if (getUserRoleSlug() === 'admin') {
+      const grantedModules = Object.entries(user.modulesAccess || {})
+        .filter(([, isGranted]) => isGranted === true)
+        .map(([module]) => module);
+      return [...new Set(['employee', 'dashboard', ...grantedModules])];
+    }
+
     const modules = [...roleModules];
 
     // All users have access to employee module (My Profile / My Workspace)
@@ -212,6 +220,7 @@ export const AuthProvider = ({ children }) => {
       ? user.role.modules
       : [];
 
+    if (roleSlug === 'admin') return user.modulesAccess?.[module] === true;
     return isActuallyAdmin && roleModules.includes(module);
   };
 

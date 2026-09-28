@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { financeService } from '../../services/financeService';
 import Loader from '../../components/common/Loader';
 import { FiBarChart2, FiPieChart, FiTrendingUp, FiFilter, FiChevronDown, FiChevronUp, FiRefreshCw, FiDollarSign, FiArrowUpRight, FiArrowDownRight, FiFileText } from 'react-icons/fi';
@@ -33,10 +33,6 @@ const FinanceReports = () => {
     const [expenseData, setExpenseData] = useState([]);
     const [invoiceData, setInvoiceData] = useState([]);
 
-    useEffect(() => {
-        fetchReports();
-    }, [activeFilters]);
-
     // Handle outside click for filters
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -55,13 +51,17 @@ const FinanceReports = () => {
         };
     }, []);
 
-    const fetchReports = async () => {
+    const fetchReports = useCallback(async () => {
         try {
             setLoading(true);
+            const dateFilters = {
+                ...(activeFilters.dateFrom ? { startDate: activeFilters.dateFrom } : {}),
+                ...(activeFilters.dateTo ? { endDate: activeFilters.dateTo } : {}),
+            };
             const [summaryRes, expenseStatsRes, invoicesRes] = await Promise.all([
-                financeService.getFinancialSummary(activeFilters).catch(err => ({ data: { success: false } })),
-                financeService.getExpenseStats(activeFilters).catch(err => ({ data: { success: false } })),
-                financeService.getInvoices({ ...activeFilters, limit: 1000 }).catch(err => ({ data: { success: false } })) // Fetch more for reporting
+                financeService.getFinancialSummary(dateFilters).catch(() => ({ data: { success: false } })),
+                financeService.getExpenseStats(dateFilters).catch(() => ({ data: { success: false } })),
+                financeService.getInvoices({ ...dateFilters, limit: 1000 }).catch(() => ({ data: { success: false } })) // Fetch more for reporting
             ]);
 
             // 1. Income vs Expense Data
@@ -100,7 +100,11 @@ const FinanceReports = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [activeFilters]);
+
+    useEffect(() => {
+        fetchReports();
+    }, [fetchReports]);
 
     const handleApplyFilters = () => {
         setActiveFilters({ ...filterInputs });

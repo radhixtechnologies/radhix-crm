@@ -20,6 +20,11 @@ const LeadTable = ({ leads, onDelete, pagination, onPageChange }) => {
   const navigate = useNavigate();
   const [deleteModal, setDeleteModal] = useState({ open: false, lead: null });
 
+  const getOwnerName = (lead) => {
+    const assignedTo = lead?.assignedTo;
+    return assignedTo?.user?.name || assignedTo?.employeeId || 'Unassigned';
+  };
+
   const handleDelete = (lead) => {
     setDeleteModal({ open: true, lead });
   };
@@ -153,8 +158,8 @@ const LeadTable = ({ leads, onDelete, pagination, onPageChange }) => {
                   </div>
                 </td>
                 <td>
-                  <span style={{ fontSize: '13px' }}>
-                    {lead.assignedTo?.user?.name || 'Unassigned'}
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>
+                    {getOwnerName(lead)}
                   </span>
                 </td>
                 <td>

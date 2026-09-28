@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -22,6 +22,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const Payments = () => {
     const navigate = useNavigate();
     const [payments, setPayments] = useState([]);
+    const [paymentSummary, setPaymentSummary] = useState(null);
     const [initialLoading, setInitialLoading] = useState(true);
     const [loading, setLoading] = useState(false);
 
@@ -47,25 +48,17 @@ const Payments = () => {
     const [showFilters, setShowFilters] = useState(false);
     const filterRef = useRef(null);
     const buttonRef = useRef(null);
-
-    useEffect(() => {
-        fetchPayments(true);
-    }, []);
-
-    useEffect(() => {
-        if (initialLoading) return;
-        fetchPayments(false);
-    }, [pagination.page, activeFilters]);
+    const initialFetch = useRef(true);
 
     // Search Debounce logic
     useEffect(() => {
         const timer = setTimeout(() => {
-            setActiveFilters(prev => ({ ...prev, search: filterInputs.search }));
+            setActiveFilters(prev => prev.search === filterInputs.search ? prev : ({ ...prev, search: filterInputs.search }));
         }, 500);
         return () => clearTimeout(timer);
     }, [filterInputs.search]);
 
-    const fetchPayments = async (isInitial = false) => {
+    const fetchPayments = useCallback(async (isInitial = false) => {
         try {
             if (isInitial) setInitialLoading(true);
             else setLoading(true);
@@ -83,13 +76,14 @@ const Payments = () => {
             });
 
             if (response.data) {
-                // Assuming data structure: { data: [], total: 0, pages: 0 } or just []
                 const paymentData = response.data.data || (Array.isArray(response.data) ? response.data : []);
                 setPayments(paymentData);
+                setPaymentSummary(response.data.summary || null);
 
                 const totalCount = response.data.total || paymentData.length;
                 setPagination(prev => ({
                     ...prev,
+                    page: response.data.page || prev.page,
                     total: totalCount,
                     pages: response.data.pages || Math.ceil(totalCount / prev.limit)
                 }));
@@ -100,17 +94,25 @@ const Payments = () => {
             setInitialLoading(false);
             setLoading(false);
         }
-    };
+    }, [activeFilters, pagination.limit, pagination.page]);
+
+    useEffect(() => {
+        const isInitialFetch = initialFetch.current;
+        initialFetch.current = false;
+        fetchPayments(isInitialFetch);
+    }, [fetchPayments]);
 
     const getStatusBadgeClass = (status) => {
         const statusClasses = {
-            'Pending': 'status-pending',
-            'Completed': 'status-completed',
-            'Failed': 'status-failed',
-            'Refunded': 'status-refunded'
+            pending: 'status-pending',
+            completed: 'status-completed',
+            failed: 'status-failed',
+            refunded: 'status-refunded'
         };
-        return statusClasses[status] || 'status-default';
+        return statusClasses[status?.toLowerCase()] || 'status-default';
     };
+
+    const formatStatus = (status) => status ? `${status[0].toUpperCase()}${status.slice(1)}` : 'Unknown';
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-IN', {
@@ -126,24 +128,6 @@ const Payments = () => {
             month: 'short',
             day: 'numeric'
         });
-    };
-
-    const getPaymentMethodIcon = (method) => {
-        // Updated to use components or simply better logic if needed, 
-        // but for now keeping it simple as we will render icons directly if possible.
-        const icons = {
-            'Bank Transfer': '🏦',
-            'Credit Card': '💳',
-            'Debit Card': '💳',
-            'Cash': '💵',
-            'Cheque': '📝',
-            'UPI': '📱',
-            'PayPal': '🅿️',
-            'Razorpay': '💰',
-            'Stripe': '💳',
-            'Other': '💰'
-        };
-        return icons[method] || '💰';
     };
 
     const handleRefresh = () => fetchPayments(false);
@@ -163,17 +147,16 @@ const Payments = () => {
     const getActiveCount = () => {
         let count = 0;
         if (filterInputs.status) count++;
-        if (filterInputs.startDate) count++;
+        if (filterInputs.startDate || filterInputs.endDate) count++;
         return count;
     };
 
     const statistics = {
-        total: payments.length,
-        totalAmount: payments.reduce((sum, p) => sum + (p.amount || 0), 0),
-        completed: payments.filter(p => p.status === 'Completed').length,
-        completedAmount: payments.filter(p => p.status === 'Completed').reduce((sum, p) => sum + (p.amount || 0), 0),
-        pending: payments.filter(p => p.status === 'Pending').length,
-        refundedAmount: payments.filter(p => p.status === 'Refunded').reduce((sum, p) => sum + (p.refundedAmount || 0), 0)
+        total: paymentSummary?.total ?? pagination.total,
+        totalAmount: paymentSummary?.totalAmount ?? payments.reduce((sum, payment) => sum + (payment.amount || 0), 0),
+        completed: paymentSummary?.completed ?? payments.filter(payment => payment.status === 'completed').length,
+        completedAmount: paymentSummary?.completedAmount ?? payments.filter(payment => payment.status === 'completed').reduce((sum, payment) => sum + (payment.amount || 0), 0),
+        refundedAmount: paymentSummary?.refundedAmount ?? payments.reduce((sum, payment) => sum + (payment.refundedAmount || 0), 0)
     };
 
     if (initialLoading) {
@@ -326,10 +309,10 @@ const Payments = () => {
                     </div>
                     <div>
                         <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-                            {statistics.pending}
+                            {statistics.total}
                         </div>
                         <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
-                            Pending
+                            Total Payments
                         </div>
                     </div>
                 </div>
@@ -395,8 +378,6 @@ const Payments = () => {
                                     >
                                         <option value="">All Statuses</option>
                                         <option value="Completed">Completed</option>
-                                        <option value="Pending">Pending</option>
-                                        <option value="Failed">Failed</option>
                                         <option value="Refunded">Refunded</option>
                                     </select>
                                     <FiChevronDown className="select-icon" />
@@ -471,7 +452,7 @@ const Payments = () => {
                             payments.map(payment => (
                                 <tr key={payment._id}>
                                     <td className="payment-number" style={{ fontWeight: '600', color: 'var(--primary-color)' }}>
-                                        {payment.paymentNumber}
+                                        {payment.paymentNumber || `PAY-${payment._id.slice(-8).toUpperCase()}`}
                                     </td>
                                     <td>
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -483,7 +464,7 @@ const Payments = () => {
                                                 {payment.invoice?.invoiceNumber || 'N/A'}
                                             </span>
                                             <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-                                                {payment.account?.companyName || 'Inter-account transfer'}
+                                                {payment.invoice?.client?.company || payment.invoice?.client?.name || 'Customer unavailable'}
                                             </span>
                                         </div>
                                     </td>
@@ -491,7 +472,7 @@ const Payments = () => {
                                         <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>
                                             {formatCurrency(payment.amount)}
                                         </div>
-                                        {payment.status === 'Refunded' && payment.refundedAmount > 0 && (
+                                        {payment.refundedAmount > 0 && (
                                             <div className="refunded-amount" style={{ color: 'var(--error)', fontSize: '11px' }}>
                                                 -{formatCurrency(payment.refundedAmount)}
                                             </div>
@@ -499,12 +480,12 @@ const Payments = () => {
                                     </td>
                                     <td>
                                         <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                                            {formatDate(payment.paymentDate)}
+                                            {formatDate(payment.paidAt || payment.paymentDate)}
                                         </div>
                                     </td>
                                     <td>
                                         <span className={`status-badge ${getStatusBadgeClass(payment.status)}`}>
-                                            {payment.status}
+                                            {formatStatus(payment.status)}
                                         </span>
                                     </td>
                                     <td className="actions">

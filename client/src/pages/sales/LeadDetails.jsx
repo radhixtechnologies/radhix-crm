@@ -336,7 +336,7 @@ const LeadDetails = () => {
           </div>
           <div className="metric-content">
             <span className="metric-label">Owner</span>
-            <div className="metric-value">{lead.assignedTo?.user?.name || 'Unassigned'}</div>
+            <div className="metric-value">{lead.assignedTo?.user?.name || lead.assignedTo?.employeeId || 'Unassigned'}</div>
           </div>
         </div>
       </section>
@@ -465,7 +465,7 @@ const LeadDetails = () => {
                   <span className="info-label">Assigned</span>
                   <div className="info-value-with-avatar">
                     <div className="mini-avatar">{getInitials(lead.assignedTo?.user?.name)}</div>
-                    <span>{lead.assignedTo?.user?.name || 'Unassigned'}</span>
+                    <span>{lead.assignedTo?.user?.name || lead.assignedTo?.employeeId || 'Unassigned'}</span>
                   </div>
                 </div>
                 <div className="info-item-compact">

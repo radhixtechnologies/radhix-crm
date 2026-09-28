@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiSearch, FiFilter, FiX, FiChevronDown, FiChevronUp, FiRefreshCw, FiDollarSign, FiCheckCircle, FiClock, FiFileText } from 'react-icons/fi';
 import { financeService } from '../../services/financeService';
@@ -29,6 +29,7 @@ const ExpenseList = () => {
   const [showFilters, setShowFilters] = useState(false);
   const filterRef = useRef(null);
   const buttonRef = useRef(null);
+  const initialFetch = useRef(true);
 
   // API State for active filters
   const [activeFilters, setActiveFilters] = useState({
@@ -49,20 +50,7 @@ const ExpenseList = () => {
 
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
 
-  // Initial load
-  useEffect(() => {
-    fetchExpenses(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Fetch when Debounced Search OR Active Filters change (NOT inputs)
-  useEffect(() => {
-    if (!initialLoading) {
-      fetchExpenses(false);
-    }
-  }, [debouncedSearch, activeFilters, pagination.page]);
-
-  const fetchExpenses = async (isInitialLoad = false) => {
+  const fetchExpenses = useCallback(async (isInitialLoad = false) => {
     try {
       if (isInitialLoad) setInitialLoading(true);
       else setLoading(true);
@@ -77,7 +65,7 @@ const ExpenseList = () => {
       const res = await financeService.getExpenses(params);
       if (res.data.success) {
         setExpenses(res.data.data || []);
-        setPagination({ ...pagination, total: res.data.total || 0, pages: res.data.pages || 0 });
+        setPagination(current => ({ ...current, total: res.data.total || 0, pages: res.data.pages || 0 }));
       }
     } catch (error) {
       console.error('Error fetching expenses:', error);
@@ -85,7 +73,13 @@ const ExpenseList = () => {
       if (isInitialLoad) setInitialLoading(false);
       else setLoading(false);
     }
-  };
+  }, [activeFilters, debouncedSearch, pagination.limit, pagination.page]);
+
+  useEffect(() => {
+    const isInitialLoad = initialFetch.current;
+    initialFetch.current = false;
+    fetchExpenses(isInitialLoad);
+  }, [fetchExpenses]);
 
   const handleApplyFilters = () => {
     setActiveFilters(filterInputs);
@@ -114,7 +108,7 @@ const ExpenseList = () => {
       try {
         await financeService.deleteExpense(id);
         fetchExpenses();
-      } catch (error) {
+      } catch {
         alert('Failed to delete expense');
       }
     }

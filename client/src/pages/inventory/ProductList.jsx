@@ -78,8 +78,8 @@ const ProductList = () => {
     };
 
     const filteredProducts = products.filter(product => {
-        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.sku.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.sku?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = !selectedCategory || product.category === selectedCategory;
         return matchesSearch && matchesCategory;
     });
@@ -231,7 +231,7 @@ const ProductList = () => {
                     </div>
                     <div>
                         <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-                            ${products.reduce((sum, p) => sum + (p.price * p.stockQuantity), 0).toLocaleString()}
+                            ${products.reduce((sum, p) => sum + ((p.unitPrice ?? p.price ?? 0) * p.stockQuantity), 0).toLocaleString()}
                         </div>
                         <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
                             Total Value
@@ -303,7 +303,7 @@ const ProductList = () => {
                                     <td className="category-cell">
                                         <span className="category-badge">{product.category.replace('_', ' ')}</span>
                                     </td>
-                                    <td className="price-cell">${product.price.toFixed(2)}</td>
+                                    <td className="price-cell">${Number(product.unitPrice ?? product.price ?? 0).toFixed(2)}</td>
                                     <td className="stock-cell">
                                         <span className={`stock-quantity ${isLowStock(product) ? 'low' : ''}`}>
                                             {product.stockQuantity} {product.unit}

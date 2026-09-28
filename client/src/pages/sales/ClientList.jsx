@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiSearch, FiFilter, FiChevronUp, FiChevronDown, FiUsers, FiCheckCircle, FiXCircle, FiTarget } from 'react-icons/fi';
-import { salesService } from '../../services/salesService';
+import { salesService, normalizeSalesListResponse } from '../../services/salesService';
 import ClientTable from '../../components/Sales/ClientTable';
 import Loader from '../../components/common/Loader';
 import '../../styles/employee/timesheets.css';
@@ -59,9 +59,16 @@ const ClientList = () => {
       });
 
       const res = await salesService.getClients(params);
-      if (res.data.success) {
-        setClients(res.data.data || []);
-        setPagination({ ...pagination, total: res.data.total || 0, pages: res.data.pages || 0 });
+      const normalized = normalizeSalesListResponse(res);
+      if (normalized.success) {
+        setClients(normalized.data || []);
+        setPagination(prev => ({
+          ...prev,
+          page: normalized.page,
+          limit: normalized.limit,
+          total: normalized.total,
+          pages: normalized.pages,
+        }));
       }
     } catch (error) {
       console.error('Error fetching clients:', error);

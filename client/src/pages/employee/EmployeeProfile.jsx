@@ -45,7 +45,10 @@ const EmployeeProfile = () => {
   const fetchEmployee = async () => {
     try {
       setError(null);
-      const res = await employeeService.getEmployee(id);
+      const res = id === 'me'
+        ? await employeeService.getMyProfile()
+        : await employeeService.getEmployee(id);
+
       if (res.data.success) {
         setEmployee(res.data.data);
         setForms(prev => ({

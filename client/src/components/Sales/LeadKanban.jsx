@@ -134,7 +134,7 @@ const LeadKanban = ({ leads, onUpdate, loading }) => {
                                             {lead.assignedTo && (
                                                 <div className="info-row">
                                                     <FiUser />
-                                                    <span>{lead.assignedTo.user?.name || 'Assigned'}</span>
+                                                    <span>{lead.assignedTo.user?.name || lead.assignedTo.employeeId || 'Assigned'}</span>
                                                 </div>
                                             )}
                                         </div>

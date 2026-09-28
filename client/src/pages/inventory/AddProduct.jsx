@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiArrowLeft, FiSave } from 'react-icons/fi';
 import api from '../../services/api';
@@ -35,17 +35,24 @@ const AddProduct = () => {
         { value: 'other', label: 'Other' }
     ];
 
-    useEffect(() => {
-        if (isEdit) {
-            fetchProduct();
-        }
-    }, [id]);
-
-    const fetchProduct = async () => {
+    const fetchProduct = useCallback(async () => {
         try {
             const res = await api.get(`/inventory/products/${id}`);
             if (res.data.success) {
-                setFormData(res.data.data);
+                const product = res.data.data;
+                setFormData({
+                    name: product.name || '',
+                    sku: product.sku || '',
+                    description: product.description || '',
+                    category: product.category || 'other',
+                    unit: product.unit || 'pcs',
+                    price: product.unitPrice ?? product.price ?? '',
+                    costPrice: product.costPrice ?? '',
+                    stockQuantity: product.stockQuantity ?? 0,
+                    minStockLevel: product.minStockLevel ?? 5,
+                    taxRate: product.taxRate ?? 0,
+                    status: product.status || (product.isActive ? 'active' : 'inactive'),
+                });
             }
         } catch (error) {
             console.error('Error fetching product:', error);
@@ -54,7 +61,11 @@ const AddProduct = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, navigate]);
+
+    useEffect(() => {
+        if (isEdit) fetchProduct();
+    }, [fetchProduct, isEdit]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -74,12 +85,21 @@ const AddProduct = () => {
 
         try {
             setSaving(true);
+            const { price, ...productFields } = formData;
+            const payload = {
+                ...productFields,
+                unitPrice: Number(price),
+                costPrice: Number(formData.costPrice || 0),
+                stockQuantity: Number(formData.stockQuantity || 0),
+                minStockLevel: Number(formData.minStockLevel || 0),
+                taxRate: Number(formData.taxRate || 0),
+            };
 
             if (isEdit) {
-                await api.put(`/inventory/products/${id}`, formData);
+                await api.put(`/inventory/products/${id}`, payload);
                 alert('Product updated successfully');
             } else {
-                await api.post('/inventory/products', formData);
+                await api.post('/inventory/products', payload);
                 alert('Product created successfully');
             }
 

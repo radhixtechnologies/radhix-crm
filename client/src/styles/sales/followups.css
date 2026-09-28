@@ -1,11 +1,66 @@
 .followup-list-page {
   padding: 24px;
+  background: linear-gradient(180deg, rgba(59,130,246,0.03), rgba(15,23,42,0.02));
+}
+
+.followup-pulse-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(16,185,129,0.08));
+  border: 1px solid rgba(59,130,246,0.15);
+  border-radius: 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 12px 25px rgba(15, 23, 42, 0.04);
+}
+
+.pulse-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pulse-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #2563eb;
+}
+
+.pulse-copy h2 {
+  margin: 0;
+  font-size: clamp(20px, 2vw, 28px);
+  color: #0f172a;
+}
+
+.pulse-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pulse-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(148,163,184,0.25);
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .followup-table-container {
-  background: var(--bg-primary);
-  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(248,250,252,0.96));
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 18px;
   overflow: hidden;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
 }
 
 .followup-table {

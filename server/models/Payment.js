@@ -7,6 +7,9 @@ const paymentSchema = new mongoose.Schema({
   reference: { type: String, default: '' },
   notes: { type: String, default: '' },
   paidAt: { type: Date, default: Date.now },
+  refundedAmount: { type: Number, default: 0, min: 0 },
+  refundedAt: { type: Date, default: null },
+  refundReason: { type: String, default: '' },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   status: { type: String, enum: ['completed', 'refunded'], default: 'completed' },
 }, { timestamps: true });

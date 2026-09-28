@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supportService } from '../../services/supportService';
 import Loader from '../../components/common/Loader';
@@ -15,11 +15,7 @@ const TicketDetails = () => {
     const [sending, setSending] = useState(false);
     const [isInternal, setIsInternal] = useState(false);
 
-    useEffect(() => {
-        fetchTicket();
-    }, [id]);
-
-    const fetchTicket = async () => {
+    const fetchTicket = useCallback(async () => {
         try {
             setLoading(true);
             const res = await supportService.getTicket(id);
@@ -31,7 +27,11 @@ const TicketDetails = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
+
+    useEffect(() => {
+        fetchTicket();
+    }, [fetchTicket]);
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -80,7 +80,7 @@ const TicketDetails = () => {
                             <div className="title-row">
                                 <h1 className="ticket-title-text">
                                     {ticket.subject}
-                                    <span className="ticket-id-tag">#{ticket.ticketNumber}</span>
+                                    <span className="ticket-id-tag">#{ticket.ticketNumber || ticket._id.slice(-8).toUpperCase()}</span>
                                 </h1>
                                 <span className={`status-badge status-${ticket.status}`}>{ticket.status}</span>
                             </div>
@@ -135,7 +135,7 @@ const TicketDetails = () => {
                                                     <span className="message-time">{formatDate(msg.sentAt)}</span>
                                                 </div>
                                                 <div className="message-bubble">
-                                                    {msg.content}
+                                                    {msg.content || msg.body}
                                                 </div>
                                             </div>
                                         </div>

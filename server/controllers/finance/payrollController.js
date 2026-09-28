@@ -11,9 +11,10 @@ exports.generatePayroll = async (req, res) => {
 		const records = [];
 		for (const employee of employees) {
 			const structure = await SalaryStructure.findOne({ employee: employee._id, isActive: true }).sort({ effectiveFrom: -1 });
-			const basicSalary = structure?.basic || employee.salaryStructure?.basic || employee.salary || 0;
-			const allowances = Number(structure?.allowances || employee.salaryStructure?.hra || 0);
-			const deductions = Number(structure?.deductions || (employee.salaryStructure?.pf || 0) + (employee.salaryStructure?.esi || 0) + (employee.salaryStructure?.tds || 0));
+			const useSubmittedValues = Boolean(req.body.employee) && req.body.basicSalary !== undefined;
+			const basicSalary = useSubmittedValues ? Number(req.body.basicSalary) : Number(structure?.basic || employee.salaryStructure?.basic || employee.salary || 0);
+			const allowances = useSubmittedValues ? Number(req.body.allowances || 0) : Number(structure?.allowances || employee.salaryStructure?.hra || 0);
+			const deductions = useSubmittedValues ? Number(req.body.deductions || 0) : Number(structure?.deductions || (employee.salaryStructure?.pf || 0) + (employee.salaryStructure?.esi || 0) + (employee.salaryStructure?.tds || 0));
 			records.push(await Payroll.findOneAndUpdate({ employee: employee._id, month, year }, { employee: employee._id, month, year, basicSalary, grossSalary: basicSalary + allowances, deductions, netSalary: basicSalary + allowances - deductions, status: 'processed' }, { upsert: true, new: true, runValidators: true }));
 		}
 		res.status(201).json({ success: true, data: records });

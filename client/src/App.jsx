@@ -100,9 +100,11 @@ import CampaignDetails from './pages/marketing/CampaignDetails';
 import MarketingDashboard from './pages/marketing/MarketingDashboard';
 import EmailList from './pages/marketing/EmailList';
 import SegmentList from './pages/marketing/SegmentList';
+import CreateEmail from './pages/marketing/CreateEmail';
 import AddSegment from './pages/marketing/AddSegment';
 import SegmentDetails from './pages/marketing/SegmentDetails';
 import AutomationList from './pages/marketing/AutomationList';
+import AddAutomation from './pages/marketing/AddAutomation';
 import MarketingReports from './pages/marketing/MarketingReports';
 
 // Support Module
@@ -528,6 +530,16 @@ const AppRoutes = () => {
       />
 
       <Route
+        path="/employees/me"
+        element={
+          <ProtectedRoute requiredModule="employee">
+            <Layout>
+              <EmployeeProfile />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/employees/:id"
         element={
           <ProtectedRoute requiredModule="employee">
@@ -616,6 +628,10 @@ const AppRoutes = () => {
             </Layout>
           </ProtectedRoute>
         }
+      />
+      <Route
+        path="/finance/payrol"
+        element={<Navigate to="/finance/payroll" replace />}
       />
       <Route
         path="/finance/payroll/generate"
@@ -1560,6 +1576,26 @@ const AppRoutes = () => {
           <ProtectedRoute requiredModule="marketing">
             <Layout>
               <AutomationList />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/marketing/automations/new"
+        element={
+          <ProtectedRoute requiredModule="marketing">
+            <Layout>
+              <AddAutomation />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/marketing/emails/new"
+        element={
+          <ProtectedRoute requiredModule="marketing">
+            <Layout>
+              <CreateEmail />
             </Layout>
           </ProtectedRoute>
         }

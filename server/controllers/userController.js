@@ -1,8 +1,12 @@
 const User = require('../models/User');
-const Role = require('../models/Role');
 const logActivity = require('../utils/activityLogger');
 const { asyncHandler } = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
+const ADMIN_MODULE_KEYS = ['employee', 'finance', 'sales', 'hrm', 'marketing', 'inventory', 'support', 'reports_analytics'];
+
+const normalizeModuleAccess = (modulesAccess = {}) => Object.fromEntries(
+  ADMIN_MODULE_KEYS.map((module) => [module, modulesAccess[module] === true])
+);
 
 // Helper function to get role slug from user object
 const getRoleSlug = (user) => {
@@ -17,16 +21,9 @@ exports.getUsers = asyncHandler(async (req, res) => {
   const { role, search } = req.query;
   let query = {};
 
-  // Filter by role if provided (convert slug to ObjectId)
+  // User.role is stored as a role slug string, not a Role ObjectId.
   if (role) {
-    const roleDoc = await Role.findOne({ slug: role });
-    if (roleDoc) {
-      query.role = roleDoc._id;
-    } else {
-      // If role not found, return empty list (or should we throw error?)
-      // For filtering, returning empty is safer
-      query.role = null;
-    }
+    query.role = role;
   }
 
   // Search functionality
@@ -41,26 +38,18 @@ exports.getUsers = asyncHandler(async (req, res) => {
 
   // Super admin can see all, admin can see employees and other admins (if permitted)
   if (userRole === 'admin') {
-    // Admin can view 'admin' and 'employee' roles
-    const allowedRoles = await Role.find({ slug: { $in: ['admin', 'employee'] } });
-    const allowedRoleIds = allowedRoles.map(r => r._id);
+    const allowedRoles = ['admin', 'employee'];
 
     // If query.role is already set, ensure it's within allowed roles
     if (query.role) {
-      const isAllowed = allowedRoleIds.some(id => id.toString() === query.role.toString());
-      if (!isAllowed) {
-        // If trying to access forbidden role, return empty
-        query.role = null;
-      }
+      if (!allowedRoles.includes(query.role)) query.role = '__not_allowed__';
     } else {
-      // Limit to allowed roles
-      query.role = { $in: allowedRoleIds };
+      query.role = { $in: allowedRoles };
     }
   }
 
   const users = await User.find(query)
     .select('-password')
-    .populate('role', 'name slug permissions')
     .sort({ createdAt: -1 });
 
   res.status(200).json({
@@ -106,12 +95,7 @@ exports.createAdmin = asyncHandler(async (req, res) => {
     email,
     password,
     role: 'admin',
-    modulesAccess: modulesAccess || {
-      employee: false,
-      finance: false,
-      sales: false,
-      hrm: false,
-    },
+    modulesAccess: normalizeModuleAccess(modulesAccess),
   });
 
   // Log activity
@@ -156,12 +140,7 @@ exports.updateAdminModules = asyncHandler(async (req, res) => {
     throw new AppError('Admin not found', 404);
   }
 
-  admin.modulesAccess = modulesAccess || {
-    employee: false,
-    finance: false,
-    sales: false,
-    hrm: false,
-  };
+  admin.modulesAccess = normalizeModuleAccess(modulesAccess);
   await admin.save();
 
   // Log activity
