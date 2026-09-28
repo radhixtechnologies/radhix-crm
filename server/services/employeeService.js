@@ -482,15 +482,23 @@ class EmployeeService {
    * @returns {Promise<Object>}
    */
   async deleteEmployee(id, currentUser) {
+    const requireIfExists = (modulePath) => {
+      try {
+        return require(modulePath);
+      } catch (error) {
+        if (error.code === 'MODULE_NOT_FOUND') {
+          return null;
+        }
+        throw error;
+      }
+    };
+
     let employee = await employeeRepository.findById(id, { includeDeleted: true });
 
     // Fallback: if not found by Employee ID, try finding by User ID
     if (!employee) {
       const mongoose = require('mongoose');
       if (mongoose.Types.ObjectId.isValid(id)) {
-        // findByUserId already handles soft-deleted check by default? Let's check.
-        // Actually findByUserId has deletedAt: null hardcoded in some versions, 
-        // but we'll try to find any employee for this user.
         const Employee = require('../models/Employee');
         employee = await Employee.findOne({ user: id }).populate('user');
       }
@@ -515,43 +523,59 @@ class EmployeeService {
     }
 
     // 2. Delete Leave Balances
-    const LeaveBalance = require('../models/LeaveBalance');
-    await LeaveBalance.deleteMany({ employee: employeeId });
+    const LeaveBalance = requireIfExists('../models/LeaveBalance');
+    if (LeaveBalance) {
+      await LeaveBalance.deleteMany({ employee: employeeId });
+    }
 
     // 3. Delete Attendance records
-    const Attendance = require('../models/Attendance');
-    await Attendance.deleteMany({ employee: employeeId });
+    const Attendance = requireIfExists('../models/Attendance');
+    if (Attendance) {
+      await Attendance.deleteMany({ employee: employeeId });
+    }
 
     // 4. Delete Tasks (or unassign them)
-    const Task = require('../models/Task');
-    // Option A: Delete tasks assigned to them
-    await Task.deleteMany({ assignedTo: employeeId });
-    // Option B: Delete tasks created by them
-    await Task.deleteMany({ creator: employeeId });
+    const Task = requireIfExists('../models/Task');
+    if (Task) {
+      await Task.deleteMany({ assignedTo: employeeId });
+      await Task.deleteMany({ creator: employeeId });
+    }
 
     // 5. Delete Leaves
-    const Leave = require('../models/Leave');
-    await Leave.deleteMany({ employee: employeeId });
+    const Leave = requireIfExists('../models/Leave');
+    if (Leave) {
+      await Leave.deleteMany({ employee: employeeId });
+    }
 
-    // 6. Delete Salary Slips
-    const SalarySlip = require('../models/SalarySlip');
-    await SalarySlip.deleteMany({ employee: employeeId });
+    // 6. Delete Salary records (Payroll model used in this app; SalarySlip may not exist)
+    const SalaryRecordModel = requireIfExists('../models/SalarySlip') || requireIfExists('../models/Payroll');
+    if (SalaryRecordModel) {
+      await SalaryRecordModel.deleteMany({ employee: employeeId });
+    }
 
     // 7. Delete Performance records
-    const Performance = require('../models/Performance');
-    await Performance.deleteMany({ employee: employeeId });
+    const Performance = requireIfExists('../models/Performance');
+    if (Performance) {
+      await Performance.deleteMany({ employee: employeeId });
+    }
 
     // 8. Delete Asset assignments (or mark as unassigned)
-    const Asset = require('../models/Asset');
-    await Asset.updateMany({ assignedTo: employeeId }, { $set: { assignedTo: null, status: 'available' } });
+    const Asset = requireIfExists('../models/Asset');
+    if (Asset) {
+      await Asset.updateMany({ assignedTo: employeeId }, { $set: { assignedTo: null, status: 'available' } });
+    }
 
     // 9. Delete Timesheets
-    const Timesheet = require('../models/Timesheet');
-    await Timesheet.deleteMany({ employee: employeeId });
+    const Timesheet = requireIfExists('../models/Timesheet');
+    if (Timesheet) {
+      await Timesheet.deleteMany({ employee: employeeId });
+    }
 
-    // 10. Delete Reimbursements
-    const Reimbursement = require('../models/Reimbursement');
-    await Reimbursement.deleteMany({ employee: employeeId });
+    // 10. Delete Reimbursements / expense records if the model exists
+    const Reimbursement = requireIfExists('../models/Reimbursement') || requireIfExists('../models/Expense');
+    if (Reimbursement) {
+      await Reimbursement.deleteMany({ employee: employeeId });
+    }
 
     // Finally, hard delete the employee record
     await employeeRepository.deleteById(employeeId);
