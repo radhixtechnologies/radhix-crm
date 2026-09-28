@@ -36,7 +36,8 @@ class AttendanceService {
       roleSlug === 'hrm_employee' || roleSlug === 'finance_employee' ||
       roleSlug === 'operations_employee' || roleSlug === 'management_employee') {
       const currentEmployee = await employeeRepository.findByUserId(user._id);
-      if (!currentEmployee || currentEmployee._id.toString() !== employeeId) {
+      const targetEmployeeId = employeeId?.toString?.() || String(employeeId);
+      if (!currentEmployee || currentEmployee._id.toString() !== targetEmployeeId) {
         throw new AppError('Not authorized to check in for this employee', 403);
       }
     }
@@ -154,7 +155,8 @@ class AttendanceService {
       roleSlug === 'hrm_employee' || roleSlug === 'finance_employee' ||
       roleSlug === 'operations_employee' || roleSlug === 'management_employee') {
       const currentEmployee = await employeeRepository.findByUserId(user._id);
-      if (!currentEmployee || currentEmployee._id.toString() !== employeeId) {
+      const targetEmployeeId = employeeId?.toString?.() || String(employeeId);
+      if (!currentEmployee || currentEmployee._id.toString() !== targetEmployeeId) {
         throw new AppError('Not authorized to check out for this employee', 403);
       }
     }
