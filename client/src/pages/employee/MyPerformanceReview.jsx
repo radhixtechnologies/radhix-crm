@@ -172,12 +172,18 @@ const MyPerformanceReview = () => {
   const getStatusBadge = (status) => {
     const badges = {
       pending: { class: 'badge-secondary', text: 'Pending', icon: FiClock },
+      draft: { class: 'badge-secondary', text: 'Pending', icon: FiClock },
       self_submitted: { class: 'badge-info', text: 'Self-Review Submitted', icon: FiFileText },
       manager_submitted: { class: 'badge-success', text: 'Completed', icon: FiCheckCircle },
       completed: { class: 'badge-success', text: 'Completed', icon: FiCheckCircle },
     };
     return badges[status] || badges.pending;
   };
+
+  const availableCycles = cycles.filter(cycle => {
+    const review = reviews.find(item => item.appraisalCycle?._id === cycle._id);
+    return !review || review.status === 'pending';
+  });
 
   return (
     <div className="expense-list-page">
@@ -190,10 +196,13 @@ const MyPerformanceReview = () => {
           </p>
         </div>
         <div className="header-actions">
-          {cycles.length > 0 && (
+          {availableCycles.length > 0 && (
             <button
               className="btn btn-primary"
-              onClick={() => setShowSelfReviewModal(true)}
+              onClick={() => {
+                setSelectedCycle(availableCycles[0]._id);
+                setShowSelfReviewModal(true);
+              }}
             >
               <FiPlus />
               Submit Self-Review
@@ -575,68 +584,68 @@ const MyPerformanceReview = () => {
                   </div>
 
                   {/* Self Review Section */}
-                  {review.selfReview?.submittedAt && (
+                  {review.selfAssessment?.submittedAt && (
                     <div className="review-section">
                       <h4 className="review-section-title">
                         <FiUser size={16} style={{ marginRight: '8px' }} />
                         Self-Review
                       </h4>
-                      {review.selfReview.strengths && (
+                      {review.selfAssessment.strengths && (
                         <div>
                           <strong>Strengths:</strong>
-                          <div className="review-content">{review.selfReview.strengths}</div>
+                          <div className="review-content">{review.selfAssessment.strengths}</div>
                         </div>
                       )}
-                      {review.selfReview.weaknesses && (
+                      {review.selfAssessment.weaknesses && (
                         <div style={{ marginTop: '12px' }}>
                           <strong>Weaknesses:</strong>
-                          <div className="review-content">{review.selfReview.weaknesses}</div>
+                          <div className="review-content">{review.selfAssessment.weaknesses}</div>
                         </div>
                       )}
-                      {review.selfReview.achievements && (
+                      {review.selfAssessment.achievements && (
                         <div style={{ marginTop: '12px' }}>
                           <strong>Achievements:</strong>
-                          <div className="review-content">{review.selfReview.achievements}</div>
+                          <div className="review-content">{review.selfAssessment.achievements}</div>
                         </div>
                       )}
-                      {review.selfReview.rating && (
+                      {review.selfAssessment.rating && (
                         <div className="review-rating" style={{ marginTop: '12px' }}>
                           <strong>Self Rating:</strong>
-                          <RatingInput value={review.selfReview.rating} disabled />
+                          <RatingInput value={review.selfAssessment.rating} disabled />
                         </div>
                       )}
                     </div>
                   )}
 
                   {/* Manager Review Section */}
-                  {review.managerReview?.submittedAt && (
+                  {review.managerAssessment?.submittedAt && (
                     <div className="review-section" style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
                       <h4 className="review-section-title">
                         <FiTrendingUp size={16} style={{ marginRight: '8px' }} />
                         Manager Review
                       </h4>
-                      {review.managerReview.strengths && (
+                      {review.managerAssessment.strengths && (
                         <div>
                           <strong>Strengths:</strong>
-                          <div className="review-content">{review.managerReview.strengths}</div>
+                          <div className="review-content">{review.managerAssessment.strengths}</div>
                         </div>
                       )}
-                      {review.managerReview.weaknesses && (
+                      {review.managerAssessment.improvementAreas && (
                         <div style={{ marginTop: '12px' }}>
                           <strong>Weaknesses:</strong>
-                          <div className="review-content">{review.managerReview.weaknesses}</div>
+                          <div className="review-content">{review.managerAssessment.improvementAreas}</div>
                         </div>
                       )}
-                      {review.managerReview.achievements && (
+                      {review.managerAssessment.recommendations && (
                         <div style={{ marginTop: '12px' }}>
                           <strong>Achievements:</strong>
-                          <div className="review-content">{review.managerReview.achievements}</div>
+                          <div className="review-content">{review.managerAssessment.recommendations}</div>
                         </div>
                       )}
-                      {review.managerReview.rating && (
+                      {review.managerAssessment.overallRating && (
                         <div className="review-rating" style={{ marginTop: '12px' }}>
                           <strong>Manager Rating:</strong>
-                          <RatingInput value={review.managerReview.rating} disabled />
+                          <RatingInput value={review.managerAssessment.overallRating} disabled />
                         </div>
                       )}
                       {review.finalRating && (
@@ -647,7 +656,7 @@ const MyPerformanceReview = () => {
                     </div>
                   )}
 
-                  {review.status === 'pending' && !review.selfReview?.submittedAt && (
+                  {review.status === 'pending' && !review.selfAssessment?.submittedAt && (
                     <div style={{ marginTop: '16px', padding: '12px', background: 'var(--surface)', borderRadius: 'var(--radius)', textAlign: 'center' }}>
                       <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0 }}>
                         Self-review not submitted yet
@@ -693,7 +702,7 @@ const MyPerformanceReview = () => {
           title="Submit Self-Review"
         >
           <form onSubmit={handleSelfReviewSubmit}>
-            {cycles.length > 0 && (
+            {availableCycles.length > 0 && (
               <div className="form-group">
                 <label className="form-label">Appraisal Cycle</label>
                 <select
@@ -703,7 +712,7 @@ const MyPerformanceReview = () => {
                   required
                 >
                   <option value="">Select Cycle</option>
-                  {cycles.map(cycle => (
+                  {availableCycles.map(cycle => (
                     <option key={cycle._id} value={cycle._id}>
                       {cycle.name} ({cycle.type.replace('_', '-')})
                     </option>

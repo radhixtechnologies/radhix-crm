@@ -54,7 +54,7 @@ const AllReviews = () => {
       setLoading(true);
       setError(null);
       // Use hrmService to get the actual HRM module reviews
-      const response = await hrmService.getReviews({});
+      const response = await employeeService.getAllReviews({});
       if (response.data.success) {
         setReviews(response.data.data);
       } else {
@@ -107,6 +107,9 @@ const AllReviews = () => {
   const getStatusBadge = (status) => {
     const badges = {
       'draft': { class: 'badge-secondary', text: 'Draft', icon: FiClock },
+      'pending': { class: 'badge-warning', text: 'Pending Self-Review', icon: FiClock },
+      'self_submitted': { class: 'badge-info', text: 'Self-Review Submitted', icon: FiFileText },
+      'manager_submitted': { class: 'badge-info', text: 'Manager Review', icon: FiTrendingUp },
       'self-assessment-pending': { class: 'badge-warning', text: 'Pending Self-Review', icon: FiClock },
       'self-assessment-submitted': { class: 'badge-info', text: 'Self-Review Submitted', icon: FiFileText },
       'manager-review': { class: 'badge-info', text: 'Manager Review', icon: FiTrendingUp },
@@ -157,7 +160,9 @@ const AllReviews = () => {
       <div className="page-header">
         <div>
           <h1 className="page-title">All Performance Reviews</h1>
-          <p className="page-subtitle">View and manage performance reviews for all employees</p>
+          <p className="page-subtitle">
+            {reviews.length} total · {reviews.filter(review => review.status === 'pending' || review.status === 'draft').length} pending · {reviews.filter(review => review.status === 'completed').length} completed
+          </p>
         </div>
       </div>
 
@@ -185,9 +190,8 @@ const AllReviews = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="">All Status</option>
-            <option value="self-assessment-pending">Pending Self-Review</option>
-            <option value="self-assessment-submitted">Self-Review Submitted</option>
-            <option value="manager-review">Manager Reviewing</option>
+            <option value="pending">Pending Self-Review</option>
+            <option value="self_submitted">Self-Review Submitted</option>
             <option value="completed">Completed</option>
           </select>
         </div>
@@ -204,7 +208,7 @@ const AllReviews = () => {
                   <div className="review-header">
                     <div>
                       <h3 className="review-title">
-                        {review.employee?.user?.name || 'N/A'} - {review.reviewCycle?.cycleName || review.reviewCycle?.type || 'Performance Review'}
+                        {review.employee?.user?.name || review.employee?.employeeId || 'N/A'} - {review.appraisalCycle?.name || review.cycle || 'Performance Review'}
                       </h3>
                       <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
                         {review.employee?.employeeId} ({review.employee?.department})
@@ -229,16 +233,16 @@ const AllReviews = () => {
                           <div className="review-content">{review.selfAssessment.achievements}</div>
                         </div>
                       )}
-                      {review.selfAssessment.challenges && (
+                      {review.selfAssessment.weaknesses && (
                         <div style={{ marginTop: '12px' }}>
                           <strong>Challenges:</strong>
-                          <div className="review-content">{review.selfAssessment.challenges}</div>
+                          <div className="review-content">{review.selfAssessment.weaknesses}</div>
                         </div>
                       )}
-                      {review.selfAssessment.overallRating && (
+                      {review.selfAssessment.rating && (
                         <div className="review-rating" style={{ marginTop: '12px' }}>
                           <strong>Self Rating:</strong>
-                          <RatingInput value={review.selfAssessment.overallRating} disabled />
+                          <RatingInput value={review.selfAssessment.rating} disabled />
                         </div>
                       )}
                     </div>
@@ -275,17 +279,19 @@ const AllReviews = () => {
                   {/* Actions: Show for any review that hasn't been completed yet */}
                   {review.status !== 'completed' && (
                     <div style={{ marginTop: '16px', padding: '12px', background: 'var(--surface)', borderRadius: 'var(--radius)' }}>
-                      {review.status === 'self-assessment-pending' && (
+                      {review.status === 'pending' && (
                         <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 8px 0' }}>
                           ℹ️ Employee has not submitted their self-assessment yet.
                         </p>
                       )}
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() => handleManagerReview(review)}
-                      >
-                        <FiEdit2 /> {review.managerAssessment?.overallRating ? 'Edit Manager Assessment' : 'Add Manager Assessment'}
-                      </button>
+                      {(review.status === 'self_submitted' || review.status === 'manager_submitted') && (
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => handleManagerReview(review)}
+                        >
+                          <FiEdit2 /> {review.managerAssessment?.overallRating ? 'Edit Manager Assessment' : 'Add Manager Assessment'}
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

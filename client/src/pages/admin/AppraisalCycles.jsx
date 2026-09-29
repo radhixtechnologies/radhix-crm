@@ -72,6 +72,16 @@ const AppraisalCycles = () => {
     }
   };
 
+  const handleCycleStatus = async (cycle, status) => {
+    try {
+      await employeeService.updateCycle(cycle._id, { status });
+      await fetchCycles();
+    } catch (error) {
+      console.error('Error updating appraisal cycle:', error);
+      alert(error.response?.data?.message || 'Error updating appraisal cycle');
+    }
+  };
+
   const getStatusBadge = (status) => {
     const badges = {
       draft: { class: 'badge-secondary', text: 'Draft', icon: FiClock },
@@ -148,6 +158,16 @@ const AppraisalCycles = () => {
                   <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '12px' }}>
                     Created by: {cycle.createdBy?.name || 'N/A'}
                   </div>
+                  {cycle.status === 'draft' && (
+                    <button className="btn btn-primary btn-sm" style={{ marginTop: '12px' }} onClick={() => handleCycleStatus(cycle, 'active')}>
+                      Start Reviews
+                    </button>
+                  )}
+                  {cycle.status === 'active' && (
+                    <button className="btn btn-secondary btn-sm" style={{ marginTop: '12px' }} onClick={() => handleCycleStatus(cycle, 'completed')}>
+                      Close Cycle
+                    </button>
+                  )}
                 </div>
               );
             })}

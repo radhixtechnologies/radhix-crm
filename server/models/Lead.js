@@ -7,7 +7,7 @@ const leadSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
+    default: '',
   },
   phone: {
     type: String,
@@ -28,8 +28,23 @@ const leadSchema = new mongoose.Schema({
   },
   source: {
     type: String,
-    enum: ['website', 'referral', 'social-media', 'email', 'phone', 'campaign', 'other'],
+    enum: ['website', 'referral', 'social-media', 'email', 'phone', 'campaign', 'meta', 'other'],
     default: 'website',
+  },
+  metaLeadId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+  metaAttribution: {
+    pageId: String,
+    formId: String,
+    campaignId: String,
+    adId: String,
+    adName: String,
+    adsetId: String,
+    adsetName: String,
+    platform: String,
   },
   // Campaign tracking
   campaign: {

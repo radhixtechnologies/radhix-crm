@@ -15,7 +15,7 @@ const isValidEmail = (email) => {
 };
 
 // Helper to normalized Enums
-const VALID_SOURCES = ['website', 'referral', 'social-media', 'email', 'phone', 'campaign', 'other'];
+const VALID_SOURCES = ['website', 'referral', 'social-media', 'email', 'phone', 'campaign', 'meta', 'other'];
 const VALID_STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 
 const normalizeSource = (source) => {

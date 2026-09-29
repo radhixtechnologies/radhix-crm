@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const performanceReviewSchema = new mongoose.Schema({
   employee: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
   reviewer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  appraisalCycle: { type: mongoose.Schema.Types.ObjectId, ref: 'AppraisalCycle' },
   cycle: { type: String, default: '' },
   status: { type: String, default: 'draft' },
   finalRating: { type: Number, min: 1, max: 5 },

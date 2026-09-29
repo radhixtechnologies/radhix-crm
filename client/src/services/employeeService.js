@@ -89,6 +89,7 @@ export const employeeService = {
 
   getCycles: () => api.get('/performance/cycles'),
   createCycle: (data) => api.post('/performance/cycles', data),
+  updateCycle: (id, data) => api.put(`/performance/cycles/${id}`, data),
 
   getTasks: (params) => api.get('/employees/tasks', { params }),
   getTask: (id) => api.get(`/employees/tasks/${id}`),

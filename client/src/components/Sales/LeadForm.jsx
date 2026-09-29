@@ -153,6 +153,7 @@ const LeadForm = ({ lead, onSubmit, onCancel, loading = false }) => {
             <option value="email">Email</option>
             <option value="phone">Phone</option>
             <option value="campaign">Campaign</option>
+            <option value="meta">Meta Instant Form</option>
             <option value="other">Other</option>
           </select>
         </div>

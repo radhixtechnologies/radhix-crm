@@ -213,6 +213,11 @@ app.get('/api/test-pdf/:filename', (req, res) => {
 });
 
 // Body parsing middleware - must come before routes
+app.use(
+  '/api/webhooks/meta',
+  express.raw({ type: 'application/json', limit: '1mb' }),
+  require('./routes/metaLeadWebhook')
+);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

@@ -13,6 +13,7 @@ const {
   getAllReviews,
   createCycle,
   getCycles,
+  updateCycle,
 } = require('../controllers/performanceController');
 
 // Protect all routes
@@ -33,6 +34,7 @@ router.post('/manager-review', authorize('super_admin', 'admin'), submitManagerR
 
 // Appraisal cycle routes
 router.post('/cycles', authorize('super_admin', 'admin'), createCycle); // Only admin can create
+router.put('/cycles/:id', authorize('super_admin', 'admin'), updateCycle);
 router.get('/cycles', getCycles); // All users can view cycles
 
 module.exports = router;
