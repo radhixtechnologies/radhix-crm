@@ -157,6 +157,24 @@ exports.getTasks = asyncHandler(async (req, res) => {
 exports.createTask = asyncHandler(async (req, res) => {
   const { assignedTo, ...taskData } = req.body;
 
+  const normalizedStatusMap = {
+    pending: 'pending',
+    created: 'created',
+    completed: 'completed',
+    'in_progress': 'in_progress',
+    'in-progress': 'in-progress',
+    submitted: 'submitted_for_approval',
+    submitted_for_approval: 'submitted_for_approval',
+    'approved_by_admin': 'approved_by_admin',
+    'approved_by_superadmin': 'approved_by_superadmin',
+    'rejected_by_admin': 'rejected_by_admin',
+    'rejected_by_superadmin': 'rejected_by_superadmin',
+  };
+
+  if (taskData.status) {
+    taskData.status = normalizedStatusMap[taskData.status] || taskData.status;
+  }
+
   let assignedToId;
   const userRole = getRoleSlug(req.user);
   const roleCategory = getRoleCategory(req.user);

@@ -193,7 +193,8 @@ export const AuthProvider = ({ children }) => {
       return true;
     }
 
-    // All users can access employee module (My Profile)
+    // The employee module is core for all authenticated users; some legacy
+    // accounts still have an empty modulesAccess object.
     if (module === 'employee') {
       return true;
     }

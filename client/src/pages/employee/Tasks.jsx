@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { employeeService } from '../../services/employeeService';
-import { FiPlus, FiCheck, FiX, FiClock, FiFilter, FiSend, FiCheckCircle, FiXCircle, FiSearch, FiChevronDown, FiChevronUp, FiDownload, FiFileText } from 'react-icons/fi';
+import { FiPlus, FiCheck, FiX, FiClock, FiFilter, FiSend, FiCheckCircle, FiXCircle, FiSearch, FiChevronDown, FiChevronUp, FiDownload, FiFileText, FiEye } from 'react-icons/fi';
 import Modal from '../../components/common/Modal';
 import TaskDrawer from '../../components/common/TaskDrawer';
 import Loader from '../../components/common/Loader';
@@ -789,6 +789,17 @@ const Tasks = () => {
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <button
+                            className="btn btn-sm btn-secondary"
+                            onClick={() => {
+                              const detail = `${task.title}\n\n${task.description || 'No description'}\n\nStatus: ${formatStatus(task.status)}\nPriority: ${task.priority}\nDue: ${formatDate(task.dueDate)}`;
+                              alert(detail);
+                            }}
+                            title="View Task Details"
+                          >
+                            <FiEye /> View
+                          </button>
+
                           {canSubmitTask(task) && (
                             <button
                               className="btn btn-sm btn-warning"

@@ -9,6 +9,17 @@ import './TaskDrawer.css';
  * Task Creation Drawer Component
  * Clean and simple task creation form with role-based access
  */
+const normalizeTaskStatus = (value) => {
+    const map = {
+        pending: 'pending',
+        created: 'created',
+        completed: 'completed',
+        'in-progress': 'in-progress',
+        in_progress: 'in_progress',
+    };
+    return map[value] || 'created';
+};
+
 const TaskDrawer = ({ isOpen, onClose, onTaskCreated }) => {
     const { user, isAdmin, isSuperAdmin, isEmployee } = useAuth();
     const [employees, setEmployees] = useState([]);
@@ -19,7 +30,7 @@ const TaskDrawer = ({ isOpen, onClose, onTaskCreated }) => {
         assignedTo: '',
         priority: 'medium',
         dueDate: '',
-        status: 'pending',
+        status: 'created',
     });
 
     useEffect(() => {
@@ -46,7 +57,7 @@ const TaskDrawer = ({ isOpen, onClose, onTaskCreated }) => {
         try {
             // For employees, assignedTo will be automatically set to themselves by backend
             // For employees, assignedTo will be automatically set to themselves by backend
-            const submitData = { ...formData };
+            const submitData = { ...formData, status: normalizeTaskStatus(formData.status) };
 
             // Start of fix for 400 Bad Request
             // If user is employee (and not admin), they MUST include assignedTo as their own employee ID for validation
@@ -176,7 +187,7 @@ const TaskDrawer = ({ isOpen, onClose, onTaskCreated }) => {
                 assignedTo: '',
                 priority: 'medium',
                 dueDate: '',
-                status: 'pending',
+                status: 'created',
             });
 
             // Notify parent component
@@ -202,7 +213,7 @@ const TaskDrawer = ({ isOpen, onClose, onTaskCreated }) => {
             assignedTo: '',
             priority: 'medium',
             dueDate: '',
-            status: 'pending',
+            status: 'created',
         });
         onClose();
     };
@@ -341,6 +352,7 @@ const TaskDrawer = ({ isOpen, onClose, onTaskCreated }) => {
                                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                 required
                             >
+                                <option value="created">Created</option>
                                 <option value="pending">Pending</option>
                                 <option value="in-progress">In Progress</option>
                                 <option value="completed">Completed</option>
