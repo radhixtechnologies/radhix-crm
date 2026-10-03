@@ -185,10 +185,17 @@ const Leaves = () => {
     };
 
     const handleApproveReject = async (status) => {
+        const comments = approvalComments.trim();
+        if (status === 'rejected' && !comments) {
+            alert('Rejection reason is required');
+            return;
+        }
+
         try {
             await employeeService.updateLeave(selectedLeave._id, {
                 status,
-                comments: approvalComments || ''
+                comments,
+                ...(status === 'rejected' ? { rejectionReason: comments } : {})
             });
             setShowApprovalModal(false);
             setSelectedLeave(null);
@@ -755,7 +762,7 @@ const Leaves = () => {
 
                         {/* Comments Input */}
                         <div className="form-group">
-                            <label className="form-label">Comments (Optional)</label>
+                            <label className="form-label">Comments (optional for approval, required for rejection)</label>
                             <textarea
                                 className="form-textarea"
                                 value={approvalComments}

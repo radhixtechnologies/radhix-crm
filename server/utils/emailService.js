@@ -2,12 +2,12 @@ const nodemailer = require('nodemailer');
 
 /**
  * Create NodeMailer transporter with Hostinger SMTP configuration
- * Uses exact Hostinger SMTP settings: smtp.hostinger.com:465 with SSL
+ * Uses Hostinger SMTP over SSL on smtp.hostinger.com:465 by default.
  */
 const createTransporter = () => {
   // SMTP credentials must be supplied through the server environment.
   const emailHost = process.env.EMAIL_HOST || 'smtp.hostinger.com';
-  const emailPort = Number.parseInt(process.env.EMAIL_PORT || '587', 10);
+  const emailPort = Number.parseInt(process.env.EMAIL_PORT || '465', 10);
   const emailUser = process.env.EMAIL_USER?.trim();
   const emailPass = process.env.EMAIL_PASS?.trim();
 
