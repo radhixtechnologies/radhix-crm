@@ -8,7 +8,7 @@ import '../../styles/dashboard.css';
 const NotificationDropdown = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
-  const [, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
 

@@ -3,7 +3,6 @@ import { FiX, FiFilter, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import DepartmentFilter from './DepartmentFilter';
 import DateRangeFilter from './DateRangeFilter';
 import RangeSlider from './RangeSlider';
-import { formatCurrency } from '../../utils/format';
 
 /**
  * Advanced Filter Drawer Component
@@ -24,6 +23,9 @@ const FilterDrawer = ({
     showRangeSliders = true,
     showStatusFilter = true,
     showPriorityFilter = false,
+    showSkillsFilter = false,
+    showLocationFilter = false,
+    showManagerFilter = false,
     customFilters = [],
   } = filterConfig;
 
@@ -267,7 +269,7 @@ const FilterDrawer = ({
                         handleFilterUpdate('salaryMin', min);
                         handleFilterUpdate('salaryMax', max);
                       }}
-                      formatValue={formatCurrency}
+                      formatValue={(val) => `$${val.toLocaleString()}`}
                       step={1000}
                     />
                   )}

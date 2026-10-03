@@ -67,7 +67,7 @@ const formatValue = (fieldName, value) => {
 
     // Handle currency
     if (fieldName === 'estimatedValue' || fieldName === 'value') {
-        return `₹${parseFloat(value).toLocaleString('en-IN')}`;
+        return `$${parseFloat(value).toLocaleString()}`;
     }
 
     // Handle dates

@@ -182,7 +182,7 @@ const AddProduct = () => {
                                 <div className="form-group">
                                     <label>Selling Price</label>
                                     <div className="input-prefix">
-                                        <span>₹</span>
+                                        <span>$</span>
                                         <input
                                             type="number"
                                             name="price"
@@ -198,7 +198,7 @@ const AddProduct = () => {
                                 <div className="form-group">
                                     <label>Cost Price</label>
                                     <div className="input-prefix">
-                                        <span>₹</span>
+                                        <span>$</span>
                                         <input
                                             type="number"
                                             name="costPrice"

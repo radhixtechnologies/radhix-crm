@@ -341,14 +341,14 @@ const generateQuotationPDF = async (quotation, company, outputPath) => {
                     .text(item.quantity.toString(), 360, yPos, { width: 35, align: 'right' });
 
                 // Unit Price
-                doc.text(`₹${item.unitPrice.toLocaleString('en-IN')}`, 400, yPos, {
+                doc.text(`${quotation.currencySymbol}${item.unitPrice.toLocaleString('en-IN')}`, 400, yPos, {
                     width: 65,
                     align: 'right'
                 });
 
                 // Amount
                 doc.font(fonts.bold)
-                    .text(`₹${item.lineTotal.toLocaleString('en-IN', {
+                    .text(`${quotation.currencySymbol}${item.lineTotal.toLocaleString('en-IN', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
                     })}`, 470, yPos, { width: 70, align: 'right' });
@@ -388,7 +388,7 @@ const generateQuotationPDF = async (quotation, company, outputPath) => {
             doc.text('Subtotal:', summaryX + 12, yPos);
             doc.font(fonts.regular)
                 .fillColor(colors.text)
-                .text(`₹${quotation.subtotal.toLocaleString('en-IN', {
+                .text(`${quotation.currencySymbol}${quotation.subtotal.toLocaleString('en-IN', {
                     minimumFractionDigits: 2
                 })}`, summaryX + 12, yPos, {
                     width: summaryWidth - 24,
@@ -401,7 +401,7 @@ const generateQuotationPDF = async (quotation, company, outputPath) => {
                 .fillColor(colors.textSecondary)
                 .text('Discount:', summaryX + 12, yPos);
             doc.fillColor(colors.text)
-                .text(`-₹${quotation.totalDiscount.toLocaleString('en-IN', {
+                .text(`-${quotation.currencySymbol}${quotation.totalDiscount.toLocaleString('en-IN', {
                     minimumFractionDigits: 2
                 })}`, summaryX + 12, yPos, {
                     width: summaryWidth - 24,
@@ -413,7 +413,7 @@ const generateQuotationPDF = async (quotation, company, outputPath) => {
             doc.fillColor(colors.textSecondary)
                 .text('Tax:', summaryX + 12, yPos);
             doc.fillColor(colors.text)
-                .text(`+₹${(quotation.totalTaxAmount || 0).toLocaleString('en-IN', {
+                .text(`+${quotation.currencySymbol}${(quotation.totalTaxAmount || 0).toLocaleString('en-IN', {
                     minimumFractionDigits: 2
                 })}`, summaryX + 12, yPos, {
                     width: summaryWidth - 24,
@@ -431,7 +431,7 @@ const generateQuotationPDF = async (quotation, company, outputPath) => {
                 .text('GRAND TOTAL:', summaryX + 12, yPos + 3);
 
             doc.fontSize(12)
-                .text(`₹${quotation.grandTotal.toLocaleString('en-IN', {
+                .text(`${quotation.currencySymbol}${quotation.grandTotal.toLocaleString('en-IN', {
                     minimumFractionDigits: 2
                 })}`, summaryX + 12, yPos + 3, {
                     width: summaryWidth - 24,

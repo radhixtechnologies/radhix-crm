@@ -16,7 +16,7 @@ const HRReports = () => {
 
   // Split state for Search (Instant/Debounced) vs Filters (Manual Apply)
   const [searchQuery, setSearchQuery] = useState('');
-  const [, setDebouncedSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // UI State for inputs
   const [filterInputs, setFilterInputs] = useState({

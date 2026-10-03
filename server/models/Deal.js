@@ -102,9 +102,8 @@ const dealSchema = new mongoose.Schema({
   // Currency for deal value
   currency: {
     type: String,
-    enum: ['INR'],
-    default: 'INR',
-    set: () => 'INR',
+    enum: ['INR', 'USD', 'EUR', 'GBP', 'AUD', 'CAD'],
+    default: 'INR'
   },
   lostReason: {
     type: String,

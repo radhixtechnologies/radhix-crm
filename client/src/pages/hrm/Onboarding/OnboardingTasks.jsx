@@ -32,7 +32,7 @@ const OnboardingTasks = () => {
     try {
       await hrmService.updateOnboardingTask(taskId, { status: 'completed' });
       fetchTasks();
-    } catch {
+    } catch (error) {
       alert('Failed to update task');
     }
   };

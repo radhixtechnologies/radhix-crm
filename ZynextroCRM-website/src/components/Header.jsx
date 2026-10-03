@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import logo from "../assets/radhix-technologies-logo.webp";
+import logo from "../assets/logo.jpg";
 
 function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -21,11 +21,8 @@ function Header() {
 
   // Close mobile menu when route changes
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      setMobileMenuOpen(false);
-      setCompanyDropdownOpen(false);
-    });
-    return () => window.cancelAnimationFrame(frame);
+    setMobileMenuOpen(false);
+    setCompanyDropdownOpen(false);
   }, [location]);
 
   // Prevent body scroll when sidebar is open
@@ -51,7 +48,7 @@ function Header() {
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-2 sm:px-6">
           {/* Logo Section */}
           <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="Radhix Technologies" className="h-10 w-auto object-contain" />
+            <img src={logo} alt="Zynextro CRM" className="h-10 w-auto object-contain" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -127,7 +124,7 @@ function Header() {
                 <div className="absolute top-full left-0 mt-0 w-48 rounded-lg border border-slate-100 bg-white shadow-lg ring-1 ring-black/5 py-1 z-50">
                   <Link
                     to="/terms-and-services"
-                    onClick={() => {
+                    onClick={(e) => {
                       setCompanyDropdownOpen(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
@@ -138,7 +135,7 @@ function Header() {
                   </Link>
                   <Link
                     to="/privacy-policy"
-                    onClick={() => {
+                    onClick={(e) => {
                       setCompanyDropdownOpen(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}

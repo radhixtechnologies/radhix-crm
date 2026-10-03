@@ -12,7 +12,7 @@ const OfferForm = () => {
     const [saving, setSaving] = useState(false);
     const [application, setApplication] = useState(null);
     const [templates, setTemplates] = useState([]);
-    const [, setPolicies] = useState([]);
+    const [policies, setPolicies] = useState([]);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -307,9 +307,22 @@ const OfferForm = () => {
         }));
     };
 
-    
+    const addPolicyReference = () => {
+        const policyId = prompt('Enter policy ID or name:');
+        if (policyId) {
+            setFormData(prev => ({
+                ...prev,
+                policyReferences: [...prev.policyReferences, { policyName: policyId, description: '' }]
+            }));
+        }
+    };
 
-    
+    const removePolicyReference = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            policyReferences: prev.policyReferences.filter((_, i) => i !== index)
+        }));
+    };
 
     // Dynamic action buttons based on status
     const renderActionButtons = () => {

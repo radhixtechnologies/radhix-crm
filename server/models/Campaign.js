@@ -43,9 +43,8 @@ const campaignSchema = new mongoose.Schema({
     },
     currency: {
         type: String,
-        enum: ['INR'],
-        default: 'INR',
-        set: () => 'INR',
+        enum: ['USD', 'EUR', 'GBP', 'INR', 'AUD', 'CAD', 'SGD', 'AED'],
+        default: 'USD',
     },
     actualSpend: {
         type: Number,

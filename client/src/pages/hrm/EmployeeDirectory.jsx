@@ -59,7 +59,7 @@ const EmployeeDirectory = () => {
     sortBy: 'joiningDate-desc'
   });
 
-  const [departments] = useState(['IT', 'HR', 'Finance', 'Sales', 'Management', 'Operations']);
+  const [departments, setDepartments] = useState(['IT', 'HR', 'Finance', 'Sales', 'Management', 'Operations']);
   const [designations, setDesignations] = useState([]);
   const [viewMode, setViewMode] = useState('table'); // 'table' or 'grid'
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });

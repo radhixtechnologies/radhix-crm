@@ -39,7 +39,17 @@ const ConvertLeadModal = ({ lead, onClose, onConvert }) => {
     };
 
     // Get currency symbol
-    const getCurrencySymbol = () => '₹';
+    const getCurrencySymbol = (currency) => {
+        const symbols = {
+            'INR': '₹',
+            'USD': '$',
+            'EUR': '€',
+            'GBP': '£',
+            'AUD': 'A$',
+            'CAD': 'C$'
+        };
+        return symbols[currency] || '₹';
+    };
 
     // Check if lead is qualified
     const isQualified =
@@ -115,7 +125,7 @@ const ConvertLeadModal = ({ lead, onClose, onConvert }) => {
                             <div className="summary-item">
                                 <span className="label">Estimated Value</span>
                                 <span className="value value-highlight">
-                                    {getCurrencySymbol()}{lead.value?.toLocaleString('en-IN') || 0} INR
+                                    {getCurrencySymbol(lead.currency)}{lead.value?.toLocaleString() || 0} {lead.currency || 'INR'}
                                 </span>
                             </div>
                         </div>

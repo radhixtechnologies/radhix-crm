@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 import { FiSearch, FiTarget, FiTrendingUp, FiCheckCircle, FiClock, FiFilter, FiChevronDown, FiChevronUp, FiX } from 'react-icons/fi';
 import { useRef } from 'react';
 import { hrmService } from '../../../services/hrmService';
@@ -7,7 +7,7 @@ import Loader from '../../../components/common/Loader';
 import '../../../styles/employee/employees.css';
 
 const PerformanceDashboard = () => {
-  
+  const navigate = useNavigate();
   const [goals, setGoals] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);

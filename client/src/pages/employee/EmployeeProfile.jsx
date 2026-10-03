@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { employeeService } from '../../services/employeeService';
-
+import { hrmService } from '../../services/hrmService';
 import { useAuth } from '../../context/AuthContext';
 import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
@@ -32,7 +32,7 @@ const EmployeeProfile = () => {
 
   // Modal States
   const [modals, setModals] = useState({ edit: false, doc: false, skill: false });
-  const [, setForms] = useState({
+  const [forms, setForms] = useState({
     profile: {},
     doc: { name: '', url: '', type: 'other' },
     skill: { name: '', proficiency: 'intermediate' }

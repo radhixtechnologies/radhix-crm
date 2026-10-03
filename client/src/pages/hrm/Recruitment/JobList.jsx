@@ -121,7 +121,7 @@ const JobList = () => {
       try {
         await hrmService.deleteJobPosting(id);
         fetchJobs();
-      } catch {
+      } catch (error) {
         alert('Failed to delete job posting');
       }
     }
@@ -132,7 +132,7 @@ const JobList = () => {
       await hrmService.publishJobPosting(id);
       fetchJobs();
       alert('Job posting published successfully');
-    } catch {
+    } catch (error) {
       alert('Failed to publish job posting');
     }
   };
@@ -143,7 +143,7 @@ const JobList = () => {
         await hrmService.archiveJobPosting(id);
         fetchJobs();
         alert('Job posting archived successfully');
-      } catch {
+      } catch (error) {
         alert('Failed to archive job posting');
       }
     }

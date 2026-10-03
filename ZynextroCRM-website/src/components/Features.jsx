@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -25,6 +25,7 @@ const imageMap = {
 function Features() {
     const sectionRef = useRef(null);
     const cardsContainerRef = useRef(null);
+    const [activeSection, setActiveSection] = useState(0);
 
     // Helper to render title with specific highlighted text
     const renderTitle = (title, highlighted) => {
@@ -73,6 +74,19 @@ function Features() {
                 anticipatePin: 1,
                 pinSpacing: true,
                 invalidateOnRefresh: true,
+                onUpdate: (self) => {
+                    const progress = self.progress;
+                    const totalDuration = (numCards - 1) * spacing;
+                    const timelinePos = progress * totalDuration;
+
+                    let newIndex = 0;
+                    for (let i = 0; i < numCards; i++) {
+                        if (timelinePos >= i * spacing) {
+                            newIndex = i;
+                        }
+                    }
+                    setActiveSection(newIndex);
+                },
             },
         });
 

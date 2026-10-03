@@ -12,8 +12,8 @@
   bottom: 0;
   width: 68px;
   /* Fixed narrow width */
-  background: var(--background);
-  border-right: 1px solid var(--border);
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
   z-index: 100;
   display: flex;
   flex-direction: column;
@@ -21,8 +21,8 @@
 }
 
 [data-theme='dark'] .sidebar-primary {
-  background: var(--bg-sidebar);
-  border-right-color: var(--border-heavy);
+  background: #111827;
+  border-right-color: #374151;
 }
 
 .primary-logo {
@@ -71,16 +71,14 @@
 }
 
 .primary-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   text-align: center;
   line-height: 1;
   max-width: 100%;
   overflow: hidden;
-  white-space: normal;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .primary-item:hover {
@@ -89,8 +87,8 @@
 }
 
 .primary-item.active {
-  background-color: #eff6ff;
-  color: var(--primary-dark);
+  background-color: #eef2ff;
+  color: #4f46e5;
 }
 
 [data-theme='dark'] .primary-item {
@@ -104,7 +102,7 @@
 
 [data-theme='dark'] .primary-item.active {
   background-color: rgba(79, 70, 229, 0.15);
-  color: var(--primary-light);
+  color: #818cf8;
 }
 
 /* ========== SECONDARY SIDEBAR (PANEL) ========== */
@@ -115,9 +113,9 @@
   /* Starts after primary */
   bottom: 0;
   width: 240px;
-  background: var(--surface);
+  background: #f9fafb;
   /* Slightly different bg */
-  border-right: 1px solid var(--border);
+  border-right: 1px solid #e5e7eb;
   z-index: 90;
   display: flex;
   flex-direction: column;
@@ -127,8 +125,8 @@
 }
 
 [data-theme='dark'] .sidebar-secondary {
-  background: var(--bg-sidebar);
-  border-right-color: var(--border-heavy);
+  background: #0f172a;
+  border-right-color: #374151;
 }
 
 .sidebar-secondary.open {
@@ -218,8 +216,8 @@
 }
 
 .secondary-item.active {
-  background-color: #eff6ff;
-  color: var(--primary-dark);
+  background-color: #eef2ff;
+  color: #4f46e5;
   box-shadow: none;
 }
 
@@ -234,7 +232,7 @@
 
 [data-theme='dark'] .secondary-item.active {
   background-color: rgba(79, 70, 229, 0.15);
-  color: var(--primary-light);
+  color: #818cf8;
 }
 
 .secondary-empty {

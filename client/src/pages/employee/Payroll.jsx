@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
 import '../../styles/forms.css';
 
 const Payroll = () => {
-  const {  isAdmin, isSuperAdmin } = useAuth();
+  const { user, isAdmin, isSuperAdmin } = useAuth();
   const [salarySlips, setSalarySlips] = useState([]);
   const [reimbursements, setReimbursements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +17,7 @@ const Payroll = () => {
   const [showReimbursementModal, setShowReimbursementModal] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [selectedReimbursement, setSelectedReimbursement] = useState(null);
-  
+  const [selectedSalarySlip, setSelectedSalarySlip] = useState(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [reimbursementForm, setReimbursementForm] = useState({
     title: '',

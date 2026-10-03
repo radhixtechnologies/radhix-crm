@@ -45,7 +45,7 @@ const offerLetterSchema = new mongoose.Schema({
         monthlyGross: { type: Number, default: 0 },
         annualGross: { type: Number, default: 0 },
         annualCTC: { type: Number, required: true },
-        currency: { type: String, enum: ['INR'], default: 'INR', set: () => 'INR' },
+        currency: { type: String, default: 'USD' },
     },
 
     // Dates

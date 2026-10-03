@@ -28,7 +28,6 @@ const EditLeaveBalanceModal = ({ isOpen, onClose, employee, leaveBalance, onSave
 
   const handleChange = (leaveType, field, value) => {
     const numValue = parseFloat(value) || 0;
-    const currentBalance = formData[leaveType] || {};
     setFormData(prev => ({
       ...prev,
       [leaveType]: {
@@ -38,12 +37,12 @@ const EditLeaveBalanceModal = ({ isOpen, onClose, employee, leaveBalance, onSave
     }));
 
     // Validate: used cannot exceed total
-    if (field === 'used' && numValue > (currentBalance.total || 0)) {
+    if (field === 'used' && numValue > (prev[leaveType]?.total || 0)) {
       setErrors(prev => ({
         ...prev,
         [leaveType]: 'Used days cannot exceed total days',
       }));
-    } else if (field === 'total' && numValue < (currentBalance.used || 0)) {
+    } else if (field === 'total' && numValue < (prev[leaveType]?.used || 0)) {
       setErrors(prev => ({
         ...prev,
         [leaveType]: 'Total days cannot be less than used days',

@@ -5,7 +5,7 @@ import { formatCurrency, formatDate } from '../../utils/format';
 import Modal from '../common/Modal';
 import '../../styles/finance/expenses.css';
 
-const ExpenseTable = ({ expenses, onDelete }) => {
+const ExpenseTable = ({ expenses, onDelete, onPageChange, pagination }) => {
   const navigate = useNavigate();
   const [deleteModal, setDeleteModal] = useState({ open: false, expense: null });
 
@@ -118,9 +118,9 @@ const ExpenseTable = ({ expenses, onDelete }) => {
                 </td>
                 <td>{expense.vendor || 'N/A'}</td>
                 <td>{expense.paymentMethod || 'Bank Transfer'}</td>
-                <td className="amount">{formatCurrency(expense.amount)}</td>
-                <td className="tax">{formatCurrency(expense.tax)}</td>
-                <td className="total-amount">{formatCurrency(expense.total)}</td>
+                <td className="amount">${expense.amount?.toFixed(2) || '0.00'}</td>
+                <td className="tax">${expense.tax?.toFixed(2) || '0.00'}</td>
+                <td className="total-amount">${expense.total?.toFixed(2) || '0.00'}</td>
                 <td>{formatDate(expense.date)}</td>
                 <td>{getStatusBadge(expense.status)}</td>
                 <td className="actions">

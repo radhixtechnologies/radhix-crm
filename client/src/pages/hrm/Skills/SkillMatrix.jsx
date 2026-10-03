@@ -11,7 +11,11 @@ import '../../../styles/hrm/skills.css';
 const SkillMatrix = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const role = typeof user?.role === 'object' ? user.role?.slug : user?.role;
+
+  // If user is not admin/super_admin, render MySkills directly
+  if (user && user.role !== 'admin' && user.role !== 'super_admin') {
+    return <MySkills />;
+  }
 
   const [matrix, setMatrix] = useState({});
   const [initialLoading, setInitialLoading] = useState(true);
@@ -57,7 +61,6 @@ const SkillMatrix = () => {
 
   const fetchData = useCallback(async (isInitialLoad = false) => {
     try {
-      setError('');
       if (isInitialLoad) setInitialLoading(true);
       else setLoading(true);
       setAccessDenied(false);
@@ -91,17 +94,17 @@ const SkillMatrix = () => {
 
   // Initial load
   useEffect(() => {
-    if (user && (role === 'admin' || role === 'super_admin')) {
+    if (user && (user.role === 'admin' || user.role === 'super_admin')) {
       fetchData(true);
     }
-  }, [user, role, fetchData]);
+  }, [user, fetchData]);
 
   // Fetch when Debounced Search OR Active Filters change
   useEffect(() => {
-    if (!initialLoading && user && (role === 'admin' || role === 'super_admin')) {
+    if (!initialLoading && user && (user.role === 'admin' || user.role === 'super_admin')) {
       fetchData(false);
     }
-  }, [debouncedSearch, activeFilters, fetchData, initialLoading, user, role]);
+  }, [debouncedSearch, activeFilters, fetchData, initialLoading, user]);
 
   const handleApplyFilters = () => {
     setActiveFilters(filterInputs);
@@ -181,17 +184,8 @@ const SkillMatrix = () => {
       : 0
   };
 
-  if (user && role !== 'admin' && role !== 'super_admin') return <MySkills />;
   if (accessDenied) return <MySkills />;
   if (initialLoading) return <Loader />;
-  if (error) {
-    return (
-      <div role="alert" className="error-message" style={{ padding: '24px', textAlign: 'center' }}>
-        <p>{error}</p>
-        <button className="btn btn-primary" onClick={() => fetchData(true)}>Retry</button>
-      </div>
-    );
-  }
 
   return (
     <div className="employee-list-page">

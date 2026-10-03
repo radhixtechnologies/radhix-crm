@@ -1,7 +1,20 @@
 import { useState } from 'react';
 import DealCard from './DealCard';
-import { formatCurrency } from '../../utils/format';
 import '../../styles/sales/pipeline.css';
+
+// Utility function to format large numbers
+const formatLargeNumber = (num) => {
+  if (num >= 1000000000) {
+    return (num / 1000000000).toFixed(1) + 'B';
+  }
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
+  return num.toFixed(0);
+};
 
 const PipelineColumn = ({ stage, deals, onDragOver, onDrop, onDealClick }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -13,7 +26,7 @@ const PipelineColumn = ({ stage, deals, onDragOver, onDrop, onDealClick }) => {
     if (onDragOver) onDragOver(e);
   };
 
-  const handleDragLeave = () => {
+  const handleDragLeave = (e) => {
     setIsDragging(false);
   };
 
@@ -42,7 +55,7 @@ const PipelineColumn = ({ stage, deals, onDragOver, onDrop, onDealClick }) => {
           <span className="deal-count-badge">{deals.length}</span>
         </div>
         <div className="column-total">
-          {formatCurrency(totalValue)}
+          ${formatLargeNumber(totalValue)}
         </div>
       </div>
       <div className="deals-container">

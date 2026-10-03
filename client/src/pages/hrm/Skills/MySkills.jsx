@@ -43,7 +43,11 @@ const MySkills = () => {
         return '#6b7280'; // Beginner - gray
     };
 
-    
+    const getGapColor = (gap) => {
+        if (gap >= 4) return '#ef4444'; // Critical - red
+        if (gap >= 2) return '#f59e0b'; // Warning - orange
+        return '#10b981'; // Good - green
+    };
 
     const filteredSkills = selectedCategory === 'all'
         ? skills

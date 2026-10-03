@@ -14,8 +14,6 @@ const MyLeaves = () => {
     const [initialLoading, setInitialLoading] = useState(true);
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
-    const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [selectedLeave, setSelectedLeave] = useState(null);
     const [leaveBalance, setLeaveBalance] = useState(null);
     const [employeeId, setEmployeeId] = useState(null);
 
@@ -303,7 +301,6 @@ const MyLeaves = () => {
                                     <th>Reason</th>
                                     <th>Status</th>
                                     <th>Comments</th>
-                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -332,18 +329,6 @@ const MyLeaves = () => {
                                             <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                 {leave.comments || '-'}
                                             </td>
-                                            <td>
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-sm btn-secondary"
-                                                    onClick={() => {
-                                                        setSelectedLeave(leave);
-                                                        setShowDetailsModal(true);
-                                                    }}
-                                                >
-                                                    View
-                                                </button>
-                                            </td>
                                         </tr>
                                     ))
                                 ) : !loading && (
@@ -358,53 +343,6 @@ const MyLeaves = () => {
                     </div>
                 )}
             </div>
-
-            <Modal
-                isOpen={showDetailsModal}
-                onClose={() => {
-                    setShowDetailsModal(false);
-                    setSelectedLeave(null);
-                }}
-                title="Leave Request Details"
-            >
-                {selectedLeave && (
-                    <div>
-                        <div style={{ display: 'grid', gap: '12px' }}>
-                            <div><strong>Requested By:</strong> {user?.name || 'You'}</div>
-                            <div><strong>Type:</strong> <span style={{ textTransform: 'capitalize' }}>{selectedLeave.type}</span></div>
-                            <div><strong>Start Date:</strong> {formatDate(selectedLeave.startDate)}</div>
-                            <div><strong>End Date:</strong> {formatDate(selectedLeave.endDate)}</div>
-                            <div><strong>Days:</strong> {selectedLeave.days} day(s)</div>
-                            <div><strong>Status:</strong> <span style={{ textTransform: 'capitalize' }}>{selectedLeave.status}</span></div>
-                            <div>
-                                <strong>Reason:</strong>
-                                <div style={{ marginTop: '8px', padding: '12px', background: 'var(--surface)', borderRadius: 'var(--radius)' }}>
-                                    {selectedLeave.reason || 'No reason provided'}
-                                </div>
-                            </div>
-                            <div>
-                                <strong>Admin / Manager Comment:</strong>
-                                <div style={{ marginTop: '8px', padding: '12px', background: 'var(--surface)', borderRadius: 'var(--radius)' }}>
-                                    {selectedLeave.comments || 'No comments yet'}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
-                            <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={() => {
-                                    setShowDetailsModal(false);
-                                    setSelectedLeave(null);
-                                }}
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </Modal>
 
             {/* Create Leave Modal */}
             <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Request Leave">

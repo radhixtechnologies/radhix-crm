@@ -14,7 +14,7 @@ import '../../styles/dashboard/quick-actions.css';
 
 const EmployeeQuickActions = () => {
   const navigate = useNavigate();
-  const {  hasModuleAccess } = useAuth();
+  const { user, hasModuleAccess } = useAuth();
   const { toggleQuickActions, closeQuickActions } = useQuickActions();
 
   const handleAction = (onClick) => {

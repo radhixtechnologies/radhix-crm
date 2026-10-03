@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import '../../styles/employee/tasks.css';
 
 const Tasks = () => {
-  const { user, isAdmin, isSuperAdmin } = useAuth();
+  const { user, isAdmin, isSuperAdmin, isEmployee } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [loading, setLoading] = useState(false);

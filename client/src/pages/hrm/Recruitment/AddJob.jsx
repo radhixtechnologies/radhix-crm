@@ -295,7 +295,7 @@ const AddJob = () => {
                 value={formData.currency}
                 onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
               >
-                <option value="INR">₹ INR</option>
+                <option value="INR">INR</option>
               </select>
             </div>
 

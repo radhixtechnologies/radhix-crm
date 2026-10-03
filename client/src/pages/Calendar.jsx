@@ -122,11 +122,34 @@ const Calendar = () => {
         }
     };
 
-    
+    const goToPrevious = () => {
+        const newDate = new Date(currentDate);
+        if (view === 'day') {
+            newDate.setDate(newDate.getDate() - 1);
+        } else if (view === 'week') {
+            newDate.setDate(newDate.getDate() - 7);
+        } else {
+            newDate.setMonth(newDate.getMonth() - 1);
+        }
+        setCurrentDate(newDate);
+    };
 
-    
+    const goToNext = () => {
+        const newDate = new Date(currentDate);
+        if (view === 'day') {
+            newDate.setDate(newDate.getDate() + 1);
+        } else if (view === 'week') {
+            newDate.setDate(newDate.getDate() + 7);
+        } else {
+            newDate.setMonth(newDate.getMonth() + 1);
+        }
+        setCurrentDate(newDate);
+    };
 
-    
+    const goToToday = () => {
+        setCurrentDate(new Date());
+        setSelectedDate(new Date());
+    };
 
     const getCalendarTitle = () => {
         if (view === 'day') {

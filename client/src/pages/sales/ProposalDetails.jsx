@@ -91,7 +91,17 @@ const ProposalDetails = () => {
         return statusMap[status] || 'badge-draft';
     };
 
-    const getCurrencySymbol = () => '₹';
+    const getCurrencySymbol = (currency) => {
+        const symbols = {
+            'INR': '₹',
+            'USD': '$',
+            'EUR': '€',
+            'GBP': '£',
+            'AUD': 'A$',
+            'CAD': 'C$'
+        };
+        return symbols[currency] || '₹';
+    };
 
     // Helper function to check if a value exists and is not empty
     const hasValue = (value) => {
@@ -239,7 +249,7 @@ const ProposalDetails = () => {
                     <div className="party-box">
                         <h3 className="party-title">From</h3>
                         <div className="party-details">
-                            <p className="company-name">Radhix Technologies</p>
+                            <p className="company-name">Radhix CRM</p>
                             <p>123 Business Street</p>
                             <p>City, State 12345</p>
                             <p>Email: support@radhix.com</p>

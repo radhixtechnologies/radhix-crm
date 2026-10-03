@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-
+import { hrmService } from '../../services/hrmService';
 import { employeeService } from '../../services/employeeService';
 import { FiFileText, FiCheckCircle, FiClock, FiUser, FiTrendingUp, FiEdit2 } from 'react-icons/fi';
 import Loader from '../../components/common/Loader';
@@ -88,7 +88,7 @@ const AllReviews = () => {
     }
 
     try {
-      const response = await employeeService.submitManagerReview(
+      const response = await hrmService.submitManagerAssessment(
         selectedReview._id,
         managerReviewForm
       );

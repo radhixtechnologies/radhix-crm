@@ -51,7 +51,12 @@ const DealDetails = () => {
         }
     };
 
-    const getCurrencySymbol = () => '₹';
+    const getCurrencySymbol = (currency) => {
+        const symbols = {
+            'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AUD': 'A$', 'CAD': 'C$'
+        };
+        return symbols[currency] || '₹';
+    };
 
     const getStageColor = (stage) => {
         const colors = {

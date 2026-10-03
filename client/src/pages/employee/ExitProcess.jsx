@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { employeeService } from '../../services/employeeService';
 import { hrmService } from '../../services/hrmService';
@@ -12,14 +12,14 @@ import '../../styles/forms.css';
 
 const ExitProcess = () => {
   const { id } = useParams();
-  
-  const {  isAdmin, isSuperAdmin } = useAuth();
+  const navigate = useNavigate();
+  const { user, isAdmin, isSuperAdmin } = useAuth();
   const [exitProcess, setExitProcess] = useState(null);
-  const [, setEmployee] = useState(null);
+  const [employee, setEmployee] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showResignationModal, setShowResignationModal] = useState(false);
-  const [, setShowSettlementModal] = useState(false);
+  const [showSettlementModal, setShowSettlementModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [resignationForm, setResignationForm] = useState({
     resignationDate: dayjs().format('YYYY-MM-DD'),

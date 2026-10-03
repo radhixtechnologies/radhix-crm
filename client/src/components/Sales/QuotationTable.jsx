@@ -11,7 +11,7 @@ const QuotationTable = ({ quotations, pagination, onPageChange }) => {
         try {
             await salesService.sendQuotation(id);
             alert('Quotation sent to client successfully');
-        } catch {
+        } catch (error) {
             alert('Failed to send quotation');
         }
     };

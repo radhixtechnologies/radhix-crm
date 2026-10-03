@@ -4,7 +4,7 @@ import { FiCalendar, FiUser, FiTrendingUp, FiBriefcase, FiDollarSign, FiArrowRig
 import { hrmService } from '../../../services/hrmService';
 import { employeeService } from '../../../services/employeeService';
 import Loader from '../../../components/common/Loader';
-import { formatCurrency, formatDate } from '../../../utils/format';
+import { formatDate } from '../../../utils/format';
 import '../../../styles/hrm/lifecycle.css';
 
 const EmployeeTimeline = () => {
@@ -114,7 +114,7 @@ const EmployeeTimeline = () => {
       case 'transfer':
         return `Transferred from ${details.fromLocation || details.oldDepartment || 'Previous Location'} to ${details.toLocation || details.newDepartment || 'New Location'}`;
       case 'compensation_update':
-        return `Salary updated from ${details.oldSalary ? formatCurrency(details.oldSalary) : 'Previous'} to ${details.newSalary ? formatCurrency(details.newSalary) : 'New'}`;
+        return `Salary updated from ${details.oldSalary ? `$${details.oldSalary.toLocaleString()}` : 'Previous'} to ${details.newSalary ? `$${details.newSalary.toLocaleString()}` : 'New'}`;
       case 'role_change':
         return `Role changed from ${details.oldRole || 'Previous Role'} to ${details.newRole || 'New Role'}`;
       case 'department_change':

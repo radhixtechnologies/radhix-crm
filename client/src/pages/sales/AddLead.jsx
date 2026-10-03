@@ -39,32 +39,13 @@ const AddLead = () => {
   const submit = async (event) => {
     event.preventDefault();
     setError('');
-
-    if (!form.name.trim()) {
-      setError('Enter the lead name.');
-      return;
-    }
-
-    if (!form.email.trim() && !form.phone.trim()) {
-      setError('Enter an email address or phone number.');
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      const leadData = {
-        ...form,
-        name: form.name.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        company: form.company.trim(),
-      };
-
       if (id) {
-        await salesService.updateLead(id, leadData);
+        await salesService.updateLead(id, form);
       } else {
-        await salesService.createLead(leadData);
+        await salesService.createLead(form);
       }
       navigate('/sales/leads');
     } catch (requestError) {
@@ -108,7 +89,7 @@ const AddLead = () => {
           <div className="form-grid">
             {[
               { key: 'name', label: 'Name', type: 'text', required: true },
-              { key: 'email', label: 'Email', type: 'email', required: false },
+              { key: 'email', label: 'Email', type: 'email', required: true },
               { key: 'phone', label: 'Phone', type: 'tel', required: false },
               { key: 'company', label: 'Company', type: 'text', required: false },
               { key: 'source', label: 'Source', type: 'select', required: false },
@@ -145,7 +126,6 @@ const AddLead = () => {
                 )}
               </div>
             ))}
-            <p className="form-hint">Enter an email address or phone number.</p>
           </div>
 
           <div className="form-actions">

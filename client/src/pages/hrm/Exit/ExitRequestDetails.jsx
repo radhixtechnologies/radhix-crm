@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { hrmService } from '../../../services/hrmService';
 import { useAuth } from '../../../context/AuthContext';
@@ -6,8 +6,6 @@ import { FiArrowLeft, FiCheckCircle, FiClock, FiFileText, FiDollarSign, FiLock, 
 import Loader from '../../../components/common/Loader';
 import { formatDate } from '../../../utils/format';
 import '../../../styles/hrm/exit.css';
-
-const API_ROOT = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
 
 const ExitRequestDetails = () => {
     const { id } = useParams();
@@ -34,14 +32,14 @@ const ExitRequestDetails = () => {
 
     useEffect(() => {
         fetchExitRequest();
-    }, [fetchExitRequest]);
+    }, [id]);
 
-    const fetchExitRequest = useCallback(async () => {
+    const fetchExitRequest = async () => {
         try {
             setLoading(true);
             const [reqRes, tasksRes, settlementRes] = await Promise.all([
                 hrmService.getExitRequest(id),
-                hrmService.getExitTasks(id).catch(() => ({ data: { data: [] } })), // specific to exit ID
+                hrmService.getExitTasks(id).catch(e => ({ data: { data: [] } })), // specific to exit ID
                 hrmService.getFinalSettlement(id)
                     .then(res => ({ data: res.data }))
                     .catch(e => {
@@ -61,7 +59,7 @@ const ExitRequestDetails = () => {
         } finally {
             setLoading(false);
         }
-    }, [id]);
+    };
 
     const handleApprove = async () => {
         if (!window.confirm('Are you sure you want to approve this exit request?')) return;

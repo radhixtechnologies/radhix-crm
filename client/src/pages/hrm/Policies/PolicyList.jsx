@@ -12,7 +12,7 @@ const PolicyList = () => {
     const [initialLoading, setInitialLoading] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    
+    const [viewMode, setViewMode] = useState('card');
     const [showFilters, setShowFilters] = useState(false);
     const filterRef = useRef(null);
     const buttonRef = useRef(null);

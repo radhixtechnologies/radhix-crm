@@ -1,95 +1,11 @@
 const Payroll = require('../models/Payroll');
 const Employee = require('../models/Employee');
 const SalaryStructure = require('../models/SalaryStructure');
-const employeeRepository = require('../repositories/employeeRepository');
-const { isAdmin } = require('../services/permissionService');
-const fs = require('fs/promises');
-const os = require('os');
-const path = require('path');
 
-const list = async (req, res) => {
-	const admin = await isAdmin(req.user);
-	let filter = {};
-
-	if (admin) {
-		if (req.query.employeeId) filter.employee = req.query.employeeId;
-	} else {
-		const employee = await employeeRepository.findByUserId(req.user._id);
-		if (!employee) return res.json({ success: true, data: [] });
-		filter.employee = employee._id;
-	}
-
-	const slips = await Payroll.find(filter).populate('employee').sort({ year: -1, month: -1 });
-	res.json({ success: true, data: slips });
-};
+const list = async (req, res) => res.json({ success: true, data: await Payroll.find(req.query.employeeId ? { employee: req.query.employeeId } : {}).populate('employee').sort({ year: -1, month: -1 }) });
 
 exports.getSalarySlips = list;
-const findAccessibleSalarySlip = async (req, id) => {
-	const admin = await isAdmin(req.user);
-	const filter = { _id: id };
-	if (!admin) {
-		const employee = await employeeRepository.findByUserId(req.user._id);
-		if (!employee) return null;
-		filter.employee = employee._id;
-	}
-
-	return Payroll.findOne(filter).populate({
-		path: 'employee',
-		populate: { path: 'user', select: 'name email' },
-	});
-};
-
-exports.getSalarySlip = async (req, res) => {
-	const slip = await findAccessibleSalarySlip(req, req.params.id);
-	if (!slip) return res.status(404).json({ success: false, message: 'Salary slip not found' });
-	res.json({ success: true, data: slip });
-};
-exports.downloadSalarySlip = async (req, res) => {
-	let temporaryDirectory;
-	try {
-		const slip = await findAccessibleSalarySlip(req, req.params.id);
-		if (!slip) return res.status(404).json({ success: false, message: 'Salary slip not found' });
-
-		const basicSalary = Number(slip.basicSalary || 0);
-		const grossSalary = Number(slip.grossSalary || 0);
-		const totalDeductions = Number(slip.deductions || 0);
-		temporaryDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'radhix-payslip-'));
-		const pdf = require('../utils/pdfGenerator');
-		const result = await pdf.generateSalarySlipPDF({
-			...slip.toObject(),
-			generatedAt: slip.createdAt,
-			paymentDate: slip.paidAt,
-			earnings: {
-				basic: basicSalary,
-				hra: 0,
-				allowances: Math.max(grossSalary - basicSalary, 0),
-				bonus: 0,
-				overtime: 0,
-				totalEarnings: grossSalary,
-			},
-			deductions: {
-				unpaidLeave: 0,
-				tax: 0,
-				pf: 0,
-				esi: 0,
-				loan: 0,
-				other: totalDeductions,
-				totalDeductions,
-			},
-			netSalary: Number(slip.netSalary ?? grossSalary - totalDeductions),
-		}, slip.employee, {
-			outputDir: temporaryDirectory,
-			fileName: `salary-slip-${slip._id}.pdf`,
-		});
-
-		res.download(result.filePath, result.fileName, () => {
-			fs.rm(temporaryDirectory, { recursive: true, force: true }).catch(() => {});
-		});
-	} catch (error) {
-		if (temporaryDirectory) await fs.rm(temporaryDirectory, { recursive: true, force: true }).catch(() => {});
-		if (!res.headersSent) res.status(500).json({ success: false, message: error.message });
-	}
-};
+exports.getSalarySlip = async (req, res) => res.json({ success: true, data: await Payroll.findById(req.params.id).populate('employee') });
 exports.createSalarySlip = async (req, res) => {
 	try {
 		const employeeId = req.body.employee || req.body.employeeId;

@@ -31,7 +31,6 @@ router.get('/reviews', authorize('super_admin', 'admin'), getAllReviews);
 router.get('/reviews/:employeeId', getReviews);
 router.post('/self-review', submitSelfReview);
 router.post('/manager-review', authorize('super_admin', 'admin'), submitManagerReview);
-router.post('/manager-review/:id', authorize('super_admin', 'admin'), submitManagerReview);
 
 // Appraisal cycle routes
 router.post('/cycles', authorize('super_admin', 'admin'), createCycle); // Only admin can create

@@ -59,6 +59,8 @@ Desktop.ini
 !.vscode/extensions.json
 !.vscode/settings.json
 .idea/
+.agent/
+.gemini/
 *.swp
 *.swo
 *~

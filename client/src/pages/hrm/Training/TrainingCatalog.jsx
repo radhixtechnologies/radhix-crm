@@ -36,7 +36,7 @@ const TrainingCatalog = () => {
     sortBy: 'newest'
   });
 
-  
+  const [pagination, setPagination] = useState({ page: 1, limit: 12, total: 0, pages: 0 });
 
   const [showFilters, setShowFilters] = useState(false);
   const filterRef = useRef(null);

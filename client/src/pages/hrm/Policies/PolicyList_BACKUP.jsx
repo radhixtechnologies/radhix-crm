@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { hrmService } from '../../../services/hrmService';
 import '../../../styles/hrm/policies.css';
@@ -11,8 +11,10 @@ const PolicyList = () => {
     const [initialLoading, setInitialLoading] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [viewMode] = useState('card');
+    const [viewMode, setViewMode] = useState('card');
     const [showFilters, setShowFilters] = useState(false);
+    const filterRef = useRef(null);
+    const buttonRef = useRef(null);
 
     // Split state for Search (Instant/Debounced) vs Filters (Manual Apply)
     const [searchQuery, setSearchQuery] = useState('');
@@ -118,7 +120,6 @@ const PolicyList = () => {
         setFilterInputs(resetState);
         setActiveFilters(resetState);
         setSearchQuery('');
-        setShowFilters(false);
     };
 
     const getActiveCount = () => {
@@ -126,6 +127,33 @@ const PolicyList = () => {
         if (filterInputs.category) count++;
         if (filterInputs.status) count++;
         return count;
+    };
+
+    const handleSendReminders = async (policyId) => {
+        if (!window.confirm('Send reminders to all employees with pending acknowledgments?')) {
+            return;
+        }
+        try {
+            const response = await hrmService.sendPolicyReminders(policyId);
+            alert(response.data.message);
+        } catch (error) {
+            console.error('Error sending reminders:', error);
+            alert('Failed to send reminders');
+        }
+    };
+
+    const handleArchive = async (policyId) => {
+        if (!window.confirm('Are you sure you want to archive this policy?')) {
+            return;
+        }
+        try {
+            await hrmService.deletePolicy(policyId);
+            alert('Policy archived successfully');
+            fetchPolicies();
+        } catch (error) {
+            console.error('Error archiving policy:', error);
+            alert('Failed to archive policy');
+        }
     };
 
     // Calculate Stats
@@ -253,8 +281,8 @@ const PolicyList = () => {
                             <input
                                 type="text"
                                 placeholder="Search policies..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                value={filters.search}
+                                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                             />
                         </div>
 
@@ -266,12 +294,12 @@ const PolicyList = () => {
                                 <FiFilter />
                                 <span>Filters</span>
                                 <FiChevronDown />
-                                {getActiveCount() > 0 && (
+                                {(filters.category || filters.status) && (
                                     <span style={{
                                         background: '#3b82f6', color: 'white', fontSize: '10px',
                                         padding: '0 5px', borderRadius: '10px', marginLeft: '4px'
                                     }}>
-                                        {getActiveCount()}
+                                        {Object.values(filters).filter(v => v && v !== filters.search).length}
                                     </span>
                                 )}
                             </button>
@@ -295,8 +323,8 @@ const PolicyList = () => {
                                             <label>Category</label>
                                             <div className="filter-wrapper">
                                                 <select
-                                                    value={filterInputs.category}
-                                                    onChange={(e) => setFilterInputs({ ...filterInputs, category: e.target.value })}
+                                                    value={filters.category}
+                                                    onChange={(e) => setFilters({ ...filters, category: e.target.value })}
                                                     className="filter-select"
                                                 >
                                                     <option value="">All Categories</option>
@@ -313,8 +341,8 @@ const PolicyList = () => {
                                             <label>Status</label>
                                             <div className="filter-wrapper">
                                                 <select
-                                                    value={filterInputs.status}
-                                                    onChange={(e) => setFilterInputs({ ...filterInputs, status: e.target.value })}
+                                                    value={filters.status}
+                                                    onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                                                     className="filter-select"
                                                 >
                                                     <option value="">All Status</option>
@@ -330,17 +358,17 @@ const PolicyList = () => {
                                     <div className="filter-actions">
                                         <button
                                             className="btn-text-action"
-                                            onClick={handleClearFilters}
+                                            onClick={() => {
+                                                setFilters({ ...filters, category: '', status: '' });
+                                                setShowFilters(false);
+                                            }}
                                             style={{ color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px' }}
                                         >
                                             Clear All
                                         </button>
                                         <button
                                             className="btn-sm-primary"
-                                            onClick={() => {
-                                                handleApplyFilters();
-                                                setShowFilters(false);
-                                            }}
+                                            onClick={() => setShowFilters(false)}
                                             style={{ width: 'auto', padding: '8px 24px' }}
                                         >
                                             Apply

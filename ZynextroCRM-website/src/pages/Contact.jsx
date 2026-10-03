@@ -139,8 +139,8 @@ function Contact() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-slate-900">Email</h3>
-                                        <a href="mailto:info@radhix.com" className="text-slate-600 hover:text-[#4f46e5] transition">
-                                            info@radhix.com
+                                        <a href="mailto:info@zynextro.com" className="text-slate-600 hover:text-[#4f46e5] transition">
+                                            info@zynextro.com
                                         </a>
                                     </div>
                                 </div>

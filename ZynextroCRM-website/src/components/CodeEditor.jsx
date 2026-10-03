@@ -4,7 +4,6 @@ function CodeEditor({ title, language, snippet }) {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 border-b border-slate-100 bg-slate-50 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5">
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-          <span className="text-xs sm:text-sm font-medium text-slate-600">{title}</span>
           <span className="text-xs sm:text-sm font-semibold text-slate-900">
             {language}
           </span>

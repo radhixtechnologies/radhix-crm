@@ -1,7 +1,7 @@
 import { FiPlus } from 'react-icons/fi';
 import '../../styles/mobile-enhancements.css';
 
-const FloatingActionButton = ({ onClick, isActive = false, ariaLabel = "Quick actions" }) => {
+const FloatingActionButton = ({ onClick, isActive = false, icon: Icon = FiPlus, ariaLabel = "Quick actions" }) => {
     return (
         <div className="fab-container">
             <button

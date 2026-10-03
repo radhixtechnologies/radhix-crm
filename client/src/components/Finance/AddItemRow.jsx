@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
-import { formatCurrency } from '../../utils/format';
 import '../../styles/finance/add-item-row.css';
 
 const AddItemRow = ({ item, index, onChange, onDelete, isLast }) => {
@@ -65,7 +64,7 @@ const AddItemRow = ({ item, index, onChange, onDelete, isLast }) => {
           step="0.01"
         />
       </td>
-      <td className="amount">{formatCurrency(quantity * rate)}</td>
+      <td className="amount">${(quantity * rate).toFixed(2)}</td>
       <td>
         {!isLast && (
           <button className="btn-icon btn-error" onClick={() => onDelete(index)} title="Remove">

@@ -545,7 +545,7 @@ const generateAndSendExitDocuments = async (exitRequestId, userId) => {
   const joiningDate = employee?.joiningDate ? new Date(employee.joiningDate).toLocaleDateString('en-GB') : 'N/A';
   const lastWorkingDate = new Date(exitRequest.lastWorkingDate).toLocaleDateString('en-GB');
   const exitType = exitRequest.type || 'resignation';
-  const companyName = process.env.COMPANY_NAME || 'Radhix Technologies';
+  const companyName = process.env.COMPANY_NAME || 'Zynextro CRM';
 
   // Get Signatory (HR Manager who approved, or fallback)
   // We don't have direct access to HR name easily unless we populate approvalFlow deep or use a generic one.

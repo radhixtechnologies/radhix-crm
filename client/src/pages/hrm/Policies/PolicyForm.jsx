@@ -9,7 +9,7 @@ const PolicyForm = () => {
     const isEditMode = Boolean(id);
 
     const [loading, setLoading] = useState(false);
-    const [departments] = useState(['IT', 'HR', 'Finance', 'Sales', 'Management', 'Operations']);
+    const [departments, setDepartments] = useState(['IT', 'HR', 'Finance', 'Sales', 'Management', 'Operations']);
 
     const [formData, setFormData] = useState({
         title: '',

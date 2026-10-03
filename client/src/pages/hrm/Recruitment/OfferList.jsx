@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiEye, FiEdit2, FiSend, FiCheck, FiX, FiClock, FiFileText } from 'react-icons/fi';
 import { hrmService } from '../../../services/hrmService';
 import Loader from '../../../components/common/Loader';
-import { formatCurrency } from '../../../utils/format';
 import '../../../styles/hrm/recruitment.css';
 
 import { useAuth } from '../../../context/AuthContext';
@@ -153,6 +152,10 @@ const OfferList = () => {
     const formatDate = (date) => {
         if (!date) return 'N/A';
         return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    };
+
+    const formatCurrency = (amount, currency = 'INR') => {
+        return `${currency} ${Number(amount || 0).toLocaleString()}`;
     };
 
     if (loading) return <Loader />;

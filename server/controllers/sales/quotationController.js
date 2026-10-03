@@ -24,31 +24,4 @@ exports.createQuotation = async (req, res) => { try { const count = await Quotat
 exports.updateQuotation = async (req, res) => { try { const data = await Quotation.findOneAndUpdate({ _id: req.params.id, isDeleted: { $ne: true } }, { ...req.body, ...calculate(req.body) }, { new: true, runValidators: true }); if (!data) return res.status(404).json({ success: false, message: 'Quotation not found' }); res.json({ success: true, data }); } catch (e) { sendError(res, e); } };
 exports.deleteQuotation = async (req, res) => { try { const data = await Quotation.findByIdAndUpdate(req.params.id, { isDeleted: true }, { new: true }); if (!data) return res.status(404).json({ success: false, message: 'Quotation not found' }); res.json({ success: true, message: 'Quotation deleted' }); } catch (e) { sendError(res, e); } };
 exports.sendQuotation = async (req, res) => { try { const data = await Quotation.findByIdAndUpdate(req.params.id, { status: 'sent', emailSent: true, emailSentAt: new Date() }, { new: true }); if (!data) return res.status(404).json({ success: false, message: 'Quotation not found' }); res.json({ success: true, data, message: 'Quotation marked as sent' }); } catch (e) { sendError(res, e); } };
-exports.generatePDF = async (req, res) => {
-  try {
-    const quotation = await Quotation.findById(req.params.id).populate('client');
-    if (!quotation) return res.status(404).json({ success: false, message: 'Quotation not found' });
-
-    const dir = path.join(__dirname, '../../../uploads/quotations');
-    fs.mkdirSync(dir, { recursive: true });
-    const fileName = `quotation_${quotation.quotationNumber || quotation._id}.pdf`;
-    const filePath = path.join(dir, fileName);
-    const doc = new PDFDocument({ margin: 50 });
-    doc.pipe(fs.createWriteStream(filePath));
-    doc.fontSize(22).text('QUOTATION');
-    doc.moveDown();
-    doc.fontSize(11).text(`Quotation #: ${quotation.quotationNumber || ''}`);
-    doc.text(`Client: ${quotation.client?.name || quotation.customClientDetails?.name || 'N/A'}`);
-    doc.moveDown();
-    (quotation.items || []).forEach(item => doc.text(`${item.description || ''} x ${item.quantity || 0} = ₹${Number(item.unitPrice || 0).toLocaleString('en-IN')}`));
-    doc.moveDown();
-    doc.fontSize(14).text(`Total: ₹${Number(quotation.total || quotation.grandTotal || 0).toLocaleString('en-IN')}`);
-    doc.end();
-    await new Promise((resolve, reject) => { doc.on('end', resolve); doc.on('error', reject); });
-    quotation.pdfUrl = `/uploads/quotations/${fileName}`;
-    await quotation.save();
-    res.json({ success: true, data: quotation });
-  } catch (e) {
-    sendError(res, e);
-  }
-};
+exports.generatePDF = async (req, res) => { try { const quotation = await Quotation.findById(req.params.id).populate('client'); if (!quotation) return res.status(404).json({ success: false, message: 'Quotation not found' }); const dir = path.join(__dirname, '../../../uploads/quotations'); fs.mkdirSync(dir, { recursive: true }); const fileName = `quotation_${quotation.quotationNumber || quotation._id}.pdf`; const filePath = path.join(dir, fileName); const doc = new PDFDocument({ margin: 50 }); doc.pipe(fs.createWriteStream(filePath)); doc.fontSize(22).text('QUOTATION'); doc.moveDown(); doc.fontSize(11).text(`Quotation #: ${quotation.quotationNumber || ''}`); doc.text(`Client: ${quotation.client?.name || quotation.customClientDetails?.name || 'N/A'}`); doc.moveDown(); (quotation.items || []).forEach(item => doc.text(`${item.description || ''} x ${item.quantity || 0} = ${item.unitPrice || 0}`)); doc.moveDown(); doc.fontSize(14).text(`Total: ${quotation.total || quotation.grandTotal || 0} ${quotation.currency || 'INR'}`); doc.end(); await new Promise((resolve, reject) => { doc.on('end', resolve); doc.on('error', reject); }); quotation.pdfUrl = `/uploads/quotations/${fileName}`; await quotation.save(); res.json({ success: true, data: quotation }); } catch (e) { sendError(res, e); } };

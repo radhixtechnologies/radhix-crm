@@ -5,7 +5,7 @@ import { FiFileText, FiCheckCircle, FiClock, FiUser, FiTrendingUp, FiPlus, FiSea
 import Loader from '../../components/common/Loader';
 import RatingInput from '../../components/Performance/RatingInput';
 import Modal from '../../components/common/Modal';
-
+import { formatDate } from '../../utils/format';
 import '../../styles/performance.css';
 import '../../styles/finance/expenses.css';
 

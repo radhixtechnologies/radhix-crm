@@ -51,7 +51,10 @@ const CircularProgressBar = ({
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          style={{ transition: 'stroke-dashoffset 0.5s ease, stroke 0.3s ease' }}
+          style={{ 
+            transition: 'stroke-dashoffset 0.5s ease',
+            transition: 'stroke 0.3s ease'
+          }}
         />
       </svg>
       {/* Center label */}

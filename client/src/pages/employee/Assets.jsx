@@ -4,12 +4,12 @@ import { employeeService } from '../../services/employeeService';
 import { FiPlus, FiEdit, FiTrash2, FiHardDrive, FiUser, FiTool, FiCheck, FiX } from 'react-icons/fi';
 import Modal from '../../components/common/Modal';
 import Loader from '../../components/common/Loader';
-import { formatDate } from '../../utils/format';
+import { formatDate, formatCurrency } from '../../utils/format';
 import dayjs from 'dayjs';
 import '../../styles/forms.css';
 
 const Assets = () => {
-  const {  isAdmin, isSuperAdmin } = useAuth();
+  const { user, isAdmin, isSuperAdmin } = useAuth();
   const [assets, setAssets] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -34,7 +34,7 @@ const proposalSchema = new mongoose.Schema({
   terminationClause: { type: String, default: '' },
   governingLaw: { type: String, default: '' },
   estimatedValue: { type: Number, default: 0 },
-  currency: { type: String, enum: ['INR'], default: 'INR', set: () => 'INR' },
+  currency: { type: String, default: 'INR' },
   language: { type: String, default: 'English' },
   industry: { type: String, default: '' },
   tags: { type: [String], default: [] },

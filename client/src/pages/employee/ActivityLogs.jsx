@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-
+import { useAuth } from '../../context/AuthContext';
 import { employeeService } from '../../services/employeeService';
 import { FiClock, FiUser, FiFileText, FiCheckCircle, FiCalendar, FiTrendingUp, FiActivity, FiXCircle } from 'react-icons/fi';
 import Loader from '../../components/common/Loader';
@@ -9,7 +9,7 @@ import '../../styles/forms.css';
 
 const ActivityLogs = () => {
   const { id } = useParams();
-  
+  const { user, isAdmin, isSuperAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('timeline');
   const [activityLogs, setActivityLogs] = useState([]);
   const [loginHistory, setLoginHistory] = useState([]);

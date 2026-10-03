@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { FiEye, FiEdit2, FiTrash2, FiMoreHorizontal, FiUsers, FiPlus, FiDownload } from 'react-icons/fi';
+import { useState } from 'react';
 
-
-const ContactTable = ({ contacts, pagination, onPageChange }) => {
+const ContactTable = ({ contacts, onDelete, pagination, onPageChange }) => {
     const navigate = useNavigate();
 
     return (

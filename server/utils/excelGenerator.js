@@ -52,7 +52,7 @@ exports.exportInvoicesToExcel = async (invoices) => {
   // Format currency columns
   const currencyColumns = ['subtotal', 'tax', 'discount', 'total'];
   currencyColumns.forEach((col) => {
-    worksheet.getColumn(col).numFmt = '₹#,##0.00';
+    worksheet.getColumn(col).numFmt = '$#,##0.00';
   });
 
   const fileName = `invoices_export_${Date.now()}.xlsx`;
@@ -108,7 +108,7 @@ exports.exportExpensesToExcel = async (expenses) => {
     });
   });
 
-  worksheet.getColumn('amount').numFmt = '₹#,##0.00';
+  worksheet.getColumn('amount').numFmt = '$#,##0.00';
 
   const fileName = `expenses_export_${Date.now()}.xlsx`;
       const uploadsDir = path.join(__dirname, '../../uploads/exports');
@@ -177,7 +177,7 @@ exports.exportPayrollToExcel = async (payrolls) => {
 
   const currencyColumns = ['basic', 'hra', 'allowances', 'grossSalary', 'pf', 'esi', 'tds', 'totalDeductions', 'netSalary'];
   currencyColumns.forEach((col) => {
-    worksheet.getColumn(col).numFmt = '₹#,##0.00';
+    worksheet.getColumn(col).numFmt = '$#,##0.00';
   });
 
   const fileName = `payroll_export_${Date.now()}.xlsx`;

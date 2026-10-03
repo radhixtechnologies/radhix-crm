@@ -27,7 +27,7 @@ const ActivityTimeline = ({ entityType, entityId }) => {
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
-     // Default type
+    const [activeTab, setActiveTab] = useState('note'); // Default type
 
     const [formData, setFormData] = useState({
         subject: '',

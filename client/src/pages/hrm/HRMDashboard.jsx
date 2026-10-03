@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 import { useQuickActions } from '../../context/QuickActionsContext';
 import {
   FiBriefcase,
@@ -38,11 +38,11 @@ import '../../styles/dashboard/superadmin-dashboard-new.css';
 import '../../styles/infinity-edition.css';
 
 const HRMDashboard = () => {
-  
+  const navigate = useNavigate();
   const { isOpen: quickActionsOpen, toggleQuickActions, closeQuickActions } = useQuickActions();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('summary');
-  const [activityPage] = useState(1);
+  const [activityPage, setActivityPage] = useState(1);
 
   // Data states
   const [hrmData, setHrmData] = useState(null);
@@ -54,7 +54,7 @@ const HRMDashboard = () => {
   const [skills, setSkills] = useState([]);
   const [exitRequests, setExitRequests] = useState([]);
   const [attendanceData, setAttendanceData] = useState(null);
-  const [, setNotifications] = useState(null);
+  const [notifications, setNotifications] = useState(null);
   const [activityLog, setActivityLog] = useState(null);
 
   useEffect(() => {
@@ -70,61 +70,61 @@ const HRMDashboard = () => {
       setLoading(true);
 
       // Fetch HRM insights from dashboard service
-      const hrmRes = await dashboardService.getHRMInsights().catch(() => ({ data: { success: false } }));
+      const hrmRes = await dashboardService.getHRMInsights().catch(err => ({ data: { success: false } }));
       if (hrmRes.data?.success) {
         setHrmData(hrmRes.data.data);
       }
 
       // Fetch attendance overview
-      const attendanceRes = await dashboardService.getAttendanceOverview().catch(() => ({ data: { success: false } }));
+      const attendanceRes = await dashboardService.getAttendanceOverview().catch(err => ({ data: { success: false } }));
       if (attendanceRes.data?.success) {
         setAttendanceData(attendanceRes.data.data);
       }
 
       // Fetch employees
-      const employeesRes = await employeeService.getEmployees().catch(() => ({ data: { success: false } }));
+      const employeesRes = await employeeService.getEmployees().catch(err => ({ data: { success: false } }));
       if (employeesRes.data?.success) {
         setEmployees(employeesRes.data.data || []);
       }
 
       // Fetch job postings
-      const jobsRes = await hrmService.getJobPostings().catch(() => ({ data: { success: false } }));
+      const jobsRes = await hrmService.getJobPostings().catch(err => ({ data: { success: false } }));
       if (jobsRes.data?.success) {
         setJobPostings(jobsRes.data.data || []);
       }
 
       // Fetch applications
-      const appsRes = await hrmService.getJobApplications().catch(() => ({ data: { success: false } }));
+      const appsRes = await hrmService.getJobApplications().catch(err => ({ data: { success: false } }));
       if (appsRes.data?.success) {
         setApplications(appsRes.data.data || []);
       }
 
       // Fetch performance reviews
-      const perfRes = await hrmService.getPerformanceReviews().catch(() => ({ data: { success: false } }));
+      const perfRes = await hrmService.getPerformanceReviews().catch(err => ({ data: { success: false } }));
       if (perfRes.data?.success) {
         setPerformance(perfRes.data.data || []);
       }
 
       // Fetch trainings
-      const trainingsRes = await hrmService.getTrainings().catch(() => ({ data: { success: false } }));
+      const trainingsRes = await hrmService.getTrainings().catch(err => ({ data: { success: false } }));
       if (trainingsRes.data?.success) {
         setTrainings(trainingsRes.data.data || []);
       }
 
       // Fetch skills
-      const skillsRes = await hrmService.getSkills().catch(() => ({ data: { success: false } }));
+      const skillsRes = await hrmService.getSkills().catch(err => ({ data: { success: false } }));
       if (skillsRes.data?.success) {
         setSkills(skillsRes.data.data || []);
       }
 
       // Fetch exit requests
-      const exitRes = await hrmService.getExitRequests().catch(() => ({ data: { success: false } }));
+      const exitRes = await hrmService.getExitRequests().catch(err => ({ data: { success: false } }));
       if (exitRes.data?.success) {
         setExitRequests(exitRes.data.data || []);
       }
 
       // Fetch notifications
-      const notificationsRes = await dashboardService.getNotifications().catch(() => ({ data: { success: false } }));
+      const notificationsRes = await dashboardService.getNotifications().catch(err => ({ data: { success: false } }));
       if (notificationsRes.data?.success) {
         setNotifications(notificationsRes.data.data);
       }
@@ -162,8 +162,8 @@ const HRMDashboard = () => {
 
   // Calculate HRM statistics
   const totalEmployees = employees.length || 0;
-  
-  
+  const activeEmployees = employees.filter(e => e.status === 'active').length || 0;
+  const inactiveEmployees = employees.filter(e => e.status === 'inactive').length || 0;
   const newHiresThisMonth = employees.filter(e => {
     const joinDate = new Date(e.joiningDate);
     const now = new Date();
@@ -171,9 +171,9 @@ const HRMDashboard = () => {
   }).length || 0;
 
   const totalApplicants = applications.length || 0;
-  
+  const pendingApplications = applications.filter(a => ['applied', 'screening', 'interview'].includes(a.status)).length || 0;
   const openJobs = jobPostings.filter(j => j.status === 'open').length || 0;
-  
+  const totalJobs = jobPostings.length || 0;
   const interviewsScheduled = hrmData?.upcomingInterviews || 0;
   const hiredThisMonth = applications.filter(a => a.status === 'hired' && new Date(a.updatedAt).getMonth() === new Date().getMonth()).length || 0;
 
@@ -182,7 +182,7 @@ const HRMDashboard = () => {
   const totalSkills = skills.length || 0;
   const verifiedSkills = skills.filter(s => s.verified).length || 0;
 
-  
+  const totalExitRequests = exitRequests.length || 0;
   const pendingExits = exitRequests.filter(e => e.status === 'pending' || e.status === 'approved').length || 0;
 
   const totalPerformanceReviews = performance.length || 0;
@@ -197,7 +197,25 @@ const HRMDashboard = () => {
 
   // Prepare chart data
   // Employee Headcount Trend (Line Chart)
-  
+  const headcountTrendData = employees.slice(0, 12).reverse().map((emp, index) => {
+    const date = new Date(emp.joiningDate);
+    return {
+      month: date.toLocaleDateString('en-US', { month: 'short' }),
+      active: 1,
+      new: emp.status === 'active' ? 1 : 0,
+      inactive: emp.status === 'inactive' ? 1 : 0,
+    };
+  }).reduce((acc, item) => {
+    const existing = acc.find(a => a.month === item.month);
+    if (existing) {
+      existing.active += item.active;
+      existing.new += item.new;
+      existing.inactive += item.inactive;
+    } else {
+      acc.push(item);
+    }
+    return acc;
+  }, []).slice(-12) || [];
 
   // Department Distribution (Bar Chart)
   const departmentData = employees.reduce((acc, emp) => {
@@ -216,7 +234,7 @@ const HRMDashboard = () => {
   }));
 
   // Hiring Trend (Bar Chart)
-  const hiringTrendData = applications.slice(0, 12).reverse().map((app) => {
+  const hiringTrendData = applications.slice(0, 12).reverse().map((app, index) => {
     const date = new Date(app.createdAt);
     return {
       month: date.toLocaleDateString('en-US', { month: 'short' }),
@@ -260,10 +278,10 @@ const HRMDashboard = () => {
   }));
 
   // Calculate percentage changes
-  
-  
-  
-  
+  const employeesChange = newHiresThisMonth > 0 ? `+${newHiresThisMonth}` : '0';
+  const applicantsChange = totalApplicants > 0 ? '+12%' : '0%';
+  const jobsChange = openJobs > 0 ? '+5%' : '0%';
+  const interviewsChange = interviewsScheduled > 0 ? '+8%' : '0%';
 
   return (
     <div className="superadmin-dashboard-new">

@@ -57,12 +57,12 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
         .fillColor('#ffffff')
         .fontSize(28)
         .font('Helvetica-Bold')
-        .text('Radhix Technologies', 50, 30)
+        .text('ZYnextro', 50, 30)
         .fontSize(12)
         .font('Helvetica')
-        .text('Digital Services & Technology', 50, 60)
+        .text('Technology Consulting', 50, 60)
         .fontSize(10)
-        .text('Web, app, brand, and marketing solutions', 50, 80);
+        .text('Software Development & IT Solutions', 50, 80);
 
       // Invoice title
       doc
@@ -93,11 +93,11 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
         .fontSize(10)
         .font('Helvetica')
         .fillColor('#000000')
-        .text('Radhix Technologies', 50, yPos + 20)
-        .text('Web, app, brand, and marketing solutions', 50, yPos + 35)
-        .text('Email: info@radhix.com', 50, yPos + 50)
-        .text('Phone: +91 70427 93777', 50, yPos + 65)
-        .text('Website: https://radhix.com', 50, yPos + 80);
+        .text('Zynextro Technology Consulting', 50, yPos + 20)
+        .text('Software Development & IT Solutions', 50, yPos + 35)
+        .text('Email: info@zynextro.com', 50, yPos + 50)
+        .text('Phone: +1 (555) 123-4567', 50, yPos + 65)
+        .text('Website: www.zynextro.com', 50, yPos + 80);
 
       // Client information section
       doc
@@ -212,12 +212,12 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
 
         // Rate
         doc
-          .text(`₹${(item.rate || 0).toFixed(2)}`, 420, itemYPos);
+          .text(`$${(item.rate || 0).toFixed(2)}`, 420, itemYPos);
 
         // Amount
         doc
           .font('Helvetica-Bold')
-          .text(`₹${(item.amount || 0).toFixed(2)}`, 480, itemYPos);
+          .text(`$${(item.amount || 0).toFixed(2)}`, 480, itemYPos);
 
         // Tax rate if applicable
         if (item.taxRate && item.taxRate > 0) {
@@ -241,7 +241,7 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
         .font('Helvetica')
         .fillColor('#000000')
         .text('Subtotal:', totalsX, yPos)
-        .text(`₹${invoice.subtotal.toFixed(2)}`, totalsX + 100, yPos, { align: 'right' });
+        .text(`$${invoice.subtotal.toFixed(2)}`, totalsX + 100, yPos, { align: 'right' });
       yPos += 18;
 
       // Discount
@@ -249,7 +249,7 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
         doc
           .text('Discount:', totalsX, yPos)
           .fillColor('#dc2626')
-          .text(`-₹${invoice.discount.toFixed(2)}`, totalsX + 100, yPos, { align: 'right' });
+          .text(`-$${invoice.discount.toFixed(2)}`, totalsX + 100, yPos, { align: 'right' });
         doc.fillColor('#000000');
         yPos += 18;
       }
@@ -258,7 +258,7 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
       if (invoice.shipping > 0) {
         doc
           .text('Shipping:', totalsX, yPos)
-          .text(`₹${invoice.shipping.toFixed(2)}`, totalsX + 100, yPos, { align: 'right' });
+          .text(`$${invoice.shipping.toFixed(2)}`, totalsX + 100, yPos, { align: 'right' });
         yPos += 18;
       }
 
@@ -266,7 +266,7 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
       if (invoice.additionalCharges > 0) {
         doc
           .text('Additional Charges:', totalsX, yPos)
-          .text(`₹${invoice.additionalCharges.toFixed(2)}`, totalsX + 100, yPos, { align: 'right' });
+          .text(`$${invoice.additionalCharges.toFixed(2)}`, totalsX + 100, yPos, { align: 'right' });
         yPos += 18;
       }
 
@@ -274,7 +274,7 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
       if (invoice.tax > 0) {
         doc
           .text(`Tax (${invoice.taxRate || 0}%):`, totalsX, yPos)
-          .text(`₹${invoice.tax.toFixed(2)}`, totalsX + 100, yPos, { align: 'right' });
+          .text(`$${invoice.tax.toFixed(2)}`, totalsX + 100, yPos, { align: 'right' });
         yPos += 18;
       }
 
@@ -296,7 +296,7 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
         .fillColor(darkColor)
         .text('Total Amount:', totalsX, yPos + 5)
         .fontSize(14)
-        .text(`₹${invoice.total.toFixed(2)}`, totalsX + 100, yPos + 3, { align: 'right' });
+        .text(`$${invoice.total.toFixed(2)}`, totalsX + 100, yPos + 3, { align: 'right' });
 
       // Payment information
       yPos += 50;
@@ -313,7 +313,7 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
             .fontSize(9)
             .font('Helvetica')
             .fillColor('#000000')
-            .text(`Amount Paid: ₹${invoice.amountPaid.toFixed(2)}`, 50, yPos);
+            .text(`Amount Paid: $${invoice.amountPaid.toFixed(2)}`, 50, yPos);
           yPos += 15;
         }
 
@@ -321,7 +321,7 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
           doc
             .font('Helvetica-Bold')
             .fillColor('#dc2626')
-            .text(`Balance Due: ₹${invoice.balanceDue.toFixed(2)}`, 50, yPos);
+            .text(`Balance Due: $${invoice.balanceDue.toFixed(2)}`, 50, yPos);
           yPos += 15;
         } else if (invoice.amountPaid >= invoice.total) {
           doc
@@ -372,7 +372,7 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
         .font('Helvetica')
         .fillColor(textGray)
         .text('Thank you for your business!', 50, pageHeight - 70, { align: 'center' })
-        .text('For any questions regarding this invoice, please contact us at info@radhix.com', 50, pageHeight - 55, { align: 'center', width: 495 })
+        .text('For any questions regarding this invoice, please contact us at info@zynextro.com', 50, pageHeight - 55, { align: 'center', width: 495 })
         .text('This is a computer-generated invoice and does not require a signature.', 50, pageHeight - 40, { align: 'center' });
 
       // Status badge
@@ -503,37 +503,37 @@ exports.generatePayrollPDF = async (payroll, employee) => {
       doc
         .font('Helvetica')
         .text('Basic Salary', 50, yPos)
-        .text(`₹${payroll.salaryStructure.basic.toFixed(2)}`, 400, yPos);
+        .text(`$${payroll.salaryStructure.basic.toFixed(2)}`, 400, yPos);
 
       yPos += 20;
       doc
         .text('HRA', 50, yPos)
-        .text(`₹${payroll.salaryStructure.hra.toFixed(2)}`, 400, yPos);
+        .text(`$${payroll.salaryStructure.hra.toFixed(2)}`, 400, yPos);
 
       yPos += 20;
       doc
         .text('Allowances', 50, yPos)
-        .text(`₹${payroll.salaryStructure.allowances.toFixed(2)}`, 400, yPos);
+        .text(`$${payroll.salaryStructure.allowances.toFixed(2)}`, 400, yPos);
 
       if (payroll.overtime.amount > 0) {
         yPos += 20;
         doc
           .text(`Overtime (${payroll.overtime.hours} hrs)`, 50, yPos)
-          .text(`₹${payroll.overtime.amount.toFixed(2)}`, 400, yPos);
+          .text(`$${payroll.overtime.amount.toFixed(2)}`, 400, yPos);
       }
 
       if (payroll.bonuses > 0) {
         yPos += 20;
         doc
           .text('Bonuses', 50, yPos)
-          .text(`₹${payroll.bonuses.toFixed(2)}`, 400, yPos);
+          .text(`$${payroll.bonuses.toFixed(2)}`, 400, yPos);
       }
 
       yPos += 25;
       doc
         .font('Helvetica-Bold')
         .text('Gross Salary', 50, yPos)
-        .text(`₹${payroll.salaryStructure.grossSalary.toFixed(2)}`, 400, yPos);
+        .text(`$${payroll.salaryStructure.grossSalary.toFixed(2)}`, 400, yPos);
 
       yPos += 30;
       doc
@@ -551,30 +551,30 @@ exports.generatePayrollPDF = async (payroll, employee) => {
       doc
         .font('Helvetica')
         .text('PF', 50, yPos)
-        .text(`₹${payroll.salaryStructure.pf.toFixed(2)}`, 400, yPos);
+        .text(`$${payroll.salaryStructure.pf.toFixed(2)}`, 400, yPos);
 
       yPos += 20;
       doc
         .text('ESI', 50, yPos)
-        .text(`₹${payroll.salaryStructure.esi.toFixed(2)}`, 400, yPos);
+        .text(`$${payroll.salaryStructure.esi.toFixed(2)}`, 400, yPos);
 
       yPos += 20;
       doc
         .text('TDS', 50, yPos)
-        .text(`₹${payroll.salaryStructure.tds.toFixed(2)}`, 400, yPos);
+        .text(`$${payroll.salaryStructure.tds.toFixed(2)}`, 400, yPos);
 
       if (payroll.salaryStructure.otherDeductions > 0) {
         yPos += 20;
         doc
           .text('Other Deductions', 50, yPos)
-          .text(`₹${payroll.salaryStructure.otherDeductions.toFixed(2)}`, 400, yPos);
+          .text(`$${payroll.salaryStructure.otherDeductions.toFixed(2)}`, 400, yPos);
       }
 
       yPos += 25;
       doc
         .font('Helvetica-Bold')
         .text('Total Deductions', 50, yPos)
-        .text(`₹${payroll.salaryStructure.totalDeductions.toFixed(2)}`, 400, yPos);
+        .text(`$${payroll.salaryStructure.totalDeductions.toFixed(2)}`, 400, yPos);
 
       yPos += 30;
       doc
@@ -587,7 +587,7 @@ exports.generatePayrollPDF = async (payroll, employee) => {
         .fontSize(14)
         .font('Helvetica-Bold')
         .text('Net Salary', 50, yPos)
-        .text(`₹${payroll.salaryStructure.netSalary.toFixed(2)}`, 400, yPos);
+        .text(`$${payroll.salaryStructure.netSalary.toFixed(2)}`, 400, yPos);
 
       // Footer
       doc
@@ -626,15 +626,15 @@ exports.generatePayrollPDF = async (payroll, employee) => {
 /**
  * Generate Salary Slip PDF (New Salary Slip Module)
  */
-exports.generateSalarySlipPDF = async (salarySlip, employee, options = {}) => {
+exports.generateSalarySlipPDF = async (salarySlip, employee) => {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ margin: 50, size: 'A4' });
       console.log(`[PDF Generator] Raw Salary Slip Employee ID: ${employee.employeeId} (Type: ${typeof employee.employeeId})`);
       const safeEmployeeId = String(employee.employeeId).replace(/[^a-zA-Z0-9]/g, '_');
       console.log(`[PDF Generator] Safe Salary Slip Employee ID: ${safeEmployeeId}`);
-      const fileName = options.fileName || `salary_slip_${safeEmployeeId}_${salarySlip.year}_${String(salarySlip.month).padStart(2, '0')}.pdf`;
-      const uploadsDir = options.outputDir || path.join(__dirname, '../../uploads/salary-slips');
+      const fileName = `salary_slip_${safeEmployeeId}_${salarySlip.year}_${String(salarySlip.month).padStart(2, '0')}.pdf`;
+      const uploadsDir = path.join(__dirname, '../../uploads/salary-slips');
 
       console.log(`[PDF Generator] Final Salary Slip Filename: ${fileName}`);
       console.log(`[PDF Generator] Uploads directory: ${uploadsDir}`);
@@ -655,7 +655,7 @@ exports.generateSalarySlipPDF = async (salarySlip, employee, options = {}) => {
         : 'To be announced';
 
       // Company Information (Header)
-      const companyName = process.env.COMPANY_NAME || 'Radhix Technologies';
+      const companyName = process.env.COMPANY_NAME || 'Zynextro Technology Consulting';
       const companyAddress = process.env.COMPANY_ADDRESS || '123 Business Street, City, State 12345';
 
       // Try to load company logo if exists
@@ -974,12 +974,12 @@ exports.generateOfferLetterPDF = async (data) => {
       doc
         .fontSize(12)
         .font('Helvetica-Bold')
-        .text('Radhix Technologies', 350, yPos)
+        .text('Zynextro Technology Consulting', 350, yPos)
         .fontSize(10)
         .font('Helvetica')
         .text('123 Business Street', 350, yPos + 15)
         .text('City, State 12345', 350, yPos + 30)
-        .text('Email: info@radhix.com', 350, yPos + 45);
+        .text('Email: info@zynextro.com', 350, yPos + 45);
 
       yPos = 250;
       doc.moveDown(3);
@@ -1002,7 +1002,7 @@ exports.generateOfferLetterPDF = async (data) => {
 
       yPos += 30;
       doc
-        .text(`We are pleased to offer you the position of ${position || applicant.jobPosting?.title || 'Position'} at Radhix Technologies.`, 50, yPos, { width: 500 })
+        .text(`We are pleased to offer you the position of ${position || applicant.jobPosting?.title || 'Position'} at Zynextro Technology Consulting.`, 50, yPos, { width: 500 })
         .moveDown();
 
       yPos += 30;
@@ -1013,7 +1013,7 @@ exports.generateOfferLetterPDF = async (data) => {
       yPos += 30;
       const details = [
         { label: 'Position:', value: position || applicant.jobPosting?.title || 'N/A' },
-        { label: 'Salary:', value: salary ? `₹${salary.toLocaleString('en-IN')}` : 'As per company policy' },
+        { label: 'Salary:', value: salary ? `$${salary.toLocaleString()}` : 'As per company policy' },
         { label: 'Start Date:', value: startDate ? new Date(startDate).toLocaleDateString() : 'To be discussed' },
         { label: 'Reporting Manager:', value: reportingManager || 'To be assigned' },
       ];
@@ -1054,7 +1054,7 @@ exports.generateOfferLetterPDF = async (data) => {
         .text('Sincerely,', 50, yPos)
         .moveDown(2)
         .text('HR Department', 50, yPos + 30)
-        .text('Radhix Technologies', 50, yPos + 45);
+        .text('Zynextro Technology Consulting', 50, yPos + 45);
 
       // Footer
       const pageHeight = doc.page.height;

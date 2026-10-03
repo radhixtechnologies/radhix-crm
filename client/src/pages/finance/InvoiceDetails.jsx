@@ -198,7 +198,7 @@ const InvoiceDetails = () => {
                 <div className="party-block">
                   <h4>Bill From</h4>
                   <div className="party-details">
-                    <p className="name">Radhix Technologies</p>
+                    <p className="name">Radhix CRM</p>
                     <p>123 Business Street</p>
                     <p>City, State 12345</p>
                   </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 import { employeeService } from '../../services/employeeService';
 import { useQuickActions } from '../../context/QuickActionsContext';
 import {
@@ -22,7 +22,7 @@ import {
   FiGrid,
 } from 'react-icons/fi';
 import Loader from '../../components/common/Loader';
-import {  formatNumber } from '../../utils/format';
+import { formatCurrency, formatNumber, formatDate } from '../../utils/format';
 import QuickActions from '../../components/dashboard/QuickActions';
 import KPIBadge from '../../components/dashboard/KPIBadge';
 import NotificationsPanel from '../../components/dashboard/NotificationsPanel';
@@ -36,7 +36,7 @@ import '../../styles/dashboard/superadmin-dashboard-new.css';
 import '../../styles/infinity-edition.css';
 
 const AdminEmployeeDashboard = () => {
-  
+  const navigate = useNavigate();
   const { isOpen: quickActionsOpen, toggleQuickActions, closeQuickActions } = useQuickActions();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('summary');
@@ -44,7 +44,7 @@ const AdminEmployeeDashboard = () => {
 
   // Data states
   const [statistics, setStatistics] = useState(null);
-  const [, setEmployees] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [attendance, setAttendance] = useState(null);
   const [leaves, setLeaves] = useState([]);
   const [notifications, setNotifications] = useState(null);
@@ -63,19 +63,19 @@ const AdminEmployeeDashboard = () => {
       setLoading(true);
 
       // Fetch employee statistics
-      const statsRes = await employeeService.getEmployeeStatistics().catch(() => ({ data: { success: false } }));
+      const statsRes = await employeeService.getEmployeeStatistics().catch(err => ({ data: { success: false } }));
       if (statsRes.data?.success) {
         setStatistics(statsRes.data.data);
       }
 
       // Fetch employees list
-      const employeesRes = await employeeService.getEmployees({ limit: 100 }).catch(() => ({ data: { success: false } }));
+      const employeesRes = await employeeService.getEmployees({ limit: 100 }).catch(err => ({ data: { success: false } }));
       if (employeesRes.data?.success) {
         setEmployees(employeesRes.data.data?.employees || []);
       }
 
       // Fetch attendance data
-      const attendanceRes = await employeeService.getAllAttendance({ limit: 100 }).catch(() => ({ data: { success: false } }));
+      const attendanceRes = await employeeService.getAllAttendance({ limit: 100 }).catch(err => ({ data: { success: false } }));
       if (attendanceRes.data?.success) {
         const attendanceData = attendanceRes.data.data?.attendance || [];
         const today = new Date();
@@ -95,7 +95,7 @@ const AdminEmployeeDashboard = () => {
       }
 
       // Fetch leaves
-      const leavesRes = await employeeService.getLeaves({ status: 'pending', limit: 50 }).catch(() => ({ data: { success: false } }));
+      const leavesRes = await employeeService.getLeaves({ status: 'pending', limit: 50 }).catch(err => ({ data: { success: false } }));
       if (leavesRes.data?.success) {
         setLeaves(leavesRes.data.data?.leaves || []);
       }
@@ -117,7 +117,7 @@ const AdminEmployeeDashboard = () => {
   const fetchActivityLog = async () => {
     try {
       // Using employee activity logs
-      const res = await employeeService.getActivityLogs(null, { page: activityPage, limit: 10 }).catch(() => ({ data: { success: false } }));
+      const res = await employeeService.getActivityLogs(null, { page: activityPage, limit: 10 }).catch(err => ({ data: { success: false } }));
       if (res.data?.success) {
         setActivityLog({
           logs: res.data.data?.logs || [],
@@ -139,9 +139,9 @@ const AdminEmployeeDashboard = () => {
 
   // Calculate percentage changes (mock data for now)
   const employeesChange = '+5%';
-  
-  
-  
+  const activeChange = '+3%';
+  const newHiresChange = '+12%';
+  const leavesChange = '+8%';
 
   // Prepare chart data from statistics
   // Employee Growth Chart (using byMonth data)
@@ -178,7 +178,7 @@ const AdminEmployeeDashboard = () => {
   }) || [];
 
   // Department Distribution (for Visitor Insights chart)
-  const departmentData = statistics?.byDepartment?.slice(0, 12).map((dept) => ({
+  const departmentData = statistics?.byDepartment?.slice(0, 12).map((dept, index) => ({
     month: dept.department?.substring(0, 3) || 'N/A',
     loyal: dept.count || 0,
     new: 0,
@@ -186,7 +186,11 @@ const AdminEmployeeDashboard = () => {
   })) || [];
 
   // Leave Summary data
-  
+  const leaveSummaryData = statistics?.leaves?.map((item) => ({
+    category: item.status?.substring(0, 3) || 'N/A',
+    volume: item.count || 0,
+    service: item.totalDays || 0,
+  })) || [];
 
   // Department Analytics table
   const departmentAnalyticsData = statistics?.byDepartment?.slice(0, 5).map((dept, index) => ({
@@ -198,7 +202,7 @@ const AdminEmployeeDashboard = () => {
   })) || [];
 
   // Top Employees (by department or status)
-  
+  const topEmployees = employees.slice(0, 5);
 
 
   return (

@@ -7,7 +7,7 @@ function CTASection() {
           <div className="space-y-1 sm:space-y-2">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
               <span className="text-slate-900">Supercharge your business</span>{" "}
-              <span className="text-indigo-600">with Radhix Technologies</span>
+              <span className="text-indigo-600">with Zynextro CRM</span>
             </h2>
           </div>
 

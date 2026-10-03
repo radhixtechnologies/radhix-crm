@@ -21,11 +21,11 @@ const imageMap = {
 
 gsap.registerPlugin(ScrollTrigger);
 
-const getFeatureItems = (feature) => (
-  Array.isArray(feature.items) && feature.items.length > 0
-    ? feature.items
-    : [{ id: feature.id, title: feature.highlighted || feature.title, description: feature.description, image: feature.image }]
-);
+const colorThemes = {
+  1: { bg: "from-green-50 to-green-100", accent: "text-green-600", border: "border-green-200" },
+  2: { bg: "from-purple-50 to-purple-100", accent: "text-purple-600", border: "border-purple-200" },
+  3: { bg: "from-blue-50 to-blue-100", accent: "text-blue-600", border: "border-blue-200" },
+};
 
 function FeatureSection() {
   const sectionRef = useRef(null);
@@ -167,6 +167,8 @@ function FeatureSection() {
     };
   }, [isMobile]);
 
+  const currentTheme = colorThemes[features[activeSection]?.id] || colorThemes[1];
+
   // Mobile: Simple stacked layout
   if (isMobile) {
     return (
@@ -214,8 +216,8 @@ function FeatureSection() {
                 </h2>
 
                 {/* Grid of 4 Sub-Cards in Single Row (4 columns like Razorpay) */}
-                <div className={`grid grid-cols-1 ${feature.items?.length ? 'sm:grid-cols-2 lg:grid-cols-4' : 'max-w-2xl'} gap-4 flex-1 min-h-0`}>
-                  {getFeatureItems(feature).map((item) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1 min-h-0">
+                  {feature.items.map((item) => (
                     <SubFeatureCard key={item.id} item={item} />
                   ))}
                 </div>
@@ -235,8 +237,8 @@ function FeatureCard({ feature }) {
       <h3 className="mb-4 sm:mb-6 md:mb-8 text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">
         {feature.title}
       </h3>
-      <div className={`grid grid-cols-1 ${feature.items?.length ? 'sm:grid-cols-2' : ''} gap-3 sm:gap-4 md:gap-6`}>
-        {getFeatureItems(feature).map((item) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+        {feature.items.map((item) => (
           <SubFeatureCard key={item.id} item={item} />
         ))}
       </div>
@@ -276,7 +278,7 @@ function SubFeatureCard({ item }) {
         )}
 
         <img
-          src={imageMap[item.image] || item.image}
+          src={item.image}
           alt={item.title}
           className={`h-full w-full object-cover transition-all duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"
             } ${!isActive ? "group-hover:scale-110" : ""}`}

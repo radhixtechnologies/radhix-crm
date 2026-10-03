@@ -11,7 +11,7 @@ const ProposalTable = ({ proposals, pagination, onPageChange }) => {
     try {
       await salesService.emailProposal(id);
       alert('Proposal email sent successfully');
-    } catch {
+    } catch (error) {
       alert('Failed to send email');
     }
   };
@@ -24,7 +24,7 @@ const ProposalTable = ({ proposals, pagination, onPageChange }) => {
           alert('Proposal converted to invoice successfully');
           navigate(`/finance/invoices/${res.data.data._id}`);
         }
-      } catch {
+      } catch (error) {
         alert('Failed to convert proposal');
       }
     }

@@ -37,7 +37,7 @@ function About() {
                     {/* Company Introduction */}
                     <div className="mt-12 max-w-4xl mx-auto">
                         <p className="text-base sm:text-lg text-slate-200 leading-relaxed text-center mb-10">
-                            Radhix Technologies is a digital solutions company helping businesses build stronger customer relationships and grow through thoughtful design, reliable technology, and practical digital services.
+                            Zynextro CRM is a leading technology consulting firm dedicated to empowering businesses with cutting-edge customer relationship management solutions. Since our inception, we've been committed to helping organizations streamline their sales processes, enhance customer engagement, and drive sustainable growth through intelligent automation and data-driven insights.
                         </p>
 
                         {/* Key Highlights */}
@@ -86,7 +86,7 @@ function About() {
                             </svg>
                             <span className="text-xs sm:text-sm font-semibold">Our Journey</span>
                         </div>
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-3 sm:mb-4 px-4">The Radhix Technologies Story</h2>
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-3 sm:mb-4 px-4">The Zynextro Story</h2>
                         <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto px-4">Building tomorrow's technology solutions today</p>
                     </div>
 
@@ -346,7 +346,7 @@ function About() {
                 <div className="mx-auto max-w-[1400px] px-4 sm:px-6 text-center">
                     <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 px-4">Ready to Transform Your Business?</h2>
                     <p className="text-base sm:text-lg text-indigo-100 max-w-2xl mx-auto mb-6 sm:mb-8 px-4">
-                        Join businesses that trust Radhix Technologies to help them grow.
+                        Join hundreds of successful businesses that trust Zynextro CRM for their growth.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
                         <Link

@@ -76,26 +76,15 @@ exports.submitSelfReview = async (req, res) => {
 };
 exports.submitManagerReview = async (req, res) => {
 	try {
-		const reviewId = req.params.id || req.body.reviewId;
-		if (!reviewId) {
-			return res.status(400).json({ success: false, message: 'Review ID is required' });
-		}
-
 		const managerAssessment = req.body.managerReview || req.body;
-		const overallRating = Number(managerAssessment.overallRating ?? managerAssessment.rating ?? managerAssessment.finalRating ?? 0);
-		if (!Number.isFinite(overallRating) || overallRating < 1 || overallRating > 5) {
-			return res.status(400).json({ success: false, message: 'Overall rating must be between 1 and 5' });
-		}
-
-		const existingReview = await PerformanceReview.findById(reviewId);
+		const existingReview = await PerformanceReview.findById(req.params.id);
 		if (!existingReview) return res.status(404).json({ success: false, message: 'Review not found' });
 		if (!['self_submitted', 'completed'].includes(existingReview.status)) {
 			return res.status(400).json({ success: false, message: 'Employee must submit a self-review before manager assessment' });
 		}
-
-		const review = await PerformanceReview.findByIdAndUpdate(reviewId, {
-			managerAssessment: { ...managerAssessment, overallRating, submittedAt: new Date() },
-			finalRating: overallRating,
+		const review = await PerformanceReview.findByIdAndUpdate(req.params.id, {
+			managerAssessment: { ...managerAssessment, submittedAt: new Date() },
+			finalRating: managerAssessment.overallRating,
 			status: 'completed',
 			reviewer: req.user._id,
 		}, { new: true, runValidators: true });
