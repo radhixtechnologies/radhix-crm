@@ -101,17 +101,7 @@ const LeadTracking = () => {
         return emojis[temp] || '🧊';
     };
 
-    const getCurrencySymbol = (currency) => {
-        const symbols = {
-            'INR': '₹',
-            'USD': '$',
-            'EUR': '€',
-            'GBP': '£',
-            'AUD': 'A$',
-            'CAD': 'C$'
-        };
-        return symbols[currency] || '₹';
-    };
+    const getCurrencySymbol = () => '₹';
 
     const handleDragStart = (e, leadId) => {
         e.dataTransfer.setData('leadId', leadId);
@@ -598,7 +588,7 @@ const LeadTracking = () => {
                                                         color: '#6b7280'
                                                     }}>
                                                         <span style={{ fontWeight: 600, color: '#667eea' }}>
-                                                            {getCurrencySymbol(lead.currency)}{lead.value?.toLocaleString() || 0}
+                                                            {getCurrencySymbol()}{lead.value?.toLocaleString('en-IN') || 0}
                                                         </span>
                                                         {lead.assignedTo && (
                                                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>

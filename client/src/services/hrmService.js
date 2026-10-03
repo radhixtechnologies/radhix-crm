@@ -190,8 +190,6 @@ export const hrmService = {
   submitResignation: (data) => api.post('/hrm/exit', data),
   getMyExitRequests: () => api.get('/hrm/exit', { params: { employeeId: 'me' } }),
   getAllExitRequests: (params) => api.get('/hrm/exit', { params }),
-  getExitRequest: (id) => api.get(`/hrm/exit/${id}`),
-  approveExitRequest: (id, data) => api.put(`/hrm/exit/${id}/approve`, data),
   requestEarlyRelease: (id, data) => api.post(`/hrm/exit/${id}/early-release`, data),
   getPendingApprovals: () => api.get('/hrm/exit/pending-approvals'),
 

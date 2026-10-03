@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import '../../styles/employee/attendance.css';
 
 const HRMAttendance = () => {
-    const { user, isAdmin, isSuperAdmin } = useAuth();
+    const { user } = useAuth();
     const [attendance, setAttendance] = useState(null);
     const [attendanceHistory, setAttendanceHistory] = useState([]);
     const [initialLoading, setInitialLoading] = useState(true);
@@ -16,7 +16,7 @@ const HRMAttendance = () => {
     const [checkingIn, setCheckingIn] = useState(false);
     const [checkingOut, setCheckingOut] = useState(false);
     const [employeeId, setEmployeeId] = useState(null);
-    const [viewMode, setViewMode] = useState('all'); // Default to 'all' for HRM Command Center
+    const [viewMode] = useState('all'); // Default to 'all' for HRM Command Center
 
     // Split state for Search (Instant/Debounced) vs Filters (Manual Apply)
     const [searchQuery, setSearchQuery] = useState('');

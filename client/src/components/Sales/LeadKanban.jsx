@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiMail, FiPhone, FiBriefcase, FiUser } from 'react-icons/fi';
-import { formatCurrency, formatDate } from '../../utils/format';
+import { formatCurrency } from '../../utils/format';
 import './LeadKanban.css';
 
 const STATUSES = [

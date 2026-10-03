@@ -51,7 +51,7 @@ const SegmentList = () => {
     return (
         <div className="segment-list-page">
             {/* Header */}
-            <div className="page-header-compact">
+            <div className="page-header-compact segment-page-header">
                 <div className="header-left">
                     <div className="header-title-section">
                         <h1 className="page-title-compact">Segments</h1>
@@ -93,14 +93,9 @@ const SegmentList = () => {
             </div>
 
             {/* Stats Cards */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '16px',
-                marginBottom: '24px'
-            }}>
+            <div className="segment-stats-grid">
                 {/* Total Segments */}
-                <div style={{
+                <div className="segment-stat-card" style={{
                     background: 'white',
                     border: '1px solid #e5e7eb',
                     borderRadius: '12px',
@@ -133,7 +128,7 @@ const SegmentList = () => {
                 </div>
 
                 {/* Dynamic */}
-                <div style={{
+                <div className="segment-stat-card" style={{
                     background: 'white',
                     border: '1px solid #e5e7eb',
                     borderRadius: '12px',
@@ -166,7 +161,7 @@ const SegmentList = () => {
                 </div>
 
                 {/* Static */}
-                <div style={{
+                <div className="segment-stat-card" style={{
                     background: 'white',
                     border: '1px solid #e5e7eb',
                     borderRadius: '12px',
@@ -199,7 +194,7 @@ const SegmentList = () => {
                 </div>
 
                 {/* Total Members */}
-                <div style={{
+                <div className="segment-stat-card" style={{
                     background: 'white',
                     border: '1px solid #e5e7eb',
                     borderRadius: '12px',

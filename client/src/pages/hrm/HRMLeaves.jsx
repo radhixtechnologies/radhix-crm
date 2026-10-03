@@ -1,21 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../context/AuthContext';
+
 import { employeeService } from '../../services/employeeService';
 import { FiCheck, FiX, FiSearch, FiFileText, FiFilter, FiChevronDown, FiChevronUp, FiDownload, FiUser } from 'react-icons/fi';
 import Modal from '../../components/common/Modal';
 import Loader from '../../components/common/Loader';
 import { formatDate } from '../../utils/format';
-import dayjs from 'dayjs';
+import 'dayjs';
 import '../../styles/employee/leaves.css';
 
 const HRMLeaves = () => {
-    const { isAdmin, isSuperAdmin } = useAuth();
+    
     const [leaves, setLeaves] = useState([]);
     const [initialLoading, setInitialLoading] = useState(true);
     const [loading, setLoading] = useState(false);
     const [showApprovalModal, setShowApprovalModal] = useState(false);
     const [selectedLeave, setSelectedLeave] = useState(null);
     const [approvalComments, setApprovalComments] = useState('');
+    const [isViewingLeave, setIsViewingLeave] = useState(false);
 
     // Split state for Search (Instant/Debounced) vs Filters (Manual Apply)
     const [searchQuery, setSearchQuery] = useState('');
@@ -438,13 +439,32 @@ const HRMLeaves = () => {
                                             <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{leave.reason}</td>
                                             <td><span className={`badge badge-${leave.status === 'approved' ? 'success' : leave.status === 'rejected' ? 'error' : 'warning'}`}>{leave.status}</span></td>
                                             <td>
-                                                {leave.status === 'pending' && (
-                                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                                        <button className="btn btn-sm btn-success" onClick={() => { setSelectedLeave(leave); setShowApprovalModal(true); }}>
+                                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                    <button
+                                                        className="btn btn-sm btn-secondary"
+                                                        onClick={() => {
+                                                            setSelectedLeave(leave);
+                                                            setApprovalComments(leave.comments || '');
+                                                            setIsViewingLeave(true);
+                                                            setShowApprovalModal(true);
+                                                        }}
+                                                    >
+                                                        View
+                                                    </button>
+                                                    {leave.status === 'pending' && (
+                                                        <button
+                                                            className="btn btn-sm btn-success"
+                                                            onClick={() => {
+                                                                setSelectedLeave(leave);
+                                                                setApprovalComments(leave.comments || '');
+                                                                setIsViewingLeave(false);
+                                                                setShowApprovalModal(true);
+                                                            }}
+                                                        >
                                                             <FiCheck /> Review
                                                         </button>
-                                                    </div>
-                                                )}
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -458,7 +478,16 @@ const HRMLeaves = () => {
             </div>
 
             {/* Approval Modal */}
-            <Modal isOpen={showApprovalModal} onClose={() => setShowApprovalModal(false)} title="Review Leave Request">
+            <Modal
+                isOpen={showApprovalModal}
+                onClose={() => {
+                    setShowApprovalModal(false);
+                    setSelectedLeave(null);
+                    setIsViewingLeave(false);
+                    setApprovalComments('');
+                }}
+                title={isViewingLeave ? 'Leave Request Details' : 'Review Leave Request'}
+            >
                 {selectedLeave && (
                     <div>
                         <div style={{ marginBottom: '20px' }}>
@@ -475,6 +504,9 @@ const HRMLeaves = () => {
                                 <strong>Days:</strong> {selectedLeave.days} day(s)
                             </div>
                             <div style={{ marginBottom: '12px' }}>
+                                <strong>Status:</strong> <span style={{ textTransform: 'capitalize' }}>{selectedLeave.status}</span>
+                            </div>
+                            <div style={{ marginBottom: '12px' }}>
                                 <strong>Reason:</strong>
                                 <div style={{ marginTop: '8px', padding: '12px', background: 'var(--surface)', borderRadius: 'var(--radius)' }}>
                                     {selectedLeave.reason}
@@ -482,44 +514,67 @@ const HRMLeaves = () => {
                             </div>
                         </div>
 
-                        {/* Comments Input */}
-                        <div className="form-group">
-                            <label className="form-label">Comments (Optional)</label>
-                            <textarea
-                                className="form-textarea"
-                                value={approvalComments}
-                                onChange={(e) => setApprovalComments(e.target.value)}
-                                placeholder="Add comments for approval/rejection..."
-                                rows={3}
-                            />
-                        </div>
+                        {!isViewingLeave && (
+                            <>
+                                {/* Comments Input */}
+                                <div className="form-group">
+                                    <label className="form-label">Comments (Optional)</label>
+                                    <textarea
+                                        className="form-textarea"
+                                        value={approvalComments}
+                                        onChange={(e) => setApprovalComments(e.target.value)}
+                                        placeholder="Add comments for approval/rejection..."
+                                        rows={3}
+                                    />
+                                </div>
 
-                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
-                            <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={() => {
-                                    setShowApprovalModal(false);
-                                    setApprovalComments('');
-                                }}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-danger"
-                                onClick={() => handleApproveReject('rejected')}
-                            >
-                                <FiX /> Reject
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-success"
-                                onClick={() => handleApproveReject('approved')}
-                            >
-                                <FiCheck /> Approve
-                            </button>
-                        </div>
+                                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={() => {
+                                            setShowApprovalModal(false);
+                                            setSelectedLeave(null);
+                                            setIsViewingLeave(false);
+                                            setApprovalComments('');
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-danger"
+                                        onClick={() => handleApproveReject('rejected')}
+                                    >
+                                        <FiX /> Reject
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-success"
+                                        onClick={() => handleApproveReject('approved')}
+                                    >
+                                        <FiCheck /> Approve
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                        {isViewingLeave && (
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => {
+                                        setShowApprovalModal(false);
+                                        setSelectedLeave(null);
+                                        setIsViewingLeave(false);
+                                        setApprovalComments('');
+                                    }}
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </Modal>

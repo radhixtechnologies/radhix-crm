@@ -20,10 +20,7 @@ const LeaveBalance = () => {
   const [selectedBalanceYear, setSelectedBalanceYear] = useState(new Date().getFullYear());
   const [reportLoading, setReportLoading] = useState(false);
   const [employeeId, setEmployeeId] = useState(null);
-  const [activeFilters, setActiveFilters] = useState({
-    year: new Date().getFullYear(),
-    month: new Date().getMonth() + 1
-  });
+  
   const [showFilters, setShowFilters] = useState(false);
   const filterRef = useRef(null);
   const buttonRef = useRef(null);

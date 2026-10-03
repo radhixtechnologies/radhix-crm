@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { FiEdit, FiTrash2, FiCheck } from 'react-icons/fi';
 import { salesService } from '../../services/salesService';
 import { formatDate } from '../../utils/format';
@@ -10,7 +10,7 @@ import Modal from '../common/Modal';
 import '../../styles/sales/followups.css';
 
 const FollowupTable = ({ followups, pagination, onPageChange }) => {
-  const navigate = useNavigate();
+  
   const [deleteModal, setDeleteModal] = useState({ open: false, followup: null });
   const [editModal, setEditModal] = useState({ open: false, followup: null });
   const [completeModal, setCompleteModal] = useState({ open: false, followup: null });

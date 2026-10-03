@@ -57,13 +57,9 @@ const LeaveBalanceOverview = () => {
   const handleSaveBalance = async (updateData) => {
     if (!editingBalance || !editingEmployee) return;
     
-    try {
-      await employeeService.updateLeaveBalance(editingEmployee._id, updateData);
-      alert('Leave balance updated successfully!');
-      fetchSummary(); // Refresh data
-    } catch (error) {
-      throw error; // Let modal handle the error
-    }
+    await employeeService.updateLeaveBalance(editingEmployee._id, updateData);
+    alert('Leave balance updated successfully!');
+    fetchSummary(); // Refresh data
   };
 
   const handleYearlyReset = async () => {

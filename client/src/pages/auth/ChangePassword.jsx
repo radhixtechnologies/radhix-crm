@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+
 import { authService } from '../../services/authService';
 import '../../styles/forms.css';
 import '../../styles/globals.css';
 
 const ChangePassword = () => {
-  const { user } = useAuth();
+  
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     currentPassword: '',

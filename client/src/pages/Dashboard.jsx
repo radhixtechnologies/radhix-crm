@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { useAuth } from '../context/AuthContext';
-import { analyticsService } from '../services/analyticsService';
+
 import { employeeService } from '../services/employeeService';
 import SuperAdminDashboard from './Dashboard/SuperAdminDashboard';
 import AdminEmployeeDashboard from './Dashboard/AdminEmployeeDashboard';
@@ -26,14 +26,14 @@ import {
   FiBriefcase as FiSkills,
 } from 'react-icons/fi';
 import Loader from '../components/common/Loader';
-import { formatCurrency, formatNumber, formatDate } from '../utils/format';
+
 import '../styles/dashboard.css';
 
 const Dashboard = () => {
-  const { user, isAdmin, isSuperAdmin, isEmployee, hasModuleAccess } = useAuth();
-  const navigate = useNavigate();
-  const [analytics, setAnalytics] = useState(null);
-  const [employeeData, setEmployeeData] = useState(null);
+  const {  isAdmin, isSuperAdmin, isEmployee, hasModuleAccess } = useAuth();
+  
+  
+  const [, setEmployeeData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,34 +48,7 @@ const Dashboard = () => {
     }
   }, [isAdmin, isSuperAdmin, isEmployee, hasModuleAccess]);
 
-  const fetchAnalytics = async () => {
-    try {
-      setLoading(true);
-      const response = await analyticsService.getDashboardAnalytics();
-      if (response.data?.success) {
-        setAnalytics(response.data.data);
-      } else {
-        // Set default empty structure if API fails
-        setAnalytics({
-          employees: { total: 0, onLeave: 0 },
-          finance: { revenue: 0, profit: 0, pendingInvoices: 0, overdueInvoices: 0 },
-          sales: { totalLeads: 0, wonLeads: 0 },
-          recent: { leads: [], invoices: [] },
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      // Set default empty structure on error
-      setAnalytics({
-        employees: { total: 0, onLeave: 0 },
-        finance: { revenue: 0, profit: 0, pendingInvoices: 0, overdueInvoices: 0 },
-        sales: { totalLeads: 0, wonLeads: 0 },
-        recent: { leads: [], invoices: [] },
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   const fetchEmployeeDashboard = async () => {
     try {

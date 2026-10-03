@@ -22,7 +22,7 @@ function TermsAndServices() {
                         {/* Introduction */}
                         <div className="mb-12">
                             <p className="text-lg text-slate-600 leading-relaxed">
-                                Welcome to Zynextro CRM. These Terms and Conditions outline the rules and regulations for the use of our CRM software and services. By accessing or using our services, you agree to be bound by these terms.
+                                Welcome to Radhix Technologies. These Terms and Conditions outline the rules and regulations for the use of our CRM software and services. By accessing or using our services, you agree to be bound by these terms.
                             </p>
                         </div>
 
@@ -30,7 +30,7 @@ function TermsAndServices() {
                         <div className="mb-10">
                             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4">1. Acceptance of Terms</h2>
                             <p className="text-slate-600 leading-relaxed mb-4">
-                                By creating an account or using Zynextro CRM services, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions. If you do not agree with any part of these terms, you may not access or use our services.
+                                By creating an account or using Radhix Technologies services, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions. If you do not agree with any part of these terms, you may not access or use our services.
                             </p>
                             <p className="text-slate-600 leading-relaxed">
                                 We reserve the right to modify these terms at any time. Your continued use of the service after changes are posted constitutes acceptance of the modified terms.
@@ -41,7 +41,7 @@ function TermsAndServices() {
                         <div className="mb-10">
                             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4">2. Service Description</h2>
                             <p className="text-slate-600 leading-relaxed mb-4">
-                                Zynextro CRM provides cloud-based customer relationship management software designed to help businesses manage customer interactions, sales pipelines, and business processes.
+                                Radhix Technologies provides cloud-based customer relationship management software designed to help businesses manage customer interactions, sales pipelines, and business processes.
                             </p>
                             <ul className="list-disc pl-6 space-y-2 text-slate-600">
                                 <li>Contact and lead management</li>
@@ -116,7 +116,7 @@ function TermsAndServices() {
                         <div className="mb-10">
                             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4">7. Intellectual Property</h2>
                             <p className="text-slate-600 leading-relaxed mb-4">
-                                All content, features, and functionality of Zynextro CRM, including but not limited to software, text, graphics, logos, and trademarks, are owned by Zynextro and protected by international copyright and trademark laws.
+                                All content, features, and functionality of Radhix Technologies, including but not limited to software, text, graphics, logos, and trademarks, are owned by Radhix Technologies and protected by international copyright and trademark laws.
                             </p>
                             <p className="text-slate-600 leading-relaxed">
                                 You are granted a limited, non-exclusive, non-transferable license to access and use our services for your business purposes only.
@@ -138,7 +138,7 @@ function TermsAndServices() {
                         <div className="mb-10">
                             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4">9. Limitation of Liability</h2>
                             <p className="text-slate-600 leading-relaxed mb-4">
-                                To the maximum extent permitted by law, Zynextro shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use or inability to use our services.
+                                To the maximum extent permitted by law, Radhix Technologies shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use or inability to use our services.
                             </p>
                             <p className="text-slate-600 leading-relaxed">
                                 Our total liability shall not exceed the amount you paid for the service in the twelve months preceding the claim.
@@ -173,9 +173,9 @@ function TermsAndServices() {
                                 If you have any questions about these Terms and Conditions, please contact us:
                             </p>
                             <div className="bg-slate-50 border border-slate-200 rounded-lg p-6">
-                                <p className="text-slate-700 mb-2"><strong>Email:</strong> support@zynextro.com</p>
-                                <p className="text-slate-700 mb-2"><strong>Phone:</strong> +91 120 456 7890</p>
-                                <p className="text-slate-700"><strong>Address:</strong> Sector 62, Noida, Uttar Pradesh 201301, India</p>
+                                <p className="text-slate-700 mb-2"><strong>Email:</strong> info@radhix.com</p>
+                                <p className="text-slate-700 mb-2"><strong>Phone:</strong> +91 70427 93777</p>
+                                <p className="text-slate-700"><strong>Address:</strong> 3rd Floor, Vipul Plaza, Sector 81, Faridabad, Haryana 121002, India</p>
                             </div>
                         </div>
                     </div>

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import i1 from "../assets/i.png";
 import i2 from "../assets/i2.png";
 import i3 from "../assets/i3.png";
@@ -19,25 +18,8 @@ const logos = [
 
 function LogoSlider() {
   const allLogos = [...logos, ...logos, ...logos, ...logos, ...logos, ...logos];
-  const [isActive, setIsActive] = useState(false);
-
-  const handleWrapperClick = () => {
-    setIsActive((prev) => !prev);
-  };
-
   return (
-    <section
-      className="group bg-white py-8 sm:py-12"
-      role="button"
-      tabIndex={0}
-      onClick={handleWrapperClick}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          handleWrapperClick();
-        }
-      }}
-    >
+    <section className="group bg-white py-8 sm:py-12" aria-label="Client logos">
       <div className="overflow-hidden relative w-full cursor-pointer">
         <div className="flex animate-logo-scroll items-center whitespace-nowrap">
           {allLogos.map((logo, index) => (

@@ -9,7 +9,7 @@ import '../../styles/contacts/contacts.css';
 const AddContact = () => {
     const navigate = useNavigate();
     const { id } = useParams();
-    const [loading, setLoading] = useState(false);
+    const [, setLoading] = useState(false);
     const [contact, setContact] = useState(null);
     const [fetching, setFetching] = useState(!!id);
 

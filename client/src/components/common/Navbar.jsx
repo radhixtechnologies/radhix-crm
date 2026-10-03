@@ -9,6 +9,7 @@ import ThemeToggle from './ThemeToggle';
 import NotificationDropdown from './NotificationDropdown';
 import { notificationService } from '../../services/notificationService';
 import GlobalSearch from './GlobalSearch';
+import BrandLogo from './BrandLogo';
 import '../../styles/dashboard.css';
 import './Header.css';
 
@@ -22,7 +23,7 @@ const Navbar = () => {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   // Track viewport for responsive behavior
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1024);
+  const [, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1024);
   const userMenuRef = useRef(null);
 
   useEffect(() => {
@@ -103,7 +104,7 @@ const Navbar = () => {
           </button>
         )}
         <div className="navbar-logo" onClick={() => navigate('/dashboard')}>
-          <span>Radhix</span>
+          <BrandLogo variant="navbar" />
           <span className="logo-suffix">CRM</span>
         </div>
         <div className="navbar-divider"></div>

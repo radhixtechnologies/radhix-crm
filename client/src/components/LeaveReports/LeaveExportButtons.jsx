@@ -5,7 +5,7 @@ import '../../styles/leaveReports.css';
  * Leave Export Buttons Component
  * Provides export options (PDF, Excel, CSV)
  */
-const LeaveExportButtons = ({ data, reportType, filename = 'leave-report', leaves = null }) => {
+const LeaveExportButtons = ({ data, filename = 'leave-report' }) => {
   // Helper to escape CSV values
   const escapeCSV = (value) => {
     if (value === null || value === undefined) return '';

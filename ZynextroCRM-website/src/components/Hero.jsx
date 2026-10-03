@@ -31,7 +31,7 @@ function Hero() {
     useEffect(() => {
         if (isAutoPlaying) {
             timerRef.current = setInterval(() => {
-                handleNext();
+                setActiveIndex((prev) => (prev + 1) % heroCards.length);
             }, 6000);
         }
         return () => clearInterval(timerRef.current);

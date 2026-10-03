@@ -102,6 +102,7 @@ router.post('/tasks/:id/reject', checkModuleAccess('employee'), authorize('admin
 const {
   getSalarySlips,
   getSalarySlip,
+  downloadSalarySlip,
   createSalarySlip,
   getReimbursements,
   getReimbursement,
@@ -110,6 +111,7 @@ const {
   deleteReimbursement,
 } = require('../controllers/payrollController');
 router.get('/salary-slips', checkModuleAccess('employee'), getSalarySlips);
+router.get('/salary-slips/:id/download', checkModuleAccess('employee'), downloadSalarySlip);
 router.get('/salary-slips/:id', checkModuleAccess('employee'), getSalarySlip);
 router.get('/reimbursements', checkModuleAccess('employee'), getReimbursements);
 router.get('/reimbursements/:id', checkModuleAccess('employee'), getReimbursement);

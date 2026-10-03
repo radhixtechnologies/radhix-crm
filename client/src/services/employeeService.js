@@ -85,7 +85,7 @@ export const employeeService = {
   getReviews: (employeeId) => api.get(`/performance/reviews/${employeeId}`),
   getAllReviews: (params) => api.get('/performance/reviews', { params }),
   submitSelfReview: (data) => api.post('/performance/self-review', data),
-  submitManagerReview: (data) => api.post('/performance/manager-review', data),
+  submitManagerReview: (id, data) => api.post(`/performance/manager-review/${id}`, data),
 
   getCycles: () => api.get('/performance/cycles'),
   createCycle: (data) => api.post('/performance/cycles', data),
@@ -134,9 +134,17 @@ export const employeeService = {
   // Payroll
   getSalarySlips: (params) => api.get('/employees/salary-slips', { params }),
   getSalarySlip: (id) => api.get(`/employees/salary-slips/${id}`),
-  downloadSalarySlip: (pdfUrl) => {
-    const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://radhix-crm.onrender.com/api' : 'http://localhost:5000/api');
-    window.open(`${API_URL}${pdfUrl}`, '_blank');
+  downloadSalarySlip: async (id) => {
+    const response = await api.get(`/employees/salary-slips/${id}/download`, { responseType: 'blob' });
+    const url = URL.createObjectURL(response.data);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `salary-slip-${id}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return response;
   },
   getReimbursements: (params) => api.get('/employees/reimbursements', { params }),
   getReimbursement: (id) => api.get(`/employees/reimbursements/${id}`),

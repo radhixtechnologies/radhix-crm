@@ -27,7 +27,7 @@ const QuotationForm = ({ quotation, onSubmit, onCancel }) => {
 
         quotationDate: quotation?.quotationDate ? new Date(quotation.quotationDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         priceValidUntil: quotation?.priceValidUntil ? new Date(quotation.priceValidUntil).toISOString().split('T')[0] : '',
-        currency: quotation?.currency || 'INR',
+        currency: 'INR',
         status: quotation?.status || 'draft',
 
         deliverables: quotation?.deliverables?.length > 0 ? quotation.deliverables : [{ name: '', description: '', customTimelineText: '' }],
@@ -77,7 +77,7 @@ const QuotationForm = ({ quotation, onSubmit, onCancel }) => {
         try {
             const res = await salesService.getContacts({ client: clientId });
             setContacts(Array.isArray(res.data.data) ? res.data.data : []);
-        } catch (error) { setContacts([]); }
+        } catch { setContacts([]); }
     };
 
     const handleClientChange = (e) => {
@@ -180,7 +180,7 @@ const QuotationForm = ({ quotation, onSubmit, onCancel }) => {
             }
             await onSubmit(payload);
         }
-        catch (error) { alert('Error saving quotation'); }
+        catch { alert('Error saving quotation'); }
         finally { setLoading(false); }
     };
 

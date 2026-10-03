@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import {  useSearchParams } from 'react-router-dom';
 import { Calendar, dayjsLocalizer } from 'react-big-calendar';
 import dayjs from 'dayjs';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -15,7 +15,7 @@ import { useAuth } from '../../context/AuthContext';
 
 const localizer = dayjsLocalizer(dayjs);
 
-const CustomWeekHeader = ({ date, events, label, localizer }) => {
+const CustomWeekHeader = ({ date, events }) => {
     const dayEvents = events.filter(evt =>
         dayjs(evt.start).isSame(date, 'day')
     );
@@ -40,7 +40,7 @@ const CustomWeekHeader = ({ date, events, label, localizer }) => {
 };
 
 const CalendarView = () => {
-    const { user, isAdmin, isSuperAdmin } = useAuth();
+    const { user } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const [events, setEvents] = useState([]);
     // State for Search and Filters
@@ -76,7 +76,7 @@ const CalendarView = () => {
     const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedEvents, setSelectedEvents] = useState([]);
-    const [filterCount, setFilterCount] = useState(0);
+    
     const [eventToEdit, setEventToEdit] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
     const filterRef = useRef(null);
@@ -237,7 +237,7 @@ const CalendarView = () => {
         return count;
     };
 
-    const eventStyleGetter = (event, start, end, isSelected) => {
+    const eventStyleGetter = (event) => {
         let backgroundColor = 'var(--evt-default-bg)';
 
         // Exact Color System
@@ -274,20 +274,14 @@ const CalendarView = () => {
         setIsDetailsDrawerOpen(true);
     };
 
-    const handleEventCreated = (newEvent) => {
+    const handleEventCreated = () => {
         fetchEvents();
         handleCloseDrawer();
     };
 
-    const handleEventUpdated = (updatedEvent) => {
-        fetchEvents();
-        handleCloseDrawer();
-    };
+    
 
-    const handleEventDeleted = (eventId) => {
-        fetchEvents();
-        handleCloseDrawer();
-    };
+    
 
     const handleEditEvent = (event) => {
         setEventToEdit(event);
@@ -308,47 +302,13 @@ const CalendarView = () => {
         setView(newView);
     };
 
-    const navigatePrev = () => {
-        let newDate;
-        if (view === 'month') {
-            newDate = dayjs(date).subtract(1, 'month').toDate();
-        } else if (view === 'week') {
-            newDate = dayjs(date).subtract(1, 'week').toDate();
-        } else {
-            newDate = dayjs(date).subtract(1, 'day').toDate();
-        }
-        setDate(newDate);
-    };
+    
 
-    const navigateNext = () => {
-        let newDate;
-        if (view === 'month') {
-            newDate = dayjs(date).add(1, 'month').toDate();
-        } else if (view === 'week') {
-            newDate = dayjs(date).add(1, 'week').toDate();
-        } else {
-            newDate = dayjs(date).add(1, 'day').toDate();
-        }
-        setDate(newDate);
-    };
+    
 
-    const navigateToday = () => {
-        setDate(new Date());
-    };
+    
 
-    const getDateLabel = () => {
-        if (view === 'month') {
-            return dayjs(date).format('MMMM YYYY');
-        } else if (view === 'week') {
-            const start = dayjs(date).startOf('week');
-            const end = dayjs(date).endOf('week');
-            return `${start.format('MMM D')} - ${end.format('MMM D, YYYY')}`;
-        } else if (view === 'day') {
-            return dayjs(date).format('MMMM D, YYYY');
-        } else {
-            return dayjs(date).format('MMMM YYYY');
-        }
-    };
+    
 
     return (
         <div className="employee-list-page fade-in">

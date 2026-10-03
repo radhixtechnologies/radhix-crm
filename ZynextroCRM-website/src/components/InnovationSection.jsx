@@ -172,7 +172,7 @@ function InnovationSection() {
             className={`grid gap-4 sm:gap-5 md:gap-6 grid-cols-1 ${isFirstSet ? "md:grid-cols-[2fr_1fr]" : "md:grid-cols-[1fr_2fr]"
               }`}
           >
-            {visibleCards.map((feature, index) => (
+            {visibleCards.map((feature) => (
               <article
                 key={feature.id}
                 className="rounded-xl sm:rounded-2xl bg-white p-4 sm:p-5 md:p-6 lg:p-8 shadow-lg"

@@ -42,12 +42,7 @@ const DealTable = ({ deals, onDelete, pagination, onPageChange }) => {
         }
     };
 
-    const getCurrencySymbol = (currency) => {
-        const symbols = {
-            'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'AUD': 'A$', 'CAD': 'C$'
-        };
-        return symbols[currency] || '₹';
-    };
+    const getCurrencySymbol = () => '₹';
 
     const formatStageName = (stage) => {
         const names = {

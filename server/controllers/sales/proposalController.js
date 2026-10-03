@@ -46,9 +46,9 @@ const generateProposalPDF = async (proposal, client) => {
       // Company info
       doc.fontSize(14).font('Helvetica-Bold').text('From:', 50, 120)
         .fontSize(10).font('Helvetica')
-        .text('Zynextro Technology Consulting', 50, 145)
-        .text('123 Business Street', 50, 160)
-        .text('City, State 12345', 50, 175);
+        .text('Radhix Technologies', 50, 145)
+        .text('3rd Floor, Vipul Plaza, Sector 81', 50, 160)
+        .text('Faridabad, Haryana 121002', 50, 175);
 
       // Client info (handle null client)
       const clientName = client?.name || 'N/A';
@@ -77,8 +77,8 @@ const generateProposalPDF = async (proposal, client) => {
         doc.fontSize(9).font('Helvetica')
           .text(item.description || '', 50, yPos, { width: 280 })
           .text((item.quantity || 0).toString(), 350, yPos)
-          .text(`$${(item.rate || 0).toFixed(2)}`, 400, yPos)
-          .text(`$${(item.amount || 0).toFixed(2)}`, 500, yPos);
+          .text(`₹${(item.rate || 0).toFixed(2)}`, 400, yPos)
+          .text(`₹${(item.amount || 0).toFixed(2)}`, 500, yPos);
         yPos += 25;
       });
 
@@ -91,22 +91,22 @@ const generateProposalPDF = async (proposal, client) => {
       const discount = proposal.discount || 0;
       const total = proposal.total || 0;
 
-      doc.font('Helvetica').text('Subtotal:', 400, yPos).text(`$${subtotal.toFixed(2)}`, 500, yPos);
+      doc.font('Helvetica').text('Subtotal:', 400, yPos).text(`₹${subtotal.toFixed(2)}`, 500, yPos);
 
       if (tax > 0) {
         yPos += 20;
-        doc.text(`Tax (${proposal.taxRate || 0}%):`, 400, yPos).text(`$${tax.toFixed(2)}`, 500, yPos);
+        doc.text(`Tax (${proposal.taxRate || 0}%):`, 400, yPos).text(`₹${tax.toFixed(2)}`, 500, yPos);
       }
 
       if (discount > 0) {
         yPos += 20;
-        doc.text('Discount:', 400, yPos).text(`-$${discount.toFixed(2)}`, 500, yPos);
+        doc.text('Discount:', 400, yPos).text(`-₹${discount.toFixed(2)}`, 500, yPos);
       }
 
       yPos += 20;
       doc.moveTo(400, yPos).lineTo(550, yPos).stroke();
       yPos += 15;
-      doc.fontSize(12).font('Helvetica-Bold').text('Total:', 400, yPos).text(`$${total.toFixed(2)}`, 500, yPos);
+      doc.fontSize(12).font('Helvetica-Bold').text('Total:', 400, yPos).text(`₹${total.toFixed(2)}`, 500, yPos);
 
       doc.end();
 

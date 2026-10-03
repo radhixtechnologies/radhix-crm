@@ -67,8 +67,8 @@ exports.sendEmail = async (options) => {
     throw new Error('Email service not configured');
   }
 
-  const emailUser = process.env.EMAIL_USER || 'info@zynextro.com';
-  const companyName = process.env.COMPANY_NAME || 'Zynextro CRM';
+  const emailUser = process.env.EMAIL_USER || 'info@radhix.com';
+  const companyName = process.env.COMPANY_NAME || 'Radhix Technologies';
 
   const mailOptions = {
     from: `"${companyName}" <${emailUser}>`,
@@ -133,7 +133,7 @@ exports.sendInvoiceEmail = async (invoice, client, pdfPath = null) => {
     }
   }
 
-  const emailUser = process.env.EMAIL_USER || 'info@zynextro.com';
+  const emailUser = process.env.EMAIL_USER || 'info@radhix.com';
   const invoiceNumber = invoice.invoiceNumber || 'N/A';
   const issueDate = invoice.issueDate ? new Date(invoice.issueDate).toLocaleDateString() : 'N/A';
   const dueDate = invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A';
@@ -142,7 +142,7 @@ exports.sendInvoiceEmail = async (invoice, client, pdfPath = null) => {
   const notes = invoice.notes || invoice.customerNotes || '';
 
   const mailOptions = {
-    from: `"Zynextro CRM" <${emailUser}>`,
+    from: `"Radhix Technologies" <${emailUser}>`,
     to: clientEmail,
     subject: `Invoice ${invoiceNumber} - Payment Due`,
     html: `
@@ -155,7 +155,7 @@ exports.sendInvoiceEmail = async (invoice, client, pdfPath = null) => {
           <p><strong>Invoice Number:</strong> ${invoiceNumber}</p>
           <p><strong>Issue Date:</strong> ${issueDate}</p>
           <p><strong>Due Date:</strong> ${dueDate}</p>
-          <p><strong>Amount:</strong> $${total}</p>
+          <p><strong>Amount:</strong> ₹${total}</p>
           <p><strong>Status:</strong> ${status}</p>
         </div>
 
@@ -165,7 +165,7 @@ exports.sendInvoiceEmail = async (invoice, client, pdfPath = null) => {
         <p>If you have already made the payment, please ignore this email.</p>
         
         <p>Thank you for your business!</p>
-        <p>Best regards,<br>Zynextro Team</p>
+        <p>Best regards,<br>Radhix Technologies</p>
       </div>
     `,
     attachments,
@@ -225,7 +225,7 @@ exports.sendProposalEmail = async (proposal, recipient, pdfPath = null) => {
     }
   }
 
-  const emailUser = process.env.EMAIL_USER || 'info@zynextro.com';
+  const emailUser = process.env.EMAIL_USER || 'info@radhix.com';
   const proposalNumber = proposal.proposalNumber || 'N/A';
 
   // Safe date formatting
@@ -238,7 +238,7 @@ exports.sendProposalEmail = async (proposal, recipient, pdfPath = null) => {
   const title = proposal.title || 'Proposal';
 
   const mailOptions = {
-    from: `"Zynextro CRM" <${emailUser}>`,
+    from: `"Radhix Technologies" <${emailUser}>`,
     to: recipientEmail,
     subject: `Proposal ${proposalNumber}: ${title}`,
     html: `
@@ -251,12 +251,12 @@ exports.sendProposalEmail = async (proposal, recipient, pdfPath = null) => {
           <p><strong>Proposal Number:</strong> ${proposalNumber}</p>
           <p><strong>Issue Date:</strong> ${issueDate}</p>
           <p><strong>Valid Until:</strong> ${expiryDate}</p>
-          <p><strong>Total Value:</strong> $${total}</p>
+          <p><strong>Total Value:</strong> ₹${total}</p>
         </div>
 
         <p>We look forward to your feedback.</p>
         
-        <p>Best regards,<br>Zynextro Team</p>
+        <p>Best regards,<br>Radhix Technologies</p>
       </div>
     `,
     attachments,
@@ -312,15 +312,15 @@ exports.sendQuotationEmail = async (quotation, recipient, pdfPath = null) => {
     }
   }
 
-  const emailUser = process.env.EMAIL_USER || 'info@zynextro.com';
+  const emailUser = process.env.EMAIL_USER || 'info@radhix.com';
   const quotationNumber = quotation.quotationNumber || 'N/A';
   const title = quotation.quotationName || 'Quotation';
   const validUntil = quotation.priceValidUntil ? new Date(quotation.priceValidUntil).toLocaleDateString() : 'N/A';
   const total = (quotation.grandTotal || 0).toFixed(2);
-  const currency = quotation.currencySymbol || '₹';
+  const currency = '₹';
 
   const mailOptions = {
-    from: `"Zynextro CRM" <${emailUser}>`,
+    from: `"Radhix Technologies" <${emailUser}>`,
     to: recipientEmail,
     subject: `Quotation ${quotationNumber}: ${title}`,
     html: `
@@ -338,7 +338,7 @@ exports.sendQuotationEmail = async (quotation, recipient, pdfPath = null) => {
 
         <p>If you have any questions or would like to proceed, please let us know.</p>
         
-        <p>Best regards,<br>Zynextro Team</p>
+        <p>Best regards,<br>Radhix Technologies</p>
       </div>
     `,
     attachments,
@@ -390,7 +390,7 @@ exports.sendPaymentReminder = async (invoice, client, reminderType = 'due_date')
   }
 
   const mailOptions = {
-    from: `"Zynextro CRM" <${process.env.EMAIL_USER}>`,
+    from: `"Radhix Technologies" <${process.env.EMAIL_USER}>`,
     to: client.email,
     subject,
     html: `
@@ -402,13 +402,13 @@ exports.sendPaymentReminder = async (invoice, client, reminderType = 'due_date')
         <div style="background-color: #f5f5f5; padding: 15px; margin: 20px 0; border-radius: 5px;">
           <p><strong>Invoice Number:</strong> ${invoice.invoiceNumber}</p>
           <p><strong>Due Date:</strong> ${new Date(invoice.dueDate).toLocaleDateString()}</p>
-          <p><strong>Amount Due:</strong> $${invoice.total.toFixed(2)}</p>
+          <p><strong>Amount Due:</strong> ₹${invoice.total.toFixed(2)}</p>
         </div>
 
         <p>Please make the payment at your earliest convenience. If you have any questions or concerns, please don't hesitate to contact us.</p>
         
         <p>Thank you!</p>
-        <p>Best regards,<br>Zynextro Team</p>
+        <p>Best regards,<br>Radhix Technologies</p>
       </div>
     `,
   };
@@ -435,9 +435,9 @@ exports.sendPasswordResetEmail = async (email, name, resetUrl) => {
   const cleanResetUrl = resetUrl.trim();
 
   const mailOptions = {
-    from: 'Zynextro CRM <info@zynextro.com>',
+    from: 'Radhix Technologies <info@radhix.com>',
     to: email,
-    subject: 'Password Reset Request - Zynextro CRM',
+    subject: 'Password Reset Request - Radhix Technologies',
     html: `
       <!DOCTYPE html>
       <html>
@@ -458,7 +458,7 @@ exports.sendPasswordResetEmail = async (email, name, resetUrl) => {
                 <tr>
                   <td style="padding: 40px 30px;">
                     <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">Dear ${name || 'User'},</p>
-                    <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">You have requested to reset your password for your Zynextro CRM account.</p>
+                    <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">You have requested to reset your password for your Radhix Technologies account.</p>
                     <p style="margin: 0 0 30px 0; color: #333333; font-size: 16px; line-height: 1.6;">Please click on the button below to reset your password:</p>
         
                     <table role="presentation" style="width: 100%; margin: 30px 0;">
@@ -484,7 +484,7 @@ exports.sendPasswordResetEmail = async (email, name, resetUrl) => {
                     <p style="margin: 30px 0 0 0; color: #666666; font-size: 14px; line-height: 1.6;">If you have any questions or concerns, please contact our support team.</p>
                     
                     <p style="margin: 30px 0 0 0; color: #333333; font-size: 14px; line-height: 1.6;">Thank you!</p>
-                    <p style="margin: 10px 0 0 0; color: #333333; font-size: 14px; line-height: 1.6;">Best regards,<br><strong>Zynextro Team</strong></p>
+                    <p style="margin: 10px 0 0 0; color: #333333; font-size: 14px; line-height: 1.6;">Best regards,<br><strong>Radhix Technologies</strong></p>
                   </td>
                 </tr>
                 <tr>
@@ -558,7 +558,7 @@ exports.sendPasswordResetEmail = async (email, name, resetUrl) => {
       });
 
       console.error('\n--- Troubleshooting Steps ---');
-      console.error('1. Verify email address: info@zynextro.com');
+      console.error('1. Verify email address: info@radhix.com');
       console.error('2. Verify password is correct (case-sensitive, no spaces)');
       console.error('3. Check Hostinger email account is active');
       console.error('4. Ensure SMTP is enabled in Hostinger control panel');
@@ -568,7 +568,7 @@ exports.sendPasswordResetEmail = async (email, name, resetUrl) => {
 
       const authError = new Error(
         `Email authentication failed (535). SMTP Response: ${error.response || error.message}. ` +
-        `Please verify Hostinger email credentials (info@zynextro.com). ` +
+        `Please verify Hostinger email credentials (info@radhix.com). ` +
         `If authentication still fails, generate a Hostinger SMTP App Password and use it instead of the regular password.`
       );
       authError.code = 'EAUTH';
@@ -664,7 +664,7 @@ exports.sendSalarySlipEmail = async (salarySlip, employee, pdfPath = null) => {
     }
   }
 
-  const emailUser = process.env.EMAIL_USER || 'info@zynextro.com';
+  const emailUser = process.env.EMAIL_USER || 'info@radhix.com';
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'];
   const monthName = monthNames[salarySlip.month - 1] || `Month ${salarySlip.month}`;
@@ -842,12 +842,12 @@ exports.sendOfferEmail = async (offer, token) => {
     }
   }
 
-  const emailUser = process.env.EMAIL_USER || 'info@zynextro.com';
+  const emailUser = process.env.EMAIL_USER || 'info@radhix.com';
 
   const mailOptions = {
-    from: `"Zynextro HR" <${emailUser}>`,
+    from: `"Radhix Technologies HR" <${emailUser}>`,
     to: candidateEmail,
-    subject: `Offer of Employment - ${offer.designation || 'Zynextro'}`,
+    subject: `Offer of Employment - ${offer.designation || 'Radhix Technologies'}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
         <div style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
@@ -857,7 +857,7 @@ exports.sendOfferEmail = async (offer, token) => {
         <div style="padding: 30px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0 0 8px 8px;">
             <p>Dear <strong>${candidateName}</strong>,</p>
             
-            <p>We are pleased to offer you the position of <strong>${offer.designation}</strong> at Zynextro Technology Consulting.</p>
+            <p>We are pleased to offer you the position of <strong>${offer.designation}</strong> at Radhix Technologies.</p>
             
             <p>We were impressed by your skills and experience, and we believe you will be a valuable asset to our team.</p>
             
@@ -879,7 +879,7 @@ exports.sendOfferEmail = async (offer, token) => {
 
             <p>If you have any questions, please feel free to reach out to us.</p>
             
-            <p style="margin-top: 30px;">Best regards,<br><strong>HR Team</strong><br>Zynextro Technology Consulting</p>
+            <p style="margin-top: 30px;">Best regards,<br><strong>HR Team</strong><br>Radhix Technologies</p>
         </div>
         
         <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #9ca3af;">
@@ -921,8 +921,8 @@ exports.sendExitDocumentsEmail = async (employee, exitRequest, attachments = [])
 
   console.log(`[Email Service] Sending exit documents to: ${employeeEmail}`);
 
-  const emailUser = process.env.EMAIL_USER || 'info@zynextro.com';
-  const companyName = process.env.COMPANY_NAME || 'Zynextro CRM';
+  const emailUser = process.env.EMAIL_USER || 'info@radhix.com';
+  const companyName = process.env.COMPANY_NAME || 'Radhix Technologies';
 
   // Build document list for email
   const documentTypes = [];

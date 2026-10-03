@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logo from "../assets/logo.jpg";
+import logo from "../assets/radhix-technologies-logo.webp";
 import footerBg from "../assets/footer.png";
 
 function Footer() {
@@ -17,7 +17,7 @@ function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:gap-12 text-center md:text-left">
           {/* Brand Column */}
           <div className="flex flex-col gap-4 items-center md:items-start">
-            <img src={logo} alt="Zynextro CRM" className="h-12 w-auto object-contain" />
+            <img src={logo} alt="Radhix Technologies" className="h-12 w-auto object-contain" />
             <p className="max-w-xs text-slate-800 font-medium">
               Empowering businesses with advanced customer relationship management solutions.
             </p>
@@ -25,18 +25,18 @@ function Footer() {
             {/* Social Media Links */}
             <div className="flex items-center justify-center md:justify-start gap-4 mt-2">
               <a
-                href="https://x.com/zynextro"
+                href="https://www.facebook.com/profile.php?id=61593682048488"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-slate-200/60 hover:bg-[#4f46e5] text-blue-900 hover:text-white flex items-center justify-center transition-all"
-                aria-label="Twitter"
+                aria-label="Facebook"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
+                  <path d="M13.5 21v-8.2h2.8l.4-3.2h-3.2V7.5c0-.9.3-1.6 1.6-1.6h1.7V3.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3v3.2h2.8V21h3.4z" />
                 </svg>
               </a>
               <a
-                href="https://www.linkedin.com/company/zynextrotechnologies/"
+                href="https://www.linkedin.com/company/radhix-technologies/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-slate-200/60 hover:bg-[#4f46e5] text-blue-900 hover:text-white flex items-center justify-center transition-all"
@@ -47,7 +47,7 @@ function Footer() {
                 </svg>
               </a>
               <a
-                href="https://www.instagram.com/zynextrotechnologies"
+                href="https://www.instagram.com/radhixtechnologies/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-slate-200/60 hover:bg-[#4f46e5] text-blue-900 hover:text-white flex items-center justify-center transition-all"
@@ -58,14 +58,14 @@ function Footer() {
                 </svg>
               </a>
               <a
-                href="https://www.youtube.com/zynextro"
+                href="https://wa.me/917042793777"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-slate-200/60 hover:bg-[#4f46e5] text-blue-900 hover:text-white flex items-center justify-center transition-all"
-                aria-label="YouTube"
+                aria-label="Call Radhix Technologies on WhatsApp"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                  <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.61 21 3 13.39 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.25 1.01l-2.2 2.2z" />
                 </svg>
               </a>
             </div>

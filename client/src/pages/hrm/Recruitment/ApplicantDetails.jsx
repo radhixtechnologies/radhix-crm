@@ -55,20 +55,7 @@ const ApplicantDetails = () => {
     }
   };
 
-  const handleStatusChange = async (status) => {
-    try {
-      setUpdating(true);
-      await hrmService.updateApplicantStatus(id, { status });
-      // Optimistic update
-      setApplicant(prev => ({ ...prev, status }));
-      alert('Status updated successfully');
-    } catch (error) {
-      alert('Failed to update status');
-      fetchApplicant();
-    } finally {
-      setUpdating(false);
-    }
-  };
+  
 
   const handleATSStageChange = async (atsStage) => {
     try {
@@ -76,7 +63,7 @@ const ApplicantDetails = () => {
       await hrmService.updateApplicantStatus(id, { atsStage });
       setApplicant(prev => ({ ...prev, atsStage }));
       alert('ATS stage updated successfully');
-    } catch (error) {
+    } catch {
       alert('Failed to update ATS stage');
       fetchApplicant();
     } finally {
@@ -91,7 +78,7 @@ const ApplicantDetails = () => {
       setShowNotesModal(false);
       setApplicant(prev => ({ ...prev, ...notes }));
       alert('Notes saved successfully');
-    } catch (error) {
+    } catch {
       alert('Failed to save notes');
     } finally {
       setUpdating(false);
@@ -105,7 +92,7 @@ const ApplicantDetails = () => {
       setShowEvaluationModal(false);
       setApplicant(prev => ({ ...prev, evaluation }));
       alert('Evaluation saved successfully');
-    } catch (error) {
+    } catch {
       alert('Failed to save evaluation');
     } finally {
       setUpdating(false);
@@ -120,7 +107,7 @@ const ApplicantDetails = () => {
       setDocumentForm({ name: '', type: '', url: '' });
       fetchApplicant(); // easier to refetch for docs array
       alert('Document uploaded successfully');
-    } catch (error) {
+    } catch {
       alert('Failed to upload document');
     } finally {
       setUpdating(false);

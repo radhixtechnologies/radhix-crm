@@ -13,7 +13,7 @@ import '../../../styles/employee/employee-profile.css'; // Reusing some profile 
 const TrainingDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { user, isAdmin, isSuperAdmin } = useAuth();
+    const {  isAdmin, isSuperAdmin } = useAuth();
     const [training, setTraining] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeModuleIndex, setActiveModuleIndex] = useState(0);
@@ -503,7 +503,7 @@ const TrainingDetails = () => {
                                                             return `https://player.vimeo.com/video/${id}`;
                                                         }
                                                         return url; // Return original if not matched (e.g. mp4)
-                                                    } catch (e) {
+                                                    } catch {
                                                         return url;
                                                     }
                                                 };

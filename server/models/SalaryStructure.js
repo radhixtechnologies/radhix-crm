@@ -7,7 +7,7 @@ const salaryStructureSchema = new mongoose.Schema({
   deductions: { type: mongoose.Schema.Types.Mixed, default: {} },
   grossSalary: { type: Number, default: 0 },
   annualCTC: { type: Number, default: 0 },
-  currency: { type: String, default: 'INR' },
+  currency: { type: String, enum: ['INR'], default: 'INR', set: () => 'INR' },
   effectiveFrom: { type: Date, default: Date.now },
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });

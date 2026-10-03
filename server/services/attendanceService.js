@@ -227,7 +227,7 @@ class AttendanceService {
       roleSlug === 'hrm_employee' || roleSlug === 'finance_employee' ||
       roleSlug === 'operations_employee' || roleSlug === 'management_employee') {
       const currentEmployee = await employeeRepository.findByUserId(user._id);
-      if (!currentEmployee || currentEmployee._id.toString() !== employeeId) {
+      if (!currentEmployee || currentEmployee._id.toString() !== employeeId?.toString?.()) {
         throw new AppError('Not authorized to view this attendance', 403);
       }
     }

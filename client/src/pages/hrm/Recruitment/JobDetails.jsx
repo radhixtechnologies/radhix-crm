@@ -56,7 +56,7 @@ const JobDetails = () => {
             setApplicants(prev => prev.map(app =>
                 app._id === applicantId ? { ...app, status } : app
             ));
-        } catch (error) {
+        } catch {
             alert('Failed to update status');
             fetchApplicants(); // Revert on failure
         }
@@ -67,7 +67,7 @@ const JobDetails = () => {
         try {
             await hrmService.updateJobPosting(id, { status: 'closed' });
             setJob(prev => ({ ...prev, status: 'closed' }));
-        } catch (error) {
+        } catch {
             alert('Failed to close job');
         }
     };

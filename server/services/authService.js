@@ -71,7 +71,8 @@ class AuthService {
       _id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role, // Now an object with role details
+      role: user.role,
+      modulesAccess: user.modulesAccess || {},
       department: user.department,
       avatar: user.avatar,
       isActive: user.isActive,
@@ -333,7 +334,7 @@ class AuthService {
       ) {
         throw new AppError(
           `Email authentication failed (535). SMTP Response: ${error.response || error.message}. ` +
-          `Please verify your Hostinger SMTP credentials (info@zynextro.com). ` +
+          `Please verify your Hostinger SMTP credentials (info@radhix.com). ` +
           `If authentication still fails, generate a Hostinger SMTP App Password and use it instead of the regular password.`,
           500,
           'EMAIL_AUTH_ERROR'

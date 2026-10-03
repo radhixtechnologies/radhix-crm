@@ -22,7 +22,7 @@ function PrivacyPolicy() {
                         {/* Introduction */}
                         <div className="mb-12">
                             <p className="text-lg text-slate-600 leading-relaxed">
-                                At Zynextro CRM, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your data when you use our CRM services.
+                                At Radhix Technologies, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your data when you use our CRM services.
                             </p>
                         </div>
 
@@ -153,7 +153,7 @@ function PrivacyPolicy() {
                                 <li><strong>Objection:</strong> Object to certain data processing activities</li>
                             </ul>
                             <p className="text-slate-600 leading-relaxed">
-                                To exercise these rights, please contact us at privacy@zynextro.com. We will respond within 30 days.
+                                To exercise these rights, please contact us at info@radhix.com. We will respond within 30 days.
                             </p>
                         </div>
 
@@ -218,10 +218,10 @@ function PrivacyPolicy() {
                                 If you have questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
                             </p>
                             <div className="bg-slate-50 border border-slate-200 rounded-lg p-6">
-                                <p className="text-slate-700 mb-2"><strong>Data Protection Officer:</strong> privacy@zynextro.com</p>
-                                <p className="text-slate-700 mb-2"><strong>Email:</strong> support@zynextro.com</p>
-                                <p className="text-slate-700 mb-2"><strong>Phone:</strong> +91 120 456 7890</p>
-                                <p className="text-slate-700"><strong>Address:</strong> Sector 62, Noida, Uttar Pradesh 201301, India</p>
+                                <p className="text-slate-700 mb-2"><strong>Data Protection Contact:</strong> info@radhix.com</p>
+                                <p className="text-slate-700 mb-2"><strong>Email:</strong> info@radhix.com</p>
+                                <p className="text-slate-700 mb-2"><strong>Phone:</strong> +91 70427 93777</p>
+                                <p className="text-slate-700"><strong>Address:</strong> 3rd Floor, Vipul Plaza, Sector 81, Faridabad, Haryana 121002, India</p>
                             </div>
                         </div>
 
@@ -229,7 +229,7 @@ function PrivacyPolicy() {
                         <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-6 mt-12">
                             <h3 className="text-lg font-semibold text-indigo-900 mb-3">Compliance Statement</h3>
                             <p className="text-indigo-800 text-sm leading-relaxed">
-                                Zynextro CRM is committed to compliance with applicable data protection laws including the General Data Protection Regulation (GDPR), California Consumer Privacy Act (CCPA), and India's Information Technology Act. We regularly review and update our practices to ensure ongoing compliance.
+                                Radhix Technologies is committed to compliance with applicable data protection laws including the General Data Protection Regulation (GDPR), California Consumer Privacy Act (CCPA), and India's Information Technology Act. We regularly review and update our practices to ensure ongoing compliance.
                             </p>
                         </div>
                     </div>

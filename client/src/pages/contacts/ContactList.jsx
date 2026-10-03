@@ -104,7 +104,7 @@ const ContactList = () => {
             try {
                 await contactService.deleteContact(id);
                 fetchContacts();
-            } catch (error) {
+            } catch {
                 alert('Failed to delete contact');
             }
         }
@@ -115,10 +115,7 @@ const ContactList = () => {
         setActiveTab('all');
     };
 
-    const removeFilter = (key) => {
-        setFilters({ ...filters, [key]: '' });
-        if (key === 'status' || key === 'lifecycleStage') setActiveTab('all');
-    };
+    
 
     const handleApplyFilters = () => {
         setFilters({ ...filters, ...filterInputs });
@@ -126,7 +123,7 @@ const ContactList = () => {
         setPagination({ ...pagination, page: 1 });
     };
 
-    const hasFilters = filters.status || filters.lifecycleStage || filters.search;
+    
 
     const getActiveCount = () => {
         let count = 0;

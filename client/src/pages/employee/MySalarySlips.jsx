@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { FiDownload, FiSearch, FiCalendar, FiCheckCircle, FiClock, FiDollarSign, FiFilter, FiChevronDown, FiChevronUp, FiX } from 'react-icons/fi';
-import { financeService } from '../../services/financeService';
+import { employeeService } from '../../services/employeeService';
 import Loader from '../../components/common/Loader';
 import '../../styles/employee/salary-slips.css';
 import '../../styles/finance/expenses.css';
@@ -32,7 +32,7 @@ const MySalarySlips = () => {
       if (!params.month) delete params.month;
       if (!params.year) delete params.year;
 
-      const res = await financeService.getSalarySlips(params);
+      const res = await employeeService.getSalarySlips(params);
       if (res.data.success) {
         setSalarySlips(res.data.data || []);
       }
@@ -43,12 +43,17 @@ const MySalarySlips = () => {
     }
   };
 
-  const handleDownload = (pdfUrl) => {
-    if (pdfUrl) {
-      financeService.downloadSalarySlip(pdfUrl);
-    } else {
-      alert('PDF not available');
+  const handleDownload = async (salarySlipId) => {
+    try {
+      await employeeService.downloadSalarySlip(salarySlipId);
+    } catch (error) {
+      alert(error.response?.data?.message || 'Unable to download salary slip');
     }
+  };
+
+  const getGeneratedDate = (slip) => {
+    const date = new Date(slip.createdAt || slip.generatedAt);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString();
   };
 
   const getStatusBadge = (status) => {
@@ -478,22 +483,20 @@ const MySalarySlips = () => {
                   <div className="card-header">
                     <div>
                       <h3>{getMonthName(slip.month)} {slip.year}</h3>
-                      <p className="card-subtitle">
-                        Generated on {new Date(slip.generatedAt).toLocaleDateString()}
-                      </p>
+                      {getGeneratedDate(slip) && (
+                        <p className="card-subtitle">Generated on {getGeneratedDate(slip)}</p>
+                      )}
                       <div style={{ marginTop: '8px' }}>
                         {getStatusBadge(slip.status || 'pending')}
                       </div>
                     </div>
-                    {slip.pdfUrl && (
-                      <button
-                        className="btn btn-icon btn-primary"
-                        onClick={() => handleDownload(slip.pdfUrl)}
-                        title="Download PDF"
-                      >
-                        <FiDownload /> Download
-                      </button>
-                    )}
+                    <button
+                      className="btn btn-icon btn-primary"
+                      onClick={() => handleDownload(slip._id)}
+                      title="Download PDF"
+                    >
+                      <FiDownload /> Download
+                    </button>
                   </div>
 
                   <div className="card-body">
@@ -502,79 +505,31 @@ const MySalarySlips = () => {
                         <h4>Earnings</h4>
                         <div className="breakdown-item">
                           <span>Basic Salary:</span>
-                          <span>{formatCurrency(slip.earnings?.basic)}</span>
+                          <span>{formatCurrency(slip.basicSalary)}</span>
                         </div>
-                        {slip.earnings?.hra > 0 && (
+                        {Number(slip.grossSalary || 0) > Number(slip.basicSalary || 0) && (
                           <div className="breakdown-item">
-                            <span>HRA:</span>
-                            <span>{formatCurrency(slip.earnings?.hra)}</span>
-                          </div>
-                        )}
-                        {slip.earnings?.allowances > 0 && (
-                          <div className="breakdown-item">
-                            <span>Allowances:</span>
-                            <span>{formatCurrency(slip.earnings?.allowances)}</span>
-                          </div>
-                        )}
-                        {slip.earnings?.bonus > 0 && (
-                          <div className="breakdown-item">
-                            <span>Bonus:</span>
-                            <span>{formatCurrency(slip.earnings?.bonus)}</span>
-                          </div>
-                        )}
-                        {slip.earnings?.overtime > 0 && (
-                          <div className="breakdown-item">
-                            <span>Overtime Pay:</span>
-                            <span>{formatCurrency(slip.earnings?.overtime)}</span>
+                            <span>Other Earnings:</span>
+                            <span>{formatCurrency(Number(slip.grossSalary) - Number(slip.basicSalary || 0))}</span>
                           </div>
                         )}
                         <div className="breakdown-total">
                           <span>Total Earnings:</span>
-                          <span className="earnings">{formatCurrency(slip.earnings?.totalEarnings)}</span>
+                          <span className="earnings">{formatCurrency(slip.grossSalary)}</span>
                         </div>
                       </div>
 
                       <div className="breakdown-section deductions-section">
                         <h4>Deductions</h4>
-                        {slip.deductions?.pf > 0 && (
+                        {slip.deductions > 0 && (
                           <div className="breakdown-item">
-                            <span>PF:</span>
-                            <span>{formatCurrency(slip.deductions?.pf)}</span>
-                          </div>
-                        )}
-                        {slip.deductions?.tax > 0 && (
-                          <div className="breakdown-item">
-                            <span>Tax:</span>
-                            <span>{formatCurrency(slip.deductions?.tax)}</span>
-                          </div>
-                        )}
-                        {slip.deductions?.esi > 0 && (
-                          <div className="breakdown-item">
-                            <span>ESI:</span>
-                            <span>{formatCurrency(slip.deductions?.esi)}</span>
-                          </div>
-                        )}
-                        {slip.deductions?.loan > 0 && (
-                          <div className="breakdown-item">
-                            <span>Loan:</span>
-                            <span>{formatCurrency(slip.deductions?.loan)}</span>
-                          </div>
-                        )}
-                        {slip.deductions?.unpaidLeave > 0 && (
-                          <div className="breakdown-item">
-                            <span>Unpaid Leave:</span>
-                            <span>{formatCurrency(slip.deductions?.unpaidLeave)}</span>
-                          </div>
-                        )}
-                        {slip.deductions?.other > 0 && (
-                          <div className="breakdown-item">
-                            <span>Other Deductions:</span>
-                            <span>{formatCurrency(slip.deductions?.other)}</span>
+                            <span>Total Deductions:</span>
+                            <span>{formatCurrency(slip.deductions)}</span>
                           </div>
                         )}
                         <div className="breakdown-total">
                           <span>Total Deductions:</span>
-                          <span className="deductions">{formatCurrency(slip.deductions?.totalDeductions)}</span>
+                          <span className="deductions">{formatCurrency(slip.deductions)}</span>
                         </div>
                       </div>
                     </div>

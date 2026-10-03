@@ -9,7 +9,7 @@ import '../../styles/forms.css';
 import '../../styles/employee/reports.css';
 
 const EmployeeReports = () => {
-  const { user, isAdmin, isSuperAdmin } = useAuth();
+  const {  isAdmin, isSuperAdmin } = useAuth();
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState(null);
   const [filters, setFilters] = useState({
@@ -144,9 +144,7 @@ const EmployeeReports = () => {
     alert('PDF export requires additional setup. Consider using libraries like jsPDF or react-pdf. CSV export is available.');
   };
 
-  const exportReport = () => {
-    exportToCSV();
-  };
+  
 
   if (loading) return <Loader />;
 

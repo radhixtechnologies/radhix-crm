@@ -34,7 +34,7 @@ import {
 } from 'react-icons/fi';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from 'recharts';
 import Loader from '../../components/common/Loader';
-import { formatCurrency, formatNumber, formatDate } from '../../utils/format';
+import { formatCurrency, formatNumber } from '../../utils/format';
 import QuickActions from '../../components/dashboard/QuickActions';
 import NotificationsPanel from '../../components/dashboard/NotificationsPanel';
 import ActivityLogTable from '../../components/dashboard/ActivityLogTable';
@@ -135,25 +135,22 @@ const SuperAdminDashboard = () => {
 
   if (loading) return <Loader />;
 
-  const getInitials = (name) => {
-    if (!name) return 'A';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  };
+  
 
   // Calculate KPI data from real data
   const totalRevenue = finance?.totalRevenue || 0;
   const totalExpenses = finance?.totalExpenses || 0;
-  const netProfit = totalRevenue - totalExpenses;
+  
   const totalEmployees = overview?.employees?.total || 0;
-  const activeEmployees = overview?.employees?.active || 0;
+  
   const newHires = overview?.employees?.newHiresThisMonth || 0;
   const totalLeads = sales?.leads?.total || 0;
   const pendingInvoices = finance?.invoices?.pending || 0;
-  const overdueInvoices = finance?.invoices?.overdue || 0;
+  
   const pendingLeaves = hrm?.pendingLeaves || 0;
   const openJobs = hrm?.openJobPosts || 0;
-  const totalApplicants = hrm?.totalApplicants || 0;
-  const pendingPayroll = finance?.payroll?.pending || 0;
+  
+  
   const processedPayroll = finance?.payroll?.processed || 0;
 
   // Prepare chart data from real data
@@ -164,11 +161,7 @@ const SuperAdminDashboard = () => {
   })) || [];
 
   // Attendance trend data
-  const attendanceData = attendance?.attendanceTrend?.map((item) => ({
-    month: item.date || 'N/A',
-    lastMonth: item.present || 0,
-    thisMonth: item.present || 0,
-  })) || [];
+  
 
   // Prepare Attendance Pie Data
   const presentCount = attendance?.today?.present || 0;
@@ -181,24 +174,13 @@ const SuperAdminDashboard = () => {
   ];
 
   // Employee headcount trend
-  const headcountData = overview?.employees?.headcountTrend?.map((item) => {
-    const baseValue = item.count || 0;
-    return {
-      month: item.month?.substring(0, 3) || 'N/A',
-      reality: baseValue,
-      target: Math.round(baseValue * 1.15),
-    };
-  }) || [];
+  
 
   // Visitor Insights data - mapped from Lead Trend
   const visitorInsightsData = sales?.leadTrend || [];
 
   // Leave summary data
-  const leaveSummaryData = hrm?.leaveSummary?.map((item) => ({
-    category: item.month?.substring(0, 3) || 'N/A',
-    volume: item.count || 0,
-    service: 0,
-  })) || [];
+  
 
   // Sales Analytics table data - mapped from Top Products
   const totalProductSales = sales?.topProducts?.reduce((acc, curr) => acc + curr.sales, 0) || 1;
@@ -211,7 +193,7 @@ const SuperAdminDashboard = () => {
   })) || [];
 
   // Top performers data
-  const topPerformers = sales?.topPerformers?.slice(0, 5) || [];
+  
 
   const revenueAnalysisData = finance?.incomeExpenseTrend?.map(item => ({
     month: item.month || 'N/A',
@@ -221,30 +203,24 @@ const SuperAdminDashboard = () => {
   })) || [];
 
   // Calculate Today's Sales KPIs
-  const totalSales = finance?.totalRevenue || 0;
+  
   const totalOrders = sales?.totalOrders || 0;
-  const productsSold = sales?.productsSold || 0;
-  const newCustomers = sales?.leads?.closed || 0; // Won leads treated as New Customers
+  
+   // Won leads treated as New Customers
 
   // Calculate percentage changes
-  const calcChange = (arr, key) => {
-    if (!arr || arr.length < 2) return 0;
-    const current = arr[arr.length - 1][key] || 0;
-    const prev = arr[arr.length - 2][key] || 0;
-    if (prev === 0) return 0;
-    return Math.round(((current - prev) / prev) * 100);
-  };
+  
 
-  const revenueTrend = finance?.incomeExpenseTrend || [];
-  const salesChangeVal = calcChange(revenueTrend, 'income');
-  const salesChange = `${salesChangeVal >= 0 ? '+' : ''}${salesChangeVal}%`;
+  
+  
+  
 
-  const leadTrend = sales?.leadTrend || [];
-  const customersChangeVal = calcChange(leadTrend, 'loyal');
-  const customersChange = `${customersChangeVal >= 0 ? '+' : ''}${customersChangeVal}%`;
+  
+  
+  
 
-  const ordersChange = '0%'; // Trend not tracked yet
-  const productsChange = '0%'; // Trend not tracked yet
+   // Trend not tracked yet
+   // Trend not tracked yet
 
 
   return (

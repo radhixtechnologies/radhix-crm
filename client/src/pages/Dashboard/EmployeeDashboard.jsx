@@ -30,7 +30,7 @@ import '../../styles/infinity-edition.css';
 
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
-  const { user, hasModuleAccess } = useAuth();
+  const {  hasModuleAccess } = useAuth();
   const { isOpen: quickActionsOpen, toggleQuickActions, closeQuickActions } = useQuickActions();
   const [loading, setLoading] = useState(true);
   const [employeeData, setEmployeeData] = useState(null);
@@ -79,7 +79,7 @@ const EmployeeDashboard = () => {
 
   if (!employeeData) return <Loader />;
 
-  const { attendance, tasks, leaveBalance, recentLeaves, salarySlip, performance, employeeId, leaveUsageTrend } = employeeData;
+  const { attendance, tasks, leaveBalance, recentLeaves, salarySlip, performance, leaveUsageTrend } = employeeData;
 
   const todayStatus = attendance?.today?.status || 'Not Checked In';
   const todayHours = attendance?.today?.hoursWorked || 0;

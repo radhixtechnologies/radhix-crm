@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { employeeService } from '../../services/employeeService';
+
+
 import { FiPlus, FiSearch, FiDollarSign, FiCalendar, FiCheckCircle, FiClock, FiXCircle, FiFilter, FiChevronDown, FiChevronUp, FiX } from 'react-icons/fi';
 import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
@@ -8,7 +8,7 @@ import { formatCurrency, formatDate } from '../../utils/format';
 import '../../styles/employee/reimbursements.css';
 
 const Reimbursements = () => {
-  const { user, isAdmin, isSuperAdmin } = useAuth();
+  
   const [reimbursements, setReimbursements] = useState([]);
   const [filteredReimbursements, setFilteredReimbursements] = useState([]);
   const [loading, setLoading] = useState(true);

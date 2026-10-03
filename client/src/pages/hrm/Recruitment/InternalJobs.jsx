@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { FiBriefcase, FiMapPin, FiClock, FiCheckCircle } from 'react-icons/fi';
 import { hrmService } from '../../../services/hrmService';
 import Loader from '../../../components/common/Loader';
@@ -8,7 +8,7 @@ import InternalApplyModal from './InternalApplyModal'; // Import Modal
 import '../../../styles/employee/employees.css';
 
 const InternalJobs = () => {
-    const navigate = useNavigate();
+    
     const { user } = useAuth();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);

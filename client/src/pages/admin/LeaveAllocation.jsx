@@ -64,7 +64,7 @@ const LeaveAllocation = () => {
           if (response.data.success && response.data.data) {
             balances.push(response.data.data);
           }
-        } catch (error) {
+        } catch {
           // Skip if balance doesn't exist
         }
       }

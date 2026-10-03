@@ -65,7 +65,7 @@ const ApplicantsList = () => {
       setApplicants(prev => prev.map(app =>
         app._id === applicantId ? { ...app, status } : app
       ));
-    } catch (error) {
+    } catch {
       alert('Failed to update status');
       fetchApplicants();
     }

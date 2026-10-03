@@ -4,6 +4,7 @@ import { FiPlus, FiEdit, FiTrash2, FiSearch, FiPackage, FiTrendingUp, FiTrending
 import api from '../../services/api';
 import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
+import { formatCurrency } from '../../utils/format';
 import './ProductList.css';
 
 const ProductList = () => {
@@ -231,7 +232,7 @@ const ProductList = () => {
                     </div>
                     <div>
                         <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-                            ${products.reduce((sum, p) => sum + ((p.unitPrice ?? p.price ?? 0) * p.stockQuantity), 0).toLocaleString()}
+                            {formatCurrency(products.reduce((sum, p) => sum + ((p.unitPrice ?? p.price ?? 0) * p.stockQuantity), 0))}
                         </div>
                         <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
                             Total Value
@@ -303,7 +304,7 @@ const ProductList = () => {
                                     <td className="category-cell">
                                         <span className="category-badge">{product.category.replace('_', ' ')}</span>
                                     </td>
-                                    <td className="price-cell">${Number(product.unitPrice ?? product.price ?? 0).toFixed(2)}</td>
+                                    <td className="price-cell">{formatCurrency(product.unitPrice ?? product.price ?? 0)}</td>
                                     <td className="stock-cell">
                                         <span className={`stock-quantity ${isLowStock(product) ? 'low' : ''}`}>
                                             {product.stockQuantity} {product.unit}

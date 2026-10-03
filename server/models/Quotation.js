@@ -9,7 +9,7 @@ const quotationSchema = new mongoose.Schema({
   customClientDetails: { type: Object, default: null },
   quotationDate: { type: Date, default: Date.now },
   priceValidUntil: Date,
-  currency: { type: String, default: 'INR' },
+  currency: { type: String, enum: ['INR'], default: 'INR', set: () => 'INR' },
   status: { type: String, enum: ['draft', 'sent', 'accepted', 'rejected', 'expired'], default: 'draft' },
   deliverables: { type: Array, default: [] },
   extraRequirements: { type: Array, default: [] },

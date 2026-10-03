@@ -23,7 +23,7 @@ const ProposalForm = ({ proposal, onSubmit, onCancel }) => {
         paymentTerms: proposal?.paymentTerms || '',
         executionTimeline: proposal?.executionTimeline || '',
         estimatedValue: proposal?.estimatedValue || '',
-        currency: proposal?.currency || 'INR',
+        currency: 'INR',
         status: proposal?.status || 'draft',
         notes: proposal?.notes || ''
     });
@@ -75,7 +75,7 @@ const ProposalForm = ({ proposal, onSubmit, onCancel }) => {
     const handleSubmit = async () => {
         setLoading(true);
         try { await onSubmit(formData); }
-        catch (error) { alert('Error saving proposal'); }
+        catch { alert('Error saving proposal'); }
         finally { setLoading(false); }
     };
 

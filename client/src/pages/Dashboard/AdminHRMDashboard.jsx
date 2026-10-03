@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { hrmService } from '../../services/hrmService';
 import { dashboardService } from '../../services/dashboardService';
 import {
@@ -23,7 +23,7 @@ import {
   FiBarChart2,
 } from 'react-icons/fi';
 import Loader from '../../components/common/Loader';
-import { formatCurrency, formatNumber, formatDate } from '../../utils/format';
+import {  formatNumber } from '../../utils/format';
 import QuickActions from '../../components/dashboard/QuickActions';
 import KPIBadge from '../../components/dashboard/KPIBadge';
 import NotificationsPanel from '../../components/dashboard/NotificationsPanel';
@@ -38,7 +38,7 @@ import '../../styles/infinity-edition.css';
 import '../../styles/dashboard/superadmin-dashboard-new.css';
 
 const AdminHRMDashboard = () => {
-  const navigate = useNavigate();
+  
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('summary');
   const [activityPage, setActivityPage] = useState(1);
@@ -65,25 +65,25 @@ const AdminHRMDashboard = () => {
       setLoading(true);
 
       // Fetch HRM insights from dashboard service
-      const hrmRes = await dashboardService.getHRMInsights().catch(err => ({ data: { success: false } }));
+      const hrmRes = await dashboardService.getHRMInsights().catch(() => ({ data: { success: false } }));
       if (hrmRes.data?.success) {
         setHrmData(hrmRes.data.data);
       }
 
       // Fetch job postings
-      const jobsRes = await hrmService.getJobPostings().catch(err => ({ data: { success: false } }));
+      const jobsRes = await hrmService.getJobPostings().catch(() => ({ data: { success: false } }));
       if (jobsRes.data?.success) {
         setJobPostings(jobsRes.data.data || []);
       }
 
       // Fetch applications
-      const appsRes = await hrmService.getJobApplications().catch(err => ({ data: { success: false } }));
+      const appsRes = await hrmService.getJobApplications().catch(() => ({ data: { success: false } }));
       if (appsRes.data?.success) {
         setApplications(appsRes.data.data || []);
       }
 
       // Fetch performance reviews
-      const perfRes = await hrmService.getPerformanceReviews().catch(err => ({ data: { success: false } }));
+      const perfRes = await hrmService.getPerformanceReviews().catch(() => ({ data: { success: false } }));
       if (perfRes.data?.success) {
         setPerformance(perfRes.data.data || []);
       }
@@ -104,7 +104,7 @@ const AdminHRMDashboard = () => {
 
   const fetchActivityLog = async () => {
     try {
-      const res = await dashboardService.getActivityLog({ page: activityPage, limit: 10 }).catch(err => ({ data: { success: false } }));
+      const res = await dashboardService.getActivityLog({ page: activityPage, limit: 10 }).catch(() => ({ data: { success: false } }));
       if (res.data?.success) {
         setActivityLog({
           logs: res.data.data?.logs || [],
@@ -154,21 +154,13 @@ const AdminHRMDashboard = () => {
   const jobsChange = calculateChange(recentJobs.length, previousJobs.length);
 
   // Calculate application trends
-  const recentApplications = applications.filter(a => {
-    const appDate = new Date(a.appliedAt || a.createdAt);
-    return appDate >= sixMonthsAgo;
-  });
-  const previousApplications = applications.filter(a => {
-    const appDate = new Date(a.appliedAt || a.createdAt);
-    const sixMonthsBefore = new Date(sixMonthsAgo);
-    sixMonthsBefore.setMonth(sixMonthsBefore.getMonth() - 6);
-    return appDate >= sixMonthsBefore && appDate < sixMonthsAgo;
-  });
-  const applicationsChange = calculateChange(recentApplications.length, previousApplications.length);
+  
+  
+  
 
   // Mock changes for interviews and onboarding (can be enhanced with real data)
-  const interviewsChange = upcomingInterviews > 0 ? '+8%' : '0%';
-  const onboardingChange = pendingOnboarding > 0 ? '+3%' : '0%';
+  
+  
 
   // Prepare chart data from real data
   // Job Postings Growth Trend (last 6 months)
@@ -261,24 +253,10 @@ const AdminHRMDashboard = () => {
     }));
 
   // Application Status Summary (from leaveSummary if available, otherwise use applications)
-  const applicationStatusData = hrmData?.leaveSummary?.map((item, index) => ({
-    category: item.month?.substring(0, 3) || 'N/A',
-    volume: item.count || 0,
-    service: 0,
-  })) || [
-      { category: 'App', volume: pendingApplications, service: 0 },
-      { category: 'Int', volume: upcomingInterviews, service: 0 },
-      { category: 'Hir', volume: totalApplications - pendingApplications, service: 0 },
-    ];
+  
 
   // Top Job Postings
-  const topJobPostings = jobPostings.slice(0, 5).map((job, index) => ({
-    id: index + 1,
-    name: job.title || 'N/A',
-    popularity: Math.round((applications.filter(a => a.jobPosting?._id === job._id).length / totalApplications) * 100) || 0,
-    sales: applications.filter(a => a.jobPosting?._id === job._id).length || 0,
-    color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'][index] || '#3B82F6',
-  }));
+  
 
   // Toggle Quick Actions on mobile
   const toggleQuickActions = () => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import industrySolutions from "../data/industrySolutions.json";
 
 // Import images to ensure they are bundled by Vite
@@ -20,7 +20,6 @@ const imageMap = {
 function IndustrySolutions() {
   const [activeTab, setActiveTab] = useState("ecommerce");
   const activeSolution = industrySolutions.find((sol) => sol.id === activeTab);
-  const [isPaused, setIsPaused] = useState(false);
 
   // Define all 5 icons as components
   const iconComponents = [
@@ -148,12 +147,6 @@ function IndustrySolutions() {
     return sequence;
   };
 
-  // Smooth continuous scrolling - no pause/resume for smoother animation
-  useEffect(() => {
-    // Keep animations running continuously for smoother effect
-    setIsPaused(false);
-  }, []);
-
   return (
     <section className="bg-white py-12 sm:py-16 md:py-20">
       <div className="mx-auto max-w-[1400px] px-4">
@@ -178,7 +171,7 @@ function IndustrySolutions() {
                     <div
                       className={`animate-icon-scroll-${positionIndex + 1} flex flex-col`}
                       style={{
-                        animationPlayState: isPaused ? "paused" : "running",
+                        animationPlayState: "running",
                         transition: "animation-play-state 0.3s ease",
                       }}
                     >

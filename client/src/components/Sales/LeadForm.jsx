@@ -15,7 +15,7 @@ const LeadForm = ({ lead, onSubmit, onCancel, loading = false }) => {
     status: lead?.status || 'new',
     leadTemperature: lead?.leadTemperature || 'cold',
     value: lead?.value || 0,
-    currency: lead?.currency || 'INR',
+    currency: 'INR',
     assignedTo: lead?.assignedTo?._id || lead?.assignedTo || '',
     notes: Array.isArray(lead?.notes) ? lead.notes.map(n => n.content).join('\n') : '',
     followUpDate: lead?.followUpDate ? new Date(lead.followUpDate).toISOString().split('T')[0] : '',
@@ -49,10 +49,8 @@ const LeadForm = ({ lead, onSubmit, onCancel, loading = false }) => {
         submitData.assignedTo = null;
       }
 
-      // Remove notes from submission (notes should be added via separate endpoint)
-      // If there's a notes string, we'll handle it separately after lead creation
-      const notesContent = submitData.notes;
-      delete submitData.notes;
+      const notesContent = submitData.notes?.trim() || '';
+      submitData.notes = notesContent ? [{ content: notesContent }] : [];
 
       // Convert empty string to null for followUpDate
       if (submitData.followUpDate === '') {

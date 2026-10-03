@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { authService } from "../../services/authService";
+
+import BrandLogo from "../../components/common/BrandLogo";
 import { MdEmail, MdLock, MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { FiLogIn } from "react-icons/fi";
 import { IoShieldCheckmark } from "react-icons/io5";
@@ -91,23 +92,25 @@ const Login = () => {
           {/* Header */}
           <div
             style={{
-              backgroundColor: "#3b82f6",
-              color: "white",
+              backgroundColor: "white",
+              color: "#102c64",
               padding: "30px 24px",
               borderRadius: "12px 12px 0 0",
               textAlign: "center",
               marginBottom: 0,
             }}
           >
+            <BrandLogo variant="login" />
             <h1
               style={{
                 fontSize: "28px",
                 fontWeight: 700,
                 margin: 0,
                 marginBottom: "8px",
+                color: "#102c64",
               }}
             >
-              Radhix CRM
+              Radhix Technologies
             </h1>
             <p
               style={{
@@ -115,6 +118,7 @@ const Login = () => {
                 margin: 0,
                 marginTop: "8px",
                 opacity: 0.95,
+                color: "#4b5563",
               }}
             >
               Welcome back! Please sign in to your account.

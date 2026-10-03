@@ -26,7 +26,9 @@ const jobPostingSchema = new mongoose.Schema({
   salaryMax: Number,
   currency: {
     type: String,
-    default: 'USD',
+    enum: ['INR'],
+    default: 'INR',
+    set: () => 'INR',
   },
   isSalaryVisible: {
     type: Boolean,

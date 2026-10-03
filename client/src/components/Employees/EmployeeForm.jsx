@@ -6,7 +6,7 @@ import '../../styles/forms.css';
 
 const EmployeeForm = ({ onSubmit, initialData = null, loading = false }) => {
   const { isAdmin, isSuperAdmin } = useAuth();
-  const [users, setUsers] = useState([]);
+  const [, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [formData, setFormData] = useState({
     userId: '',

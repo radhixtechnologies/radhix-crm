@@ -4,7 +4,7 @@ import { FiX, FiCheck, FiSend, FiClock } from 'react-icons/fi';
 import { hrmService } from '../../services/hrmService';
 import { formatDate, formatCurrency } from '../../utils/format';
 
-const OfferManagement = ({ applicationId, onClose, onUpdate }) => {
+const OfferManagement = ({ applicationId }) => {
     const navigate = useNavigate();
     const [offers, setOffers] = useState([]);
     const [loading, setLoading] = useState(true);

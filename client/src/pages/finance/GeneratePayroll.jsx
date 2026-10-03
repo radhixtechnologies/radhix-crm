@@ -87,8 +87,8 @@ const GeneratePayroll = () => {
             <select name="employee" value={form.employee} onChange={handleChange} required>
               <option value="">Select employee</option>
               {employees.map((employee) => (
-                <option key={employee._id || employee.id} value={employee._id || employee.id}>
-                  {employee.name || employee.fullName || employee.email}
+                <option key={employee._id || employee.id || employee.employeeId} value={employee._id || employee.id}>
+                  {employee.user?.name || employee.name || employee.fullName || employee.user?.email || employee.email || employee.employeeId || 'Unnamed employee'}
                 </option>
               ))}
             </select>

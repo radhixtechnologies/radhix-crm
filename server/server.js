@@ -280,7 +280,7 @@ mountRoute('/api/pipeline-stages', './routes/pipelineStages');
 
 // Health check route
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Zynextro CRM API is running' });
+  res.json({ status: 'OK', message: 'Radhix Technologies CRM API is running' });
 });
 
 // Note: Cron jobs are now started in startServer() function after server starts

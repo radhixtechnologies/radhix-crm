@@ -25,11 +25,17 @@ const CampaignList = () => {
         try {
             setLoading(true);
             const res = await marketingService.getCampaigns(filters);
-            if (res.data.success) {
-                setCampaigns(res.data.data.campaigns || []);
-            }
+            const payload = res?.data?.data;
+            const normalizedCampaigns = Array.isArray(payload)
+                ? payload
+                : Array.isArray(payload?.campaigns)
+                    ? payload.campaigns
+                    : [];
+
+            setCampaigns(normalizedCampaigns);
         } catch (error) {
             console.error('Error fetching campaigns:', error);
+            setCampaigns([]);
         } finally {
             setLoading(false);
         }
@@ -62,9 +68,9 @@ const CampaignList = () => {
     };
 
     return (
-        <div className="timesheets-list-page fade-in">
+        <div className="campaign-list-page fade-in">
             {/* Header Row */}
-            <div className="timesheets-page-header">
+            <div className="campaign-page-header">
                 <div className="header-title-group">
                     <div className="title-text">
                         <h1 className="page-title">Campaigns</h1>
@@ -73,9 +79,9 @@ const CampaignList = () => {
                         </p>
                     </div>
                 </div>
-                <div className="header-actions">
+                <div className="header-actions campaign-actions">
                     <button
-                        className="btn btn-primary"
+                        className="btn btn-primary campaign-create-btn"
                         onClick={() => navigate('/marketing/campaigns/new')}
                     >
                         <FiPlus size={16} />
@@ -83,7 +89,7 @@ const CampaignList = () => {
                     </button>
                     <button
                         ref={buttonRef}
-                        className="btn filter-btn-mobile"
+                        className="btn filter-btn-mobile campaign-filter-btn"
                         onClick={() => setShowFilters(!showFilters)}
                         style={{
                             display: 'flex',
@@ -117,12 +123,7 @@ const CampaignList = () => {
             </div>
 
             {/* Stats Cards */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '16px',
-                marginBottom: '24px'
-            }}>
+            <div className="campaign-stats-grid">
                 {/* Total Campaigns */}
                 <div style={{
                     background: 'white',
@@ -257,8 +258,8 @@ const CampaignList = () => {
             </div>
 
             {/* Search Bar Section */}
-            <div className="search-bar-section" style={{ marginBottom: '16px' }}>
-                <div className="toolbar-search" style={{ margin: 0, width: '100%', maxWidth: '280px' }}>
+            <div className="search-bar-section campaign-toolbar-block">
+                <div className="toolbar-search campaign-search-box" style={{ margin: 0, width: '100%', maxWidth: '280px' }}>
                     <FiSearch className="search-icon" />
                     <input
                         type="text"
@@ -459,12 +460,14 @@ const CampaignList = () => {
                                 </div>
                             ))
                         ) : (
-                            <div className="empty-state">
-                                <FiCalendar size={64} />
+                            <div className="campaign-empty-state">
+                                <div className="campaign-empty-icon">
+                                    <FiCalendar size={64} />
+                                </div>
                                 <h3>No campaigns found</h3>
                                 <p>Create your first campaign to get started!</p>
                                 <button
-                                    className="btn btn-primary"
+                                    className="btn btn-primary campaign-create-btn campaign-empty-btn"
                                     onClick={() => navigate('/marketing/campaigns/new')}
                                 >
                                     <FiPlus /> Create Campaign

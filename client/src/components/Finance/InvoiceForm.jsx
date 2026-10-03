@@ -3,6 +3,7 @@ import { financeService } from '../../services/financeService';
 import { productService } from '../../services/productService';
 import { FiPlus, FiTrash2, FiCopy, FiUpload, FiX, FiEye, FiSend, FiSave } from 'react-icons/fi';
 import Loader from '../common/Loader';
+import { formatCurrency } from '../../utils/format';
 import '../../styles/finance/invoice-form.css';
 
 const InvoiceForm = ({ invoice, onSubmit, onCancel }) => {
@@ -333,109 +334,7 @@ const InvoiceForm = ({ invoice, onSubmit, onCancel }) => {
     alert('Preview functionality will open in a new window');
   };
 
-  const handleGeneratePDFAndSendEmail = async () => {
-    if (!formData.client) {
-      alert('Please select a client first.');
-      return;
-    }
-
-    if (!formData.dueDate) {
-      alert('Please select a due date.');
-      return;
-    }
-
-    if (!formData.items || formData.items.length === 0 || formData.items.every(item => !item.description && !item.name)) {
-      alert('Please add at least one item to the invoice.');
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      // Prepare invoice data
-      const invoiceData = {
-        client: formData.client,
-        invoiceNumber: formData.invoiceNumber || '',
-        issueDate: formData.issueDate,
-        dueDate: formData.dueDate,
-        poNumber: formData.poNumber || '',
-        project: formData.project || '',
-        department: formData.department || '',
-        items: formData.items.map(item => ({
-          name: item.name || '',
-          description: item.description || '',
-          quantity: item.quantity || 0,
-          rate: item.rate || 0,
-          taxRate: item.taxRate || 0,
-          amount: item.amount || 0,
-        })),
-        taxRate: formData.taxRate || 0,
-        taxMode: formData.taxMode || 'exclusive',
-        discountType: formData.discountType || 'flat',
-        shipping: formData.shipping || 0,
-        additionalCharges: formData.additionalCharges || 0,
-        amountPaid: formData.amountPaid || 0,
-        customerNotes: formData.customerNotes || '',
-        terms: formData.terms || '',
-        footerMessage: formData.footerMessage || '',
-        notes: formData.notes || '',
-        subtotal: calculations.subtotal,
-        discount: calculations.discount,
-        tax: calculations.tax,
-        total: calculations.total,
-        balanceDue: calculations.balanceDue,
-        status: 'sent',
-      };
-
-      // First save the invoice if it's new
-      let invoiceId = invoice?._id;
-
-      if (!invoiceId) {
-        // Create the invoice and get the ID
-        const createRes = await financeService.createInvoice(invoiceData);
-        if (!createRes.data.success) {
-          throw new Error(createRes.data.message || 'Failed to create invoice');
-        }
-
-        invoiceId = createRes.data.data._id;
-      } else {
-        // Update existing invoice
-        await financeService.updateInvoice(invoiceId, invoiceData);
-      }
-
-      if (!invoiceId) {
-        throw new Error('Invoice ID not found');
-      }
-
-      // Generate PDF
-      const pdfRes = await financeService.generateInvoicePDF(invoiceId);
-      if (!pdfRes.data.success) {
-        throw new Error(pdfRes.data.message || 'Failed to generate PDF');
-      }
-
-      // Send Email
-      const emailRes = await financeService.sendInvoiceEmail(invoiceId);
-      if (!emailRes.data.success) {
-        throw new Error(emailRes.data.message || 'Failed to send email');
-      }
-
-      alert('PDF generated and email sent successfully!');
-
-      // If this was a new invoice, navigate to invoice list
-      if (!invoice?._id) {
-        window.location.href = '/finance/invoices';
-      } else {
-        // Refresh the page to show updated invoice
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error('Error generating PDF and sending email:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to generate PDF and send email. Please try again.';
-      alert(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   return (
     <div className="invoice-form-main">
@@ -679,7 +578,7 @@ const InvoiceForm = ({ invoice, onSubmit, onCancel }) => {
                       />
                     </td>
                     <td className="col-amount-cell" style={{ fontWeight: '700', fontSize: '15px' }}>
-                      ${item.amount.toFixed(2)}
+                      {formatCurrency(item.amount)}
                     </td>
                     <td className="col-actions-cell" style={{ verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
@@ -774,7 +673,7 @@ const InvoiceForm = ({ invoice, onSubmit, onCancel }) => {
             <div className="summary-card-modern shadow-sm">
               <div className="calc-row">
                 <span>Subtotal</span>
-                <span>${calculations.subtotal.toFixed(2)}</span>
+                <span>{formatCurrency(calculations.subtotal)}</span>
               </div>
 
               <div className="calc-row">
@@ -786,7 +685,7 @@ const InvoiceForm = ({ invoice, onSubmit, onCancel }) => {
                     value={formData.discountType}
                     onChange={(e) => setFormData({ ...formData, discountType: e.target.value })}
                   >
-                    <option value="flat">($)</option>
+                    <option value="flat">(₹)</option>
                     <option value="percentage">(%)</option>
                   </select>
                 </div>
@@ -798,7 +697,7 @@ const InvoiceForm = ({ invoice, onSubmit, onCancel }) => {
                     value={formData.discount}
                     onChange={(e) => setFormData({ ...formData, discount: parseFloat(e.target.value) || 0 })}
                   />
-                  <span style={{ color: 'var(--error)', fontWeight: '600' }}>-${calculations.discount.toFixed(2)}</span>
+                  <span style={{ color: 'var(--error)', fontWeight: '600' }}>-{formatCurrency(calculations.discount)}</span>
                 </div>
               </div>
 
@@ -827,7 +726,7 @@ const InvoiceForm = ({ invoice, onSubmit, onCancel }) => {
 
               <div className="calc-row grand-total">
                 <span>Total Amount</span>
-                <span>${calculations.total.toFixed(2)}</span>
+                <span>{formatCurrency(calculations.total)}</span>
               </div>
 
               <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
@@ -843,7 +742,7 @@ const InvoiceForm = ({ invoice, onSubmit, onCancel }) => {
                 </div>
                 <div className="calc-row" style={{ color: calculations.balanceDue > 0 ? 'var(--error)' : 'var(--success)', marginTop: '8px' }}>
                   <span style={{ fontWeight: '700' }}>Balance Due</span>
-                  <span style={{ fontWeight: '800', fontSize: '18px' }}>${calculations.balanceDue.toFixed(2)}</span>
+                  <span style={{ fontWeight: '800', fontSize: '18px' }}>{formatCurrency(calculations.balanceDue)}</span>
                 </div>
               </div>
             </div>

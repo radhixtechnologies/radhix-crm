@@ -75,8 +75,9 @@ const leadSchema = new mongoose.Schema({
   },
   currency: {
     type: String,
-    enum: ['INR', 'USD', 'EUR', 'GBP', 'AUD', 'CAD'],
+    enum: ['INR'],
     default: 'INR',
+    set: () => 'INR',
   },
   probability: {
     type: Number,

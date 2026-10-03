@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { FiX, FiCalendar, FiClock, FiUsers, FiBell, FiTrash2 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
-import { activityService } from '../../services/activityService';
+import { calendarService } from '../../services/calendarService';
 import './NewEventDrawer.css';
 
 const NewEventDrawer = ({ isOpen, onClose, onEventCreated, eventToEdit, onEventUpdated, onEventDeleted }) => {
-    const { user, isAdmin, isSuperAdmin } = useAuth();
+    const { isAdmin, isSuperAdmin } = useAuth();
 
     const [formData, setFormData] = useState({
         subject: '',

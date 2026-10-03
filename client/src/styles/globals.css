@@ -1,19 +1,19 @@
 :root {
-  --primary-color: #6366f1;
-  --primary-dark: #4f46e5;
-  --primary-light: #818cf8;
-  --secondary-color: #8b5cf6;
+  --primary-color: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #60a5fa;
+  --secondary-color: #0f766e;
   --background: #ffffff;
-  --surface: #f9fafb;
-  --surface-hover: #f3f4f6;
-  --border: #e5e7eb;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --text-tertiary: #9ca3af;
-  --success: #10b981;
+  --surface: #f5f7fb;
+  --surface-hover: #edf2f8;
+  --border: #e2e8f0;
+  --text-primary: #172033;
+  --text-secondary: #596579;
+  --text-tertiary: #8591a3;
+  --success: #138a63;
   --warning: #f59e0b;
   --error: #ef4444;
-  --info: #3b82f6;
+  --info: #0e7490;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -23,6 +23,10 @@
 }
 
 [data-theme='dark'] {
+  --primary-color: #60a5fa;
+  --primary-dark: #3b82f6;
+  --primary-light: #93c5fd;
+  --secondary-color: #2dd4bf;
   /* Main backgrounds */
   --bg-main: #0f0f0f;
   --bg-surface: #181818;
@@ -80,9 +84,8 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-family-base);
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--surface);
@@ -123,6 +126,15 @@ button {
   border: none;
   outline: none;
   font-family: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
 
 input,

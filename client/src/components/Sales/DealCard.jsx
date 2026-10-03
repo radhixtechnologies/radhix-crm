@@ -1,4 +1,4 @@
-import { formatCurrency, formatDate } from '../../utils/format';
+import { formatCurrency } from '../../utils/format';
 import '../../styles/sales/deal-card.css';
 
 const DealCard = ({ deal, onClick }) => {

@@ -81,7 +81,7 @@ const AddCampaign = () => {
                     startDate: campaign.startDate ? new Date(campaign.startDate).toISOString().split('T')[0] : '',
                     endDate: campaign.endDate ? new Date(campaign.endDate).toISOString().split('T')[0] : '',
                     budget: campaign.budget || 0,
-                    currency: campaign.currency || 'INR',
+                    currency: 'INR',
                     owner: campaign.owner?._id || campaign.owner || '',
                     segment: campaign.segment?._id || campaign.segment || '',
                     targetAudience: {
@@ -258,7 +258,7 @@ const AddCampaign = () => {
                                     onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                                 >
                                     {['INR'].map(curr => (
-                                        <option key={curr} value={curr}>{curr}</option>
+                                        <option key={curr} value={curr}>₹ {curr}</option>
                                     ))}
                                 </select>
                                 <input

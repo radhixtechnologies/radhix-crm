@@ -11,10 +11,10 @@ export const formatDate = (date, format = 'DD/MM/YYYY') => {
   return dayjs(date).format(format);
 };
 
-export const formatCurrency = (amount, currencyCode = 'INR') => {
+export const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: currencyCode || 'INR',
+    currency: 'INR',
   }).format(amount || 0);
 };
 

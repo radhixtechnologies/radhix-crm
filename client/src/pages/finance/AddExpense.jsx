@@ -268,7 +268,7 @@ const AddExpense = () => {
                   Amount <span className="required">*</span>
                 </label>
                 <div className="input-with-prefix">
-                  <span className="input-prefix">$</span>
+                  <span className="input-prefix">₹</span>
                   <input
                     type="number"
                     className="form-input-modern"
@@ -307,15 +307,15 @@ const AddExpense = () => {
             <div className="financial-summary-card">
               <div className="summary-row">
                 <span className="summary-label">Subtotal:</span>
-                <span className="summary-value">${(parseFloat(formData.amount) || 0).toFixed(2)}</span>
+                <span className="summary-value">₹{(parseFloat(formData.amount) || 0).toFixed(2)}</span>
               </div>
               <div className="summary-row">
                 <span className="summary-label">Tax Amount:</span>
-                <span className="summary-value">${getTaxAmount()}</span>
+                <span className="summary-value">₹{getTaxAmount()}</span>
               </div>
               <div className="summary-row summary-total">
                 <span className="summary-label">Total Amount:</span>
-                <span className="summary-value-total">${getTotalAmount()}</span>
+                <span className="summary-value-total">₹{getTotalAmount()}</span>
               </div>
             </div>
           </div>

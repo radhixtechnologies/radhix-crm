@@ -33,10 +33,6 @@ const PayrollList = () => {
   // Search query state (visual primarily, or used for employee filtering)
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    fetchPayrolls();
-  }, [fetchPayrolls]);
-
   // Handle outside click for filters
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -68,6 +64,10 @@ const PayrollList = () => {
       setLoading(false);
     }
   }, [activeFilters]);
+
+  useEffect(() => {
+    fetchPayrolls();
+  }, [fetchPayrolls]);
 
   const handleDownload = async (id) => {
     try {
@@ -210,7 +210,7 @@ const PayrollList = () => {
           </div>
           <div>
             <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-              {formatCurrency(payrolls.reduce((sum, p) => sum + (p.salaryStructure?.grossSalary || 0), 0))}
+              {formatCurrency(payrolls.reduce((sum, p) => sum + (p.salaryStructure?.grossSalary ?? p.grossSalary ?? 0), 0))}
             </div>
             <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
               Gross Salary
@@ -243,7 +243,7 @@ const PayrollList = () => {
           </div>
           <div>
             <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-              {formatCurrency(payrolls.reduce((sum, p) => sum + (p.salaryStructure?.netSalary || 0), 0))}
+              {formatCurrency(payrolls.reduce((sum, p) => sum + (p.salaryStructure?.netSalary ?? p.netSalary ?? 0), 0))}
             </div>
             <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
               Net Salary
@@ -382,9 +382,9 @@ const PayrollList = () => {
                   <tr key={payroll._id}>
                     <td>{payroll.employee?.user?.name || 'N/A'}</td>
                     <td>{String(payroll.month).padStart(2, '0')}/{payroll.year}</td>
-                    <td>{formatCurrency(payroll.salaryStructure.grossSalary)}</td>
-                    <td>{formatCurrency(payroll.salaryStructure.totalDeductions)}</td>
-                    <td>{formatCurrency(payroll.salaryStructure.netSalary)}</td>
+                    <td>{formatCurrency(payroll.salaryStructure?.grossSalary ?? payroll.grossSalary ?? 0)}</td>
+                    <td>{formatCurrency(payroll.salaryStructure?.totalDeductions ?? payroll.deductions ?? 0)}</td>
+                    <td>{formatCurrency(payroll.salaryStructure?.netSalary ?? payroll.netSalary ?? 0)}</td>
                     <td>
                       <span className={`badge badge-${payroll.status === 'paid' ? 'success' : 'warning'}`}>
                         {payroll.status}

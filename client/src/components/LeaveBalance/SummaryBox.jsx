@@ -9,7 +9,6 @@ const SummaryBox = ({
   title, 
   value, 
   subtitle, 
-  icon: Icon = FiInfo, 
   color = 'var(--primary)',
   background = 'var(--surface)',
   gradient = false

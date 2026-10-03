@@ -195,7 +195,7 @@ const seedData = async () => {
                 client: clients[0]._id,
                 contact: contacts[0]._id,
                 value: 45000,
-                currency: 'USD',
+                currency: 'INR',
                 stage: 'negotiation',
                 probability: 80,
                 expectedCloseDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // +15 days
@@ -219,7 +219,7 @@ const seedData = async () => {
                 client: clients[2]._id,
                 contact: contacts[2]._id,
                 value: 85000,
-                currency: 'USD',
+                currency: 'INR',
                 stage: 'new-deal', 
                 probability: 40,
                 expectedCloseDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // +60 days

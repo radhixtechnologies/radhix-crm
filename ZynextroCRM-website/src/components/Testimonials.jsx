@@ -83,7 +83,7 @@ function Testimonials() {
             <span className="text-indigo-600">the Users</span>
           </h2>
           <p className="mt-3 sm:mt-4 text-sm sm:text-base text-slate-600 px-4">
-            Hover or click a portrait to flip the card and read how Zynextro CRM fits their workflow.
+            Hover or click a portrait to flip the card and read how Radhix Technologies supports their work.
           </p>
         </div>
       </div>

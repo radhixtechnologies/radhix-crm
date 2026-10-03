@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSidebar } from '../../context/SidebarContext';
+import BrandLogo from './BrandLogo';
 import {
   FiLayout,
   FiUsers,
@@ -320,7 +321,7 @@ const Sidebar = () => {
         />
         <aside className={`sidebar-mobile-drawer ${isOpen ? 'open' : ''}`}>
           <div className="mobile-logo">
-            CRM
+            <BrandLogo variant="mobile" />
           </div>
           <nav className="mobile-nav">
             {primaryModules.filter(m => m.access).map(module => renderMobileItem(module))}
@@ -337,8 +338,7 @@ const Sidebar = () => {
       {/* PRIMARY RAIL */}
       <aside className="sidebar-primary">
         <div className="primary-logo">
-          {/* Logo placeholder or simple icon */}
-          <div className="logo-icon__Box">CRM</div>
+          <BrandLogo variant="rail" />
         </div>
         <nav className="primary-nav">
           {primaryModules.filter(m => m.access).map(module => (
