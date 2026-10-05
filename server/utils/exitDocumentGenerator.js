@@ -60,9 +60,10 @@ exports.generateExitDocumentPDF = async (data, type) => {
             };
 
             // --- HEADER ---
+            doc.image(path.join(__dirname, 'radhix-technologies-logo.png'), 247, 40, { fit: [100, 58] });
+            doc.y = 104;
             // Company Name
-            doc.font('Helvetica-Bold').fontSize(22).fillColor(colors.primary).text(companyName, { align: 'center' });
-            doc.moveDown(0.2);
+            
 
             // Company Address (Placeholder if empty)
             // If address is provided, split it? Assuming string.

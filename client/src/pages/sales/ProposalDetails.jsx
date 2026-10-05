@@ -249,7 +249,8 @@ const ProposalDetails = () => {
                     <div className="party-box">
                         <h3 className="party-title">From</h3>
                         <div className="party-details">
-                            <p className="company-name">Radhix CRM</p>
+                            <img src="/radhix-logo.png" alt="Radhix Technologies" style={{ height: 56, width: 'auto', marginBottom: 6 }} />
+
                             <p>123 Business Street</p>
                             <p>City, State 12345</p>
                             <p>Email: support@radhix.com</p>

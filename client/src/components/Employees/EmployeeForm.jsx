@@ -6,7 +6,6 @@ import '../../styles/forms.css';
 
 const EmployeeForm = ({ onSubmit, initialData = null, loading = false }) => {
   const { isAdmin, isSuperAdmin } = useAuth();
-  const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [formData, setFormData] = useState({
     userId: '',
@@ -30,27 +29,15 @@ const EmployeeForm = ({ onSubmit, initialData = null, loading = false }) => {
         employeeId: initialData.employeeId || '',
         department: initialData.department || '',
         designation: initialData.designation || '',
-        role: initialData.user?.role?._id || initialData.user?.role || '',
+        role: initialData.user?.role?.slug || initialData.user?.role || '',
         salary: initialData.salary || '',
         phone: initialData.phone || '',
         name: initialData.user?.name || '',
         email: initialData.user?.email || '',
       });
     }
-    fetchUsers();
     fetchRoles();
   }, [initialData]);
-
-  const fetchUsers = async () => {
-    try {
-      const response = await userService.getUsers();
-      if (response.data.success) {
-        setUsers(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    }
-  };
 
   const fetchRoles = async () => {
     try {
@@ -62,6 +49,15 @@ const EmployeeForm = ({ onSubmit, initialData = null, loading = false }) => {
       console.error('Error fetching roles:', error);
     }
   };
+
+  useEffect(() => {
+    // User.role is a slug; the dropdown uses role ids
+    if (!initialData || !roles.length) return;
+    setFormData((prev) => {
+      const match = roles.find((r) => r.slug === prev.role);
+      return match ? { ...prev, role: match._id } : prev;
+    });
+  }, [roles, initialData]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -165,7 +161,15 @@ const EmployeeForm = ({ onSubmit, initialData = null, loading = false }) => {
             <select
               className="form-select"
               value={formData.department}
-              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+              onChange={(e) => {
+                const department = e.target.value;
+                const codes = { IT: 'DEV', Sales: 'MKT', HR: 'HR', Finance: 'FIN', Operations: 'OPS', Management: 'MGMT' };
+                setFormData({
+                  ...formData,
+                  department,
+                  idDeptCode: formData.idDeptCode || codes[department] || '',
+                });
+              }}
               required
             >
               <option value="">Select Department</option>
@@ -231,6 +235,9 @@ const EmployeeForm = ({ onSubmit, initialData = null, loading = false }) => {
                 <option value="DM">DM (Digital Marketing)</option>
                 <option value="GD">GD (Graphic Design)</option>
                 <option value="HR">HR (Human Resources)</option>
+                <option value="FIN">FIN (Finance)</option>
+                <option value="OPS">OPS (Operations)</option>
+                <option value="MGMT">MGMT (Management)</option>
               </select>
               {!formData.employeeId && <div className="form-helper">Required for auto-ID</div>}
             </div>

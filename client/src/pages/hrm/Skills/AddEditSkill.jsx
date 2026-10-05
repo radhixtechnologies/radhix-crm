@@ -7,7 +7,7 @@ import { useAuth } from '../../../context/AuthContext'; // Import useAuth
 import '../../../styles/hrm/skills.css';
 
 const AddEditSkill = () => {
-    const { user } = useAuth(); // Get user
+    const { user, roleSlug } = useAuth(); // Get user
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const employeeIdFromUrl = searchParams.get('employeeId');
@@ -34,7 +34,7 @@ const AddEditSkill = () => {
     });
 
     useEffect(() => {
-        if (user?.role === 'admin' || user?.role === 'super_admin') {
+        if (roleSlug === 'admin' || roleSlug === 'super_admin') {
             fetchEmployees();
         }
     }, [user]);
@@ -72,7 +72,7 @@ const AddEditSkill = () => {
                 yearsOfExperience: parseInt(formData.yearsOfExperience) || 0,
             };
 
-            if (user?.role === 'admin' || user?.role === 'super_admin') {
+            if (roleSlug === 'admin' || roleSlug === 'super_admin') {
                 // Admin creates directly (supports adding for others)
                 await hrmService.createSkill(payload);
                 setSuccess('Skill added successfully!');
@@ -95,7 +95,7 @@ const AddEditSkill = () => {
                     navigate(`/hrm/skills/employee/${employeeIdFromUrl}`);
                 } else {
                     // Redirect to appropriate view
-                    if (user?.role === 'admin' || user?.role === 'super_admin') {
+                    if (roleSlug === 'admin' || roleSlug === 'super_admin') {
                         navigate('/hrm/skills');
                     } else {
                         navigate('/hrm/skills/my');
@@ -142,7 +142,7 @@ const AddEditSkill = () => {
                         {!employeeIdFromUrl && (
                             <div className="form-group">
                                 <label>Employee *</label>
-                                {user?.role === 'admin' || user?.role === 'super_admin' ? (
+                                {roleSlug === 'admin' || roleSlug === 'super_admin' ? (
                                     <select
                                         name="employee"
                                         value={formData.employee}

@@ -99,16 +99,17 @@ const Login = () => {
               marginBottom: 0,
             }}
           >
-            <h1
+            <img
+              src="/radhix-logo.png"
+              alt="Radhix Technologies"
               style={{
-                fontSize: "28px",
-                fontWeight: 700,
-                margin: 0,
-                marginBottom: "8px",
+                height: "84px",
+                width: "auto",
+                background: "#fff",
+                borderRadius: "12px",
+                padding: "8px 18px",
               }}
-            >
-              Radhix CRM
-            </h1>
+            />
             <p
               style={{
                 fontSize: "14px",

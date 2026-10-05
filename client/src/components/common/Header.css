@@ -74,7 +74,7 @@
   transition: opacity 0.2s ease;
 }
 
-.navbar-logo span:first-child {
+.navbar-logo span:first-child:not(.logo-suffix) {
   font-weight: 800;
   letter-spacing: -0.5px;
   color: #111827;
@@ -105,7 +105,7 @@
   background-color: #e5e7eb;
 }
 
-[data-theme='dark'] .navbar-logo span:first-child {
+[data-theme='dark'] .navbar-logo span:first-child:not(.logo-suffix) {
   color: #f9fafb;
 }
 

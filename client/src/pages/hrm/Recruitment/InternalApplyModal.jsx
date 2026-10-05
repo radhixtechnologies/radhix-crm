@@ -4,7 +4,7 @@ import { FiUpload, FiUser, FiMail, FiBriefcase, FiHash } from 'react-icons/fi';
 import { useAuth } from '../../../context/AuthContext';
 
 const InternalApplyModal = ({ job, isOpen, onClose, onApply, loading }) => {
-    const { user } = useAuth();
+    const { user, roleSlug } = useAuth();
     const [coverLetter, setCoverLetter] = useState('');
     const [resume, setResume] = useState(null);
 
@@ -67,7 +67,7 @@ const InternalApplyModal = ({ job, isOpen, onClose, onApply, loading }) => {
                         <div className="info-field">
                             <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Current Role</label>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '500', color: '#0f172a' }}>
-                                <FiBriefcase /> {user.role === 'admin' ? 'Administrator' : 'Employee'}
+                                <FiBriefcase /> {roleSlug === 'admin' ? 'Administrator' : 'Employee'}
                             </div>
                         </div>
                     </div>

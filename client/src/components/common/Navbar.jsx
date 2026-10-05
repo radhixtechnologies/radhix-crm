@@ -103,8 +103,11 @@ const Navbar = () => {
           </button>
         )}
         <div className="navbar-logo" onClick={() => navigate('/dashboard')}>
-          <span>Radhix</span>
-          <span className="logo-suffix">CRM</span>
+          <img
+            src="/radhix-logo.png"
+            alt="Radhix Technologies"
+            style={{ height: 38, width: 'auto', display: 'block' }}
+          />
         </div>
         <div className="navbar-divider"></div>
       </div>

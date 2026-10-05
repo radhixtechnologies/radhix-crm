@@ -11,7 +11,7 @@ import { formatDate } from '../../../utils/format';
 import '../../../styles/employee/timesheets.css';
 
 const ExitManagement = () => {
-    const { user } = useAuth();
+    const { user, roleSlug } = useAuth();
     const navigate = useNavigate();
     const [requests, setRequests] = useState([]);
     const [initialLoading, setInitialLoading] = useState(true);
@@ -54,7 +54,7 @@ const ExitManagement = () => {
     const [employeeSearch, setEmployeeSearch] = useState('');
     const [showEmployeeDropdown, setShowEmployeeDropdown] = useState(false);
 
-    const isAdmin = user?.role === 'super_admin' || user?.role === 'admin';
+    const isAdmin = roleSlug === 'super_admin' || roleSlug === 'admin';
 
     // Debounce Search
     useEffect(() => {
