@@ -9,7 +9,7 @@ import { useAuth } from '../../../context/AuthContext';
 
 const OfferList = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, roleSlug } = useAuth();
     const [loading, setLoading] = useState(true);
     const [offers, setOffers] = useState([]);
     const [unauthorized, setUnauthorized] = useState(false);
@@ -35,7 +35,7 @@ const OfferList = () => {
             // Determine which endpoint to call based on role
             // HR/Admin roles or users with HRM module access get ALL offers
             // Note: modulesAccess is an object { hrm: true, ... }, so check property, not includes
-            if (['super_admin', 'admin'].includes(user?.role) || user?.modulesAccess?.hrm) {
+            if (['super_admin', 'admin'].includes(roleSlug) || user?.modulesAccess?.hrm) {
                 const params = {};
                 if (filters.status) params.status = filters.status;
                 if (filters.department) params.department = filters.department;

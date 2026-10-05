@@ -9,7 +9,7 @@ import '../../../styles/employee/employees.css';
 
 const InternalJobs = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, roleSlug } = useAuth();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [applying, setApplying] = useState(null); // ID of job being applied to
@@ -223,7 +223,7 @@ const InternalJobs = () => {
                                     </div>
 
                                     <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px', marginTop: 'auto', display: 'flex', justifyContent: 'flex-end' }}>
-                                        {user?.role === 'employee' ? (
+                                        {roleSlug === 'employee' ? (
                                             <button
                                                 className={`btn ${isApplied ? 'btn-secondary' : 'btn-primary'}`}
                                                 onClick={() => !isApplied && openApplyModal(job)}

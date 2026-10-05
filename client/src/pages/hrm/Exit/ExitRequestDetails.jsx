@@ -7,10 +7,12 @@ import Loader from '../../../components/common/Loader';
 import { formatDate } from '../../../utils/format';
 import '../../../styles/hrm/exit.css';
 
+const API_ROOT = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
+
 const ExitRequestDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, roleSlug } = useAuth();
     const [request, setRequest] = useState(null);
     const [tasks, setTasks] = useState([]);
     const [settlement, setSettlement] = useState(null);
@@ -28,7 +30,7 @@ const ExitRequestDetails = () => {
     });
     const [submittingTask, setSubmittingTask] = useState(false);
 
-    const isAdmin = user?.role === 'super_admin' || user?.role === 'admin';
+    const isAdmin = roleSlug === 'super_admin' || roleSlug === 'admin';
 
     useEffect(() => {
         fetchExitRequest();
