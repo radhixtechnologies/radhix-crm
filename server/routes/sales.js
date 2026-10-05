@@ -5,6 +5,7 @@ const { protect, checkModuleAccess } = require('../middlewares/auth');
 // Lead controllers
 const {
   getLeads,
+  getLeadOwners,
   getLead,
   createLead,
   updateLead,
@@ -95,6 +96,7 @@ router.use(protect);
 router.get('/leads/import/template', checkModuleAccess('sales'), downloadLeadTemplate);
 router.post('/leads/import/preview', checkModuleAccess('sales'), upload.single('file'), previewLeads);
 router.post('/leads/import', checkModuleAccess('sales'), upload.single('file'), importLeads);
+router.get('/lead-owners', checkModuleAccess('sales'), getLeadOwners);
 
 // Lead routes - Accessible only to Sales module users
 router.route('/leads')

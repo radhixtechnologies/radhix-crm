@@ -36,8 +36,25 @@ const QuotationDetails = () => {
         }
     };
 
-    const handlePrint = () => {
-        window.print();
+    const handlePrint = async () => {
+        const printWindow = window.open('about:blank', '_blank');
+        if (!printWindow) {
+            alert('Please allow pop-ups to open the quotation for printing');
+            return;
+        }
+
+        try {
+            const res = await salesService.generateQuotationPDF(id);
+            const pdfUrl = res.data?.data?.pdfUrl;
+            if (!res.data?.success || !pdfUrl) {
+                throw new Error('Quotation PDF was not generated');
+            }
+            printWindow.location.href = `${API_URL}${pdfUrl}`;
+        } catch (error) {
+            console.error('Error preparing quotation for printing:', error);
+            printWindow.close();
+            alert('Failed to prepare quotation for printing');
+        }
     };
 
     const handleGeneratePDF = async () => {
@@ -149,12 +166,11 @@ const QuotationDetails = () => {
                             {quotation.pdfUrl && (
                                 <a
                                     href={`${API_URL}${quotation.pdfUrl}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                    download={`quotation_${quotation.quotationNumber || id}.pdf`}
                                     className="btn btn-primary"
                                     style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}
                                 >
-                                    <FiDownload /> View PDF
+                                    <FiDownload /> Download PDF
                                 </a>
                             )}
                             <button

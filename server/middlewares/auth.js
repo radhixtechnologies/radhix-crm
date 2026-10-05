@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Role = require('../models/Role');
 
 const getRole = (user) => typeof user?.role === 'object' ? user.role.slug : user?.role;
 
@@ -24,22 +25,29 @@ exports.authorize = (...allowedRoles) => (req, res, next) => {
 };
 
 exports.requireRole = exports.authorize;
-exports.checkModuleAccess = (moduleName) => (req, res, next) => {
-  const role = getRole(req.user);
+exports.checkModuleAccess = (moduleName) => async (req, res, next) => {
+  try {
+    const role = getRole(req.user);
 
-  if (role === 'super_admin') return next();
+    if (role === 'super_admin') return next();
 
-  // Legacy and default employee/admin accounts may not have module ACL entries
-  // populated for the employee module. Treat it as a core access requirement.
-  const isEmployeeRole = role === 'employee' || /_employee$/.test(role || '');
-  const isAdminRole = role === 'admin' || /_admin$/.test(role || '') || /_manager$/.test(role || '');
+    const isEmployeeRole = role === 'employee' || /_employee$/.test(role || '');
+    const isAdminRole = role === 'admin' || /_admin$/.test(role || '') || /_manager$/.test(role || '');
 
-  if (moduleName === 'employee' && (isEmployeeRole || isAdminRole)) {
-    return next();
+    if (moduleName === 'employee' && (isEmployeeRole || isAdminRole)) {
+      return next();
+    }
+
+    if (req.user?.modulesAccess?.[moduleName] === true) return next();
+
+    const roleRecord = typeof req.user.role === 'object' && Array.isArray(req.user.role.modules)
+      ? req.user.role
+      : await Role.findOne({ slug: role }).select('modules').lean();
+
+    if (roleRecord?.modules?.includes(moduleName)) return next();
+
+    return res.status(403).json({ success: false, message: `Access denied for ${moduleName} module` });
+  } catch (error) {
+    return next(error);
   }
-
-  const access = req.user?.modulesAccess || {};
-  if (access[moduleName] === true) return next();
-
-  return res.status(403).json({ success: false, message: `Access denied for ${moduleName} module` });
 };

@@ -212,7 +212,7 @@ const EmployeeForm = ({ onSubmit, initialData = null, loading = false }) => {
               className="form-input"
               value={formData.employeeId}
               onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
-              placeholder="ZY26/ND/DEV/0019"
+              placeholder="RH26/ND/DEV/0019"
             />
             <div className="form-helper">Leave blank to auto-generate</div>
           </div>

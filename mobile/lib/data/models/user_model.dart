@@ -20,27 +20,37 @@ class UserModel {
   });
 
   bool get isSuperAdmin => role == 'super_admin';
-  bool get isAdmin => role == 'admin' || role == 'super_admin';
-  bool get isEmployee => role == 'employee';
+  bool get isAdmin =>
+      role == 'admin' || role == 'super_admin' || role.endsWith('_admin') || role.endsWith('_manager');
+  bool get isEmployee => role == 'employee' || role.endsWith('_employee');
 
   bool hasModuleAccess(String module) {
     if (isSuperAdmin) return true;
-    if (modulesAccess.isEmpty) return true;
-    return modulesAccess[module] == true;
+    return modulesAccess[module] == true || module == 'employee';
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    final roleValue = json['role'];
+    final roleData = roleValue is Map ? Map<String, dynamic>.from(roleValue) : <String, dynamic>{};
+    final roleModules = roleData['modules'];
+    final modules = json['modulesAccess'] is Map
+        ? Map<String, dynamic>.from(json['modulesAccess'])
+        : <String, dynamic>{};
+    if (roleModules is List) {
+      for (final module in roleModules) {
+        if (module is String) modules.putIfAbsent(module, () => true);
+      }
+    }
+
     return UserModel(
       id: (json['_id'] ?? json['id'] ?? '').toString(),
       name: (json['name'] ?? '').toString(),
       email: (json['email'] ?? '').toString(),
-      role: (json['role'] ?? 'employee').toString(),
+      role: (roleData['slug'] ?? roleValue ?? 'employee').toString(),
       department: (json['department'] ?? '').toString(),
       avatar: (json['avatar'] ?? '').toString(),
       isActive: json['isActive'] ?? true,
-      modulesAccess: json['modulesAccess'] is Map<String, dynamic>
-          ? Map<String, dynamic>.from(json['modulesAccess'])
-          : {},
+      modulesAccess: modules,
     );
   }
 

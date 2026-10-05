@@ -2,6 +2,7 @@ const ExcelJS = require('exceljs');
 const fs = require('fs');
 const path = require('path');
 const Lead = require('../../models/Lead');
+const Employee = require('../../models/Employee');
 const { asyncHandler } = require('../../utils/asyncHandler');
 const AppError = require('../../utils/AppError');
 const logActivity = require('../../utils/activityLogger'); // Ensure this utility exists
@@ -312,6 +313,13 @@ exports.importLeads = asyncHandler(async (req, res) => {
     try {
         const rows = await parseFile(filePath, fileExtension);
         const results = { success: [], failed: [], total: rows.length };
+        const uploaderEmployee = await Employee.findOne({ user: req.user._id, department: 'Sales', deletedAt: null });
+        const role = typeof req.user.role === 'object' ? req.user.role?.slug : req.user.role;
+        const isSalesManager = role === 'super_admin' || role === 'admin' ||
+            role?.endsWith('_admin') || role?.endsWith('_manager');
+        if (!isSalesManager && !uploaderEmployee) {
+            throw new AppError('Your Sales employee profile is missing. Please contact your administrator.', 403);
+        }
 
         console.log(`Starting import for ${rows.length} rows...`);
 
@@ -338,7 +346,7 @@ exports.importLeads = asyncHandler(async (req, res) => {
                     source: normalizeSource(rowData.source),
                     status: normalizeStatus(rowData.status),
                     value: rowData.value ? parseFloat(rowData.value) : 0,
-                    assignedTo: req.user._id, // Default to uploader
+                    ...(uploaderEmployee ? { assignedTo: uploaderEmployee._id } : {}),
                 };
 
                 // Helper to check duplicates
@@ -387,6 +395,7 @@ exports.importLeads = asyncHandler(async (req, res) => {
         if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
         }
+        if (error instanceof AppError) throw error;
         throw new AppError(`Import process failed: ${error.message}`, 500);
     }
 });

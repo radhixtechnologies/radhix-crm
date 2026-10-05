@@ -7,10 +7,14 @@ import LeadTable from '../../components/Sales/LeadTable';
 import LeadKanban from '../../components/Sales/LeadKanban';
 import ImportLeadsModal from '../../components/Sales/ImportLeadsModal';
 import Loader from '../../components/common/Loader';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/employee/timesheets.css';
 
 const LeadList = () => {
   const navigate = useNavigate();
+  const { user, roleSlug, isAdmin } = useAuth();
+  const isSalesRep = roleSlug === 'sales_employee' ||
+    (roleSlug === 'employee' && user?.department?.toLowerCase() === 'sales');
   const [leads, setLeads] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -53,11 +57,15 @@ const LeadList = () => {
   const [selectedLeads, setSelectedLeads] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, pages: 0 });
   const [showImportModal, setShowImportModal] = useState(false);
-  const [showMyLeadsOnly, setShowMyLeadsOnly] = useState(false); // Can be merged into filters, but keeping logic
+  const [showMyLeadsOnly, setShowMyLeadsOnly] = useState(isSalesRep);
 
   const [showFilters, setShowFilters] = useState(false);
   const filterRef = useRef(null);
   const buttonRef = useRef(null);
+
+  useEffect(() => {
+    if (isSalesRep) setShowMyLeadsOnly(true);
+  }, [isSalesRep]);
 
   // Initial load
   useEffect(() => {
@@ -89,9 +97,14 @@ const LeadList = () => {
   };
 
   const fetchOwners = async () => {
+    if (!isAdmin) return;
     try {
-      setOwners([{ _id: '1', name: 'John Doe' }, { _id: '2', name: 'Jane Smith' }]);
-    } catch (error) { console.error(error); }
+      const response = await salesService.getLeadOwners();
+      setOwners(response.data?.data || []);
+    } catch (error) {
+      console.error('Error fetching Sales owners:', error);
+      setOwners([]);
+    }
   };
 
   const fetchLeads = async (isInitialLoad = false) => {
@@ -393,7 +406,7 @@ const LeadList = () => {
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: '32px', width: '100%', flexWrap: 'wrap' }}>
 
               {/* My Leads Toggle */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {!isSalesRep && <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '11px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Show</label>
                 <div
                   className="toggle-wrapper"
@@ -419,7 +432,7 @@ const LeadList = () => {
                     <span className="unique-slider"></span>
                   </div>
                 </div>
-              </div>
+              </div>}
 
               {/* Sort By */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -546,7 +559,7 @@ const LeadList = () => {
               </div>
 
               {/* Owner */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {isAdmin && <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '11px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Owner</label>
                 <div style={{ position: 'relative', width: '150px' }}>
                   <select
@@ -568,11 +581,11 @@ const LeadList = () => {
                     }}
                   >
                     <option value="">All Owners</option>
-                    {owners.map(o => <option key={o._id} value={o._id}>{o.name}</option>)}
+                    {owners.map(o => <option key={o._id} value={o._id}>{o.user?.name || o.employeeId}</option>)}
                   </select>
                   <FiChevronDown style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', pointerEvents: 'none' }} />
                 </div>
-              </div>
+              </div>}
 
               {/* Dates */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -692,6 +705,7 @@ const LeadList = () => {
               selectedLeads={selectedLeads}
               onSelectLeads={setSelectedLeads}
               onDelete={handleDelete}
+              canDelete={isAdmin}
               pagination={pagination}
               onPageChange={(p) => setPagination({ ...pagination, page: p })}
               loading={loading}

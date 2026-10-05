@@ -7,6 +7,12 @@ const getRoleSlug = (user) => {
   return user?.role?.slug;
 };
 
+const getRoleRecord = async (user) => {
+  if (user?.role && typeof user.role === 'object') return user.role;
+  const slug = getRoleSlug(user);
+  return slug ? Role.findOne({ slug }).lean() : null;
+};
+
 /**
  * Permission Service
  * Centralized service for all permission-related operations
@@ -23,24 +29,21 @@ const getRoleSlug = (user) => {
 async function hasPermission(user, module, action, resource = null) {
   if (!user) return false;
 
-  // Populate role and permissions if not already populated
-  if (!user.populated('role')) {
-    await user.populate('role');
-  }
+  const role = await getRoleRecord(user);
   if (user.schema?.path('customPermissions')?.options?.ref && !user.populated('customPermissions')) {
     await user.populate('customPermissions');
   }
 
   // Super Admin has all permissions
-  if (user.role && user.role.slug === 'super_admin') {
+  if (getRoleSlug(user) === 'super_admin') {
     return true;
   }
 
   // Admins have all permissions for their assigned modules
-  if (user.role && (user.role.slug === 'admin' || user.role.slug.includes('_admin'))) {
-    if (user.role.modules && user.role.modules.includes(module)) {
-      return true;
-    }
+  const roleSlug = getRoleSlug(user) || '';
+  if ((roleSlug === 'admin' || roleSlug.includes('_admin') || roleSlug.includes('_manager')) &&
+    role?.modules?.includes(module)) {
+    return true;
   }
 
   // Build permission query
@@ -66,9 +69,9 @@ async function hasPermission(user, module, action, resource = null) {
   }
 
   // Check role permissions
-  if (user.role && user.role.permissions && user.role.permissions.length > 0) {
+  if (role?.permissions?.length > 0) {
     const rolePermissions = await Permission.find({
-      _id: { $in: user.role.permissions },
+      _id: { $in: role.permissions },
       ...permissionQuery,
     });
     return rolePermissions.length > 0;
@@ -86,13 +89,10 @@ async function hasPermission(user, module, action, resource = null) {
 async function canAccessModule(user, module) {
   if (!user) return false;
 
-  // Populate role if not already populated
-  if (!user.populated('role')) {
-    await user.populate('role');
-  }
+  const role = await getRoleRecord(user);
 
   // Super Admin can access all modules
-  if (user.role && user.role.slug === 'super_admin') {
+  if (getRoleSlug(user) === 'super_admin') {
     return true;
   }
 
@@ -102,7 +102,7 @@ async function canAccessModule(user, module) {
   }
 
   // Check if module is in user's role
-  if (user.role && user.role.modules && user.role.modules.includes(module)) {
+  if (user.modulesAccess?.[module] === true || role?.modules?.includes(module)) {
     return true;
   }
 
@@ -117,26 +117,26 @@ async function canAccessModule(user, module) {
 async function getAccessibleModules(user) {
   if (!user) return [];
 
-  // Populate role if not already populated
-  if (!user.populated('role')) {
-    await user.populate('role');
-  }
+  const role = await getRoleRecord(user);
 
   // Super Admin can access all modules
-  if (user.role && user.role.slug === 'super_admin') {
+  if (getRoleSlug(user) === 'super_admin') {
     return ['dashboard', 'employee', 'finance', 'sales', 'hrm', 'settings'];
   }
 
   const modules = ['employee']; // All users have access to employee module (My Profile)
 
   // Add modules from role
-  if (user.role && user.role.modules) {
-    user.role.modules.forEach((module) => {
+  if (role?.modules) {
+    role.modules.forEach((module) => {
       if (!modules.includes(module)) {
         modules.push(module);
       }
     });
   }
+  Object.entries(user.modulesAccess || {}).forEach(([module, granted]) => {
+    if (granted && !modules.includes(module)) modules.push(module);
+  });
 
   return modules;
 }
@@ -147,18 +147,17 @@ async function getAccessibleModules(user) {
  * @returns {Promise<Array>}
  */
 async function getUserPermissions(userId) {
-  const user = await User.findById(userId)
-    .populate('role')
-    .populate('customPermissions');
+  const user = await User.findById(userId);
 
   if (!user) return [];
 
+  const role = await getRoleRecord(user);
   const permissions = [];
 
   // Get role permissions
-  if (user.role && user.role.permissions) {
+  if (role?.permissions) {
     const rolePermissions = await Permission.find({
-      _id: { $in: user.role.permissions },
+      _id: { $in: role.permissions },
       isActive: true,
     });
     permissions.push(...rolePermissions);
@@ -192,10 +191,7 @@ async function getPermissionScope(user, module, action, resource) {
   const roleSlug = getRoleSlug(user);
   if (roleSlug === 'super_admin') return 'all';
 
-  // Populate role and permissions if not already populated
-  if (user.schema?.path('role')?.options?.ref && !user.populated('role')) {
-    await user.populate('role');
-  }
+  const role = await getRoleRecord(user);
   if (user.schema?.path('customPermissions')?.options?.ref && !user.populated('customPermissions')) {
     await user.populate('customPermissions');
   }
@@ -207,7 +203,7 @@ async function getPermissionScope(user, module, action, resource) {
 
   // Admins have 'all' scope for their assigned modules
   if (roleSlug === 'admin' || roleSlug?.includes('_admin') || roleSlug?.includes('_manager')) {
-    if (typeof user.role === 'string' || user.role.modules?.includes(module)) {
+    if (user.modulesAccess?.[module] === true || role?.modules?.includes(module)) {
       return 'all';
     }
   }
@@ -224,9 +220,9 @@ async function getPermissionScope(user, module, action, resource) {
   }
 
   // Check role permissions
-  if (user.role && user.role.permissions && user.role.permissions.length > 0) {
+  if (role?.permissions?.length > 0) {
     const rolePermissions = await Permission.find({
-      _id: { $in: user.role.permissions },
+      _id: { $in: role.permissions },
       module,
       action,
       isActive: true,
@@ -298,12 +294,7 @@ async function applyScopeFilter(query, user, scope) {
  */
 async function isSuperAdmin(user) {
   if (!user) return false;
-
-  if (!user.populated('role')) {
-    await user.populate('role');
-  }
-
-  return user.role && user.role.slug === 'super_admin';
+  return getRoleSlug(user) === 'super_admin';
 }
 
 /**
@@ -319,16 +310,7 @@ async function isAdmin(user) {
     return roleSlug === 'super_admin' || roleSlug === 'admin' || roleSlug.includes('_admin') || roleSlug.includes('_manager');
   }
 
-  if (user.schema?.path('role')?.options?.ref && !user.populated('role')) {
-    await user.populate('role');
-  }
-
-  return user.role && (
-    user.role.slug === 'super_admin' ||
-    user.role.slug === 'admin' ||
-    user.role.slug.includes('_admin') ||
-    user.role.slug.includes('_manager')
-  );
+  return false;
 }
 
 module.exports = {

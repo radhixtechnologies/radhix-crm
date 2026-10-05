@@ -224,7 +224,7 @@ async function recreateDatabaseEssentials() {
                 const year = new Date().getFullYear().toString().slice(-2);
                 const deptMap = { 'IT': 'DEV', 'HR': 'HR', 'Sales': 'MKT', 'Management': 'MGMT' };
                 const deptCode = deptMap[data.department] || 'GENT';
-                const empIdStr = `ZY${year}/ND/${deptCode}/${String(counter.seq).padStart(4, '0')}`;
+                const empIdStr = `RH${year}/ND/${deptCode}/${String(counter.seq).padStart(4, '0')}`;
 
                 employee = await Employee.create({
                     user: user._id,

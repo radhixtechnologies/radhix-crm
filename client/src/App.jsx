@@ -85,6 +85,7 @@ const SalesDocuments = lazy(() => import('./pages/sales/SalesDocuments'));
 const AddProposal = lazy(() => import('./pages/sales/AddProposal'));
 const ProposalDetails = lazy(() => import('./pages/sales/ProposalDetails'));
 const CreateQuotation = lazy(() => import('./pages/sales/CreateQuotation'));
+const QuotationDetails = lazy(() => import('./pages/sales/QuotationDetails'));
 const FollowupList = lazy(() => import('./pages/sales/FollowupList'));
 
 // Contact Management
@@ -961,13 +962,12 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      {/* Fallback for details/edit - to be implemented fully later */}
       <Route
         path="/sales/quotations/:id"
         element={
           <ProtectedRoute requiredModule="sales">
             <Layout>
-              <CreateQuotation /> {/* reuse form for now or need details page */}
+              <QuotationDetails />
             </Layout>
           </ProtectedRoute>
         }

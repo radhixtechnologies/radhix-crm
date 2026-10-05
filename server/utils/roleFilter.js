@@ -18,7 +18,7 @@ async function isSuperAdminEmployee(employee) {
   // If user is just an ID, we need to fetch it
   if (employee.user) {
     const User = require('../models/User');
-    const user = await User.findById(employee.user).populate('role').select('role');
+    const user = await User.findById(employee.user).select('role');
     const roleSlug = typeof user?.role === 'object' ? user.role?.slug : user?.role;
     return roleSlug === 'super_admin';
   }
@@ -176,27 +176,21 @@ async function addSuperAdminFilter(query, currentUser) {
   const isAdmin = await require('../services/permissionService').isAdmin(currentUser);
   if (isAdmin) {
     const User = require('../models/User');
-    const Role = require('../models/Role');
-
     // Find Super Admin role
-    const superAdminRole = await Role.findOne({ slug: 'super_admin' });
-    if (superAdminRole) {
-      // Find all users with Super Admin role
-      const superAdminUsers = await User.find({ role: superAdminRole._id }).select('_id');
-      const superAdminUserIds = superAdminUsers.map(u => u._id);
+    const superAdminUsers = await User.find({ role: 'super_admin' }).select('_id');
+    const superAdminUserIds = superAdminUsers.map(u => u._id);
 
-      // Add filter to exclude employees with Super Admin users
-      if (superAdminUserIds.length > 0) {
-        // Only add filter if query.user is not already set
-        // If query.user is already set, it means there's a specific filter in place
-        if (!query.user) {
-          query.user = { $nin: superAdminUserIds };
-        } else if (typeof query.user === 'object' && !query.user._id) {
-          // If it's already an object with operators (like $in, $ne), merge $nin
-          query.user.$nin = superAdminUserIds;
-        }
-        // If query.user is a direct ObjectId/string, don't override it
+    // Add filter to exclude employees with Super Admin users
+    if (superAdminUserIds.length > 0) {
+      // Only add filter if query.user is not already set
+      // If query.user is already set, it means there's a specific filter in place
+      if (!query.user) {
+        query.user = { $nin: superAdminUserIds };
+      } else if (typeof query.user === 'object' && !query.user._id) {
+        // If it's already an object with operators (like $in, $ne), merge $nin
+        query.user.$nin = superAdminUserIds;
       }
+      // If query.user is a direct ObjectId/string, don't override it
     }
   }
 
@@ -210,4 +204,3 @@ module.exports = {
   filterSuperAdminData,
   addSuperAdminFilter,
 };
-

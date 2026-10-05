@@ -16,7 +16,7 @@ const getInitials = (name) => {
     .toUpperCase();
 };
 
-const LeadTable = ({ leads, onDelete, pagination, onPageChange }) => {
+const LeadTable = ({ leads, onDelete, canDelete = true, pagination, onPageChange }) => {
   const navigate = useNavigate();
   const [deleteModal, setDeleteModal] = useState({ open: false, lead: null });
 
@@ -186,14 +186,14 @@ const LeadTable = ({ leads, onDelete, pagination, onPageChange }) => {
                     >
                       <FiEdit />
                     </button>
-                    <button
+                    {canDelete && <button
                       className="btn btn-sm"
                       style={{ background: '#fee2e2', color: '#ef4444', border: '1px solid #fecaca' }}
                       onClick={() => handleDelete(lead)}
                       title="Delete"
                     >
                       <FiTrash2 />
-                    </button>
+                    </button>}
                   </div>
                 </td>
               </tr>

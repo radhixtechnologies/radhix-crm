@@ -2,13 +2,16 @@ import { useEffect, useState } from 'react';
 import { FiArrowLeft } from 'react-icons/fi';
 import { useNavigate, useParams } from 'react-router-dom';
 import { salesService } from '../../services/salesService';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/sales/lead-form.css';
 
 const AddLead = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { isAdmin } = useAuth();
   const [loadingExisting, setLoadingExisting] = useState(Boolean(id));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [owners, setOwners] = useState([]);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -17,6 +20,15 @@ const AddLead = () => {
     source: 'website',
   });
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    salesService.getLeadOwners()
+      .then((response) => setOwners(response.data?.data || []))
+      .catch((requestError) => {
+        setError(requestError.response?.data?.message || 'Unable to load Sales owners.');
+      });
+  }, [isAdmin]);
 
   useEffect(() => {
     if (!id) return;
@@ -126,6 +138,25 @@ const AddLead = () => {
                 )}
               </div>
             ))}
+            {isAdmin && (
+              <div className="form-group">
+                <label htmlFor="assignedTo">Sales owner</label>
+                <select
+                  id="assignedTo"
+                  name="assignedTo"
+                  className="form-select"
+                  value={typeof form.assignedTo === 'object' ? form.assignedTo?._id || '' : form.assignedTo || ''}
+                  onChange={update}
+                >
+                  <option value="">Unassigned</option>
+                  {owners.map((owner) => (
+                    <option key={owner._id} value={owner._id}>
+                      {owner.user?.name || owner.employeeId}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="form-actions">

@@ -7,6 +7,7 @@ const AppError = require('../utils/AppError');
 const buildQuery = require('../utils/buildQuery');
 const { addSuperAdminFilter, canAccessEmployeeResource, filterSuperAdminEmployees } = require('../utils/roleFilter');
 const permissionService = require('./permissionService');
+const syncEmployeeUserRole = require('../utils/syncEmployeeUserRole');
 
 /**
  * Employee Service
@@ -365,19 +366,7 @@ class EmployeeService {
       },
     });
 
-    // Sync role and department to associated User if provided in employee data
-    // This ensures the user has the correct role/department immediately
-    if (userToUse && (data.role || data.department)) {
-      const userUpdateFields = {};
-      if (data.role && userToUse.role !== data.role) {
-        const Role = require('../models/Role');
-        const selectedRole = await Role.findById(data.role);
-        if (selectedRole) userUpdateFields.role = selectedRole.slug;
-      }
-      if (data.department) userUpdateFields.department = data.department;
-
-      await User.findByIdAndUpdate(userToUse._id, userUpdateFields);
-    }
+    await syncEmployeeUserRole(userToUse._id, data.department, data.role);
 
     // Populate and return
     const populatedEmployee = await employeeRepository.findById(employee._id, {
@@ -458,13 +447,8 @@ class EmployeeService {
       populate: 'user manager',
     });
 
-    // Sync role and department to associated User if provided
     if (employee.user && (data.role || data.department)) {
-      const userUpdateFields = {};
-      if (data.role) userUpdateFields.role = data.role;
-      if (data.department) userUpdateFields.department = data.department;
-
-      await User.findByIdAndUpdate(employee.user._id || employee.user, userUpdateFields);
+      await syncEmployeeUserRole(employee.user._id || employee.user, data.department, data.role);
     }
 
     return {
@@ -731,4 +715,3 @@ class EmployeeService {
 }
 
 module.exports = new EmployeeService();
-

@@ -160,6 +160,10 @@ const leadSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -199,4 +203,3 @@ leadSchema.pre('save', function (next) {
 });
 
 module.exports = mongoose.model('Lead', leadSchema);
-

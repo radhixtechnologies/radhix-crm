@@ -29,6 +29,7 @@ export const salesService = {
   // Lead services
   getLeads: (params) => api.get('/sales/leads', { params }),
   getLead: (id) => api.get(`/sales/leads/${id}`),
+  getLeadOwners: () => api.get('/sales/lead-owners'),
   createLead: (data) => api.post('/sales/leads', data),
   updateLead: (id, data) => api.put(`/sales/leads/${id}`, data),
   deleteLead: (id) => api.delete(`/sales/leads/${id}`),

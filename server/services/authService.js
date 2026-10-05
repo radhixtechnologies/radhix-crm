@@ -1,9 +1,11 @@
 const User = require('../models/User');
+const Role = require('../models/Role');
 const Session = require('../models/Session');
 const generateToken = require('../utils/generateToken');
 const AppError = require('../utils/AppError');
 const crypto = require('crypto');
 const { sendPasswordResetEmail } = require('../utils/emailService');
+const syncEmployeeUserRole = require('../utils/syncEmployeeUserRole');
 
 /**
  * Authentication Service
@@ -24,10 +26,7 @@ class AuthService {
       throw new AppError('Please provide email and password', 400);
     }
 
-    // Check for user and include password, populate role and customPermissions
-    const user = await User.findOne({ email: email.toLowerCase() })
-      .select('+password')
-      .populate('role');
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
 
     if (!user) {
       throw new AppError('Invalid credentials', 401);
@@ -45,6 +44,17 @@ class AuthService {
       throw new AppError('Invalid credentials', 401);
     }
 
+    // Lookup employee record (exclude soft-deleted employees)
+    const Employee = require('../models/Employee');
+    const employee = await Employee.findOne({ user: user._id, deletedAt: null });
+    if (employee) {
+      const syncedUser = await syncEmployeeUserRole(user._id, employee.department);
+      user.role = syncedUser.role;
+      user.department = syncedUser.department;
+    }
+
+    const role = await Role.findOne({ slug: user.role }).lean();
+
     // Generate JWT token
     const token = generateToken(user._id);
 
@@ -57,25 +67,17 @@ class AuthService {
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
 
-
-    // Lookup employee record (exclude soft-deleted employees)
-    let employeeId = null;
-    const Employee = require('../models/Employee');
-    const employee = await Employee.findOne({ user: user._id, deletedAt: null });
-    if (employee) {
-      employeeId = employee._id;
-    }
-
     // Return user data without password
     const userData = {
       _id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role, // Now an object with role details
+      role: role || { slug: user.role, name: user.role, modules: [] },
       department: user.department,
       avatar: user.avatar,
       isActive: user.isActive,
-      employeeId: employeeId,
+      modulesAccess: user.modulesAccess || {},
+      employeeId: employee?._id || null,
     };
 
     return {
@@ -150,25 +152,27 @@ class AuthService {
    * @returns {Promise<Object>}
    */
   async getCurrentUser(userId) {
-    const user = await User.findById(userId)
-      .populate('role');
+    const user = await User.findById(userId);
 
     if (!user) {
       throw new AppError('User not found', 404);
     }
 
 
-    // Get employee ID if exists (exclude soft-deleted employees)
-    let employeeId = null;
+    // Get employee record and keep the role aligned with its department.
     const Employee = require('../models/Employee');
     const employee = await Employee.findOne({ user: userId, deletedAt: null });
     if (employee) {
-      employeeId = employee._id;
+      const syncedUser = await syncEmployeeUserRole(user._id, employee.department);
+      user.role = syncedUser.role;
+      user.department = syncedUser.department;
     }
 
     // Return user with employee ID
     const userData = user.toObject();
-    userData.employeeId = employeeId;
+    const role = await Role.findOne({ slug: user.role }).lean();
+    userData.role = role || { slug: user.role, name: user.role, modules: [] };
+    userData.employeeId = employee?._id || null;
 
     return {
       success: true,
@@ -686,4 +690,3 @@ class AuthService {
 }
 
 module.exports = new AuthService();
-

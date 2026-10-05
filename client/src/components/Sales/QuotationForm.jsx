@@ -178,6 +178,9 @@ const QuotationForm = ({ quotation, onSubmit, onCancel }) => {
             } else {
                 payload.customClientDetails = null;
             }
+            ['client', 'contact', 'deal'].forEach((field) => {
+                if (payload[field] === '') payload[field] = null;
+            });
             await onSubmit(payload);
         }
         catch (error) { alert('Error saving quotation'); }

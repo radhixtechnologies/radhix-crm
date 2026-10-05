@@ -33,7 +33,7 @@ async function ensureEmployeeProfiles() {
       const seq = String(counterDoc && counterDoc.value ? counterDoc.value.seq : 1).padStart(4, '0');
       const year = new Date().getFullYear().toString().slice(-2);
       const deptCode = codeMap[dept] || 'GEN';
-      const employeeId = `ZY${year}/ND/${deptCode}/${seq}`;
+      const employeeId = `RH${year}/ND/${deptCode}/${seq}`;
 
       const newEmployee = await Employee.create({
         user: user._id,

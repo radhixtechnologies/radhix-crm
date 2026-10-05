@@ -112,9 +112,9 @@ async function generateEmployeeId(deptCode) {
     { new: true, upsert: true } // Create if doesn't exist
   );
 
-  // Format: ZY26/ND/DEV/0019 where 26 is year, ND is static, DEV is dept code, 0019 is padded seq
+  // Format: RH26/ND/DEV/0019 where 26 is year, ND is static, DEV is dept code, 0019 is padded seq
   const year = new Date().getFullYear().toString().slice(-2);
-  const prefix = `ZY${year}/ND`;
+  const prefix = `RH${year}/ND`;
 
   // Mapping for default departments if full names are provided (e.g., from imports)
   const mapping = {
