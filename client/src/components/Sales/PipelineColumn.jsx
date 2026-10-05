@@ -26,7 +26,7 @@ const PipelineColumn = ({ stage, deals, onDragOver, onDrop, onDealClick }) => {
     if (onDragOver) onDragOver(e);
   };
 
-  const handleDragLeave = (e) => {
+  const handleDragLeave = () => {
     setIsDragging(false);
   };
 
@@ -55,7 +55,7 @@ const PipelineColumn = ({ stage, deals, onDragOver, onDrop, onDealClick }) => {
           <span className="deal-count-badge">{deals.length}</span>
         </div>
         <div className="column-total">
-          ${formatLargeNumber(totalValue)}
+          {'\u20B9'}{formatLargeNumber(totalValue)}
         </div>
       </div>
       <div className="deals-container">
