@@ -1,6 +1,12 @@
+import 'package:flutter/material.dart';
+
 class AppConstants {
   static const String appName = 'Radhix CRM';
   static const String appVersion = '1.0.0';
+
+  // Global key to display SnackBars reliably across dialogs and screens
+  static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
 
   // Default Backend API URL
   // Can be switched to local development: http://10.0.2.2:5000/api (Android Emulator)
@@ -16,7 +22,8 @@ class AppConstants {
   static const String keyRememberEmail = 'remember_email';
   static const String keyRememberMe = 'remember_me';
 
-  // Timeouts
-  static const Duration connectTimeout = Duration(seconds: 20);
-  static const Duration receiveTimeout = Duration(seconds: 20);
+  // Timeouts - 60s to accommodate Render.com cold starts on free tier & mobile network latency
+  static const Duration connectTimeout = Duration(seconds: 60);
+  static const Duration receiveTimeout = Duration(seconds: 60);
 }
+

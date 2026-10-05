@@ -16,6 +16,8 @@ class AttendanceScreen extends StatefulWidget {
 }
 
 class _AttendanceScreenState extends State<AttendanceScreen> {
+  bool _isPunching = false;
+
   @override
   void initState() {
     super.initState();
@@ -108,6 +110,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   ) {
     final isCheckedIn = today.isCheckedIn;
     final isCheckedOut = today.isCheckedOut;
+    final isBusy = _isPunching || attendance.isLoading;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -117,7 +120,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         border: Border.all(color: AppColors.borderLight),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
@@ -157,18 +160,35 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           Center(
             child: InkWell(
               borderRadius: BorderRadius.circular(100),
-              onTap: attendance.isLoading || isCheckedOut
+              onTap: (isBusy || isCheckedOut)
                   ? null
                   : () async {
-                      if (!isCheckedIn) {
-                        final ok = await attendance.punchCheckIn();
-                        if (ok && context.mounted) {
-                          ToastUtil.showSuccess(context, 'Punched In Successfully!');
+                      setState(() => _isPunching = true);
+                      try {
+                        if (!isCheckedIn) {
+                          final ok = await attendance.punchCheckIn();
+                          if (ok && mounted) {
+                            ToastUtil.showSuccess(null, 'Punched In Successfully!');
+                          } else if (mounted) {
+                            ToastUtil.showError(
+                              null,
+                              attendance.errorMessage ?? 'Failed to punch in. Please check connection.',
+                            );
+                          }
+                        } else {
+                          final ok = await attendance.punchCheckOut();
+                          if (ok && mounted) {
+                            ToastUtil.showSuccess(null, 'Punched Out Successfully!');
+                          } else if (mounted) {
+                            ToastUtil.showError(
+                              null,
+                              attendance.errorMessage ?? 'Failed to punch out. Please check connection.',
+                            );
+                          }
                         }
-                      } else {
-                        final ok = await attendance.punchCheckOut();
-                        if (ok && context.mounted) {
-                          ToastUtil.showSuccess(context, 'Punched Out Successfully!');
+                      } finally {
+                        if (mounted) {
+                          setState(() => _isPunching = false);
                         }
                       }
                     },
@@ -181,19 +201,23 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       ? null
                       : (!isCheckedIn
                           ? AppColors.primaryGradient
-                          : AppColors.successGradient),
+                          : const LinearGradient(
+                              colors: [Color(0xFFEF4444), Color(0xFFF97316)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )),
                   color: isCheckedOut ? Colors.grey.shade200 : null,
                   boxShadow: isCheckedOut
                       ? []
                       : [
                           BoxShadow(
-                            color: (!isCheckedIn ? AppColors.primary : AppColors.success).withOpacity(0.35),
+                            color: (!isCheckedIn ? AppColors.primary : const Color(0xFFEF4444)).withValues(alpha: 0.35),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
                         ],
                 ),
-                child: attendance.isLoading
+                child: isBusy
                     ? const Center(
                         child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
                       )
@@ -211,13 +235,22 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           Text(
                             isCheckedOut
                                 ? 'Shift Ended'
-                                : (isCheckedIn ? 'Check Out' : 'Check In'),
+                                : (isCheckedIn ? 'Punch Out' : 'Punch In'),
                             style: TextStyle(
                               color: isCheckedOut ? Colors.grey.shade700 : Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontSize: 15,
                             ),
                           ),
+                          if (isCheckedIn && !isCheckedOut)
+                            const Text(
+                              'Shift Active',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                         ],
                       ),
               ),
@@ -240,12 +273,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   height: 30,
                   child: VerticalDivider(color: AppColors.borderLight, thickness: 1),
                 ),
-                _buildMetricCol('Punch Out', Formatters.formatTime(today.checkOutTime)),
+                _buildMetricCol(
+                  'Punch Out',
+                  today.checkOutTime != null
+                      ? Formatters.formatTime(today.checkOutTime)
+                      : (today.isCheckedIn ? 'Working...' : '--:--'),
+                ),
                 const SizedBox(
                   height: 30,
                   child: VerticalDivider(color: AppColors.borderLight, thickness: 1),
                 ),
-                _buildMetricCol('Hours', '${today.hoursWorked.toStringAsFixed(1)} hrs'),
+                _buildMetricCol('Hours', '${today.activeHoursWorked.toStringAsFixed(1)} hrs'),
               ],
             ),
           ),
@@ -283,7 +321,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.08),
+              color: AppColors.primary.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.calendar_today_rounded, color: AppColors.primary, size: 20),

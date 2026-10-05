@@ -50,6 +50,19 @@ class TodayAttendanceStatus {
   DateTime? get checkIn => checkInTime;
   DateTime? get checkOut => checkOutTime;
 
+  /// Dynamic active hours worked: calculates elapsed time if currently checked in
+  double get activeHoursWorked {
+    if (hoursWorked > 0) return hoursWorked;
+    if (checkInTime != null) {
+      final endTime = checkOutTime ?? DateTime.now();
+      final diff = endTime.difference(checkInTime!).inMinutes / 60.0;
+      if (diff > 0) {
+        return (diff * 10).round() / 10.0;
+      }
+    }
+    return 0.0;
+  }
+
   TodayAttendanceStatus({
     this.isCheckedIn = false,
     this.isCheckedOut = false,
@@ -65,13 +78,30 @@ class TodayAttendanceStatus {
     final checkIn = record['checkIn'] != null ? DateTime.tryParse(record['checkIn'].toString()) : null;
     final checkOut = record['checkOut'] != null ? DateTime.tryParse(record['checkOut'].toString()) : null;
 
+    final isPunchedIn = checkIn != null;
+    final isPunchedOut = checkOut != null;
+
+    String calculatedStatus = (record['status'] ?? (isPunchedIn ? 'present' : 'absent')).toString();
+    if (isPunchedIn && calculatedStatus == 'absent') {
+      calculatedStatus = 'present';
+    }
+
+    double parsedHours = (record['hoursWorked'] is num) ? (record['hoursWorked'] as num).toDouble() : 0.0;
+    if (parsedHours <= 0 && isPunchedIn) {
+      final endTime = checkOut ?? DateTime.now();
+      final diff = endTime.difference(checkIn).inMinutes / 60.0;
+      if (diff > 0) {
+        parsedHours = (diff * 10).round() / 10.0;
+      }
+    }
+
     return TodayAttendanceStatus(
-      isCheckedIn: checkIn != null,
-      isCheckedOut: checkOut != null,
+      isCheckedIn: isPunchedIn,
+      isCheckedOut: isPunchedOut,
       checkInTime: checkIn,
       checkOutTime: checkOut,
-      hoursWorked: (record['hoursWorked'] is num) ? (record['hoursWorked'] as num).toDouble() : 0.0,
-      status: (record['status'] ?? (checkIn != null ? 'present' : 'absent')).toString(),
+      hoursWorked: parsedHours,
+      status: calculatedStatus,
     );
   }
 }

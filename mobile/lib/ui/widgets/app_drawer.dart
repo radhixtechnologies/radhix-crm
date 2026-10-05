@@ -4,6 +4,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
 import '../profile/server_settings_dialog.dart';
+import 'logout_dialog.dart';
 import 'status_badge.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -28,63 +29,109 @@ class AppDrawer extends StatelessWidget {
           // Header
           Container(
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 24,
+              top: MediaQuery.of(context).padding.top + 18,
               left: 20,
               right: 20,
-              bottom: 24,
+              bottom: 20,
             ),
             decoration: const BoxDecoration(
               gradient: AppColors.primaryGradient,
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Colors.white,
-                  child: Text(
-                    user != null && user.name.isNotEmpty
-                        ? user.name[0].toUpperCase()
-                        : 'U',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                // App Logo and Name
+                Row(
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.business_rounded, color: AppColors.primary, size: 20),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 10),
+                    const Text(
+                      AppConstants.appName,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user?.name ?? 'User',
+                const SizedBox(height: 16),
+
+                // User Info Row
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.white,
+                      child: Text(
+                        user != null && user.name.isNotEmpty
+                            ? user.name[0].toUpperCase()
+                            : 'U',
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        user?.email ?? '',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 12,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user?.name ?? 'User',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            user?.email ?? '',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.8),
+                              fontSize: 11,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          StatusBadge(
+                            status: (user?.department != null && user!.department.isNotEmpty)
+                                ? user.department
+                                : (user?.role ?? 'employee'),
+                            fontSize: 10,
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 6),
-                      StatusBadge(
-                        status: user?.role ?? 'employee',
-                        fontSize: 10,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -101,30 +148,51 @@ class AppDrawer extends StatelessWidget {
                   title: 'Dashboard',
                   index: 0,
                 ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.trending_up_rounded,
-                  title: 'Sales & Leads',
-                  index: 1,
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.fingerprint_rounded,
-                  title: 'My Attendance',
-                  index: 2,
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.assignment_turned_in_rounded,
-                  title: 'Tasks',
-                  index: 3,
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.receipt_long_rounded,
-                  title: 'Invoices',
-                  index: 4,
-                ),
+                if (user?.isSalesDepartment ?? false) ...[
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.trending_up_rounded,
+                    title: 'Sales & Leads',
+                    index: 1,
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.fingerprint_rounded,
+                    title: 'My Attendance',
+                    index: 2,
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.assignment_turned_in_rounded,
+                    title: 'Tasks',
+                    index: 3,
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.receipt_long_rounded,
+                    title: 'Salary Slips',
+                    index: 4,
+                  ),
+                ] else ...[
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.fingerprint_rounded,
+                    title: 'My Attendance',
+                    index: 1,
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.assignment_turned_in_rounded,
+                    title: 'Tasks',
+                    index: 2,
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.receipt_long_rounded,
+                    title: 'Salary Slips',
+                    index: 3,
+                  ),
+                ],
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Divider(),
@@ -144,14 +212,26 @@ class AppDrawer extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.logout_rounded, color: AppColors.danger),
+                  leading: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppColors.danger.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.logout_rounded, color: AppColors.danger, size: 20),
+                  ),
                   title: const Text(
-                    'Sign Out',
+                    'Log Out / Switch ID',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.danger),
                   ),
+                  subtitle: const Text(
+                    'Sign in with another account',
+                    style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+                  ),
                   onTap: () {
+                    final rootCtx = Navigator.of(context, rootNavigator: true).context;
                     Navigator.pop(context);
-                    auth.logout();
+                    LogoutDialog.show(rootCtx);
                   },
                 ),
               ],

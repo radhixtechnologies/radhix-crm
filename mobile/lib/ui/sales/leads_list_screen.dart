@@ -115,7 +115,7 @@ class _LeadsListScreenState extends State<LeadsListScreen> {
                       sales.setFilterStatus(status);
                       sales.fetchLeads();
                     },
-                    selectedColor: AppColors.primary.withOpacity(0.15),
+                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
                     checkmarkColor: AppColors.primary,
                     labelStyle: TextStyle(
                       color: isSelected ? AppColors.primary : AppColors.textSecondary,
@@ -194,7 +194,7 @@ class _LeadsListScreenState extends State<LeadsListScreen> {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundColor: AppColors.primary.withOpacity(0.1),
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                     child: Text(
                       lead.name.isNotEmpty ? lead.name[0].toUpperCase() : 'L',
                       style: const TextStyle(
@@ -277,7 +277,7 @@ class _LeadsListScreenState extends State<LeadsListScreen> {
                         IconButton.filledTonal(
                           iconSize: 18,
                           style: IconButton.styleFrom(
-                            backgroundColor: AppColors.success.withOpacity(0.12),
+                            backgroundColor: AppColors.success.withValues(alpha: 0.12),
                             foregroundColor: AppColors.success,
                           ),
                           icon: const Icon(Icons.phone_rounded),
@@ -288,7 +288,7 @@ class _LeadsListScreenState extends State<LeadsListScreen> {
                         IconButton.filledTonal(
                           iconSize: 18,
                           style: IconButton.styleFrom(
-                            backgroundColor: AppColors.info.withOpacity(0.12),
+                            backgroundColor: AppColors.info.withValues(alpha: 0.12),
                             foregroundColor: AppColors.info,
                           ),
                           icon: const Icon(Icons.email_rounded),

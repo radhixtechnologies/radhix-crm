@@ -24,8 +24,20 @@ class UserModel {
       role == 'admin' || role == 'super_admin' || role.endsWith('_admin') || role.endsWith('_manager');
   bool get isEmployee => role == 'employee' || role.endsWith('_employee');
 
+  /// Only members of the Sales department (or full admins) can access Sales & Leads
+  bool get isSalesDepartment {
+    if (isSuperAdmin) return true;
+    final dept = department.trim().toLowerCase();
+    final r = role.toLowerCase();
+    if (dept == 'sales') return true;
+    if (r == 'sales_employee' || r == 'sales_manager' || r == 'sales_admin') return true;
+    if (r == 'admin' && (dept.isEmpty || dept == 'management' || dept == 'sales')) return true;
+    return false;
+  }
+
   bool hasModuleAccess(String module) {
     if (isSuperAdmin) return true;
+    if (module == 'sales' || module == 'leads') return isSalesDepartment;
     return modulesAccess[module] == true || module == 'employee';
   }
 
@@ -42,12 +54,15 @@ class UserModel {
       }
     }
 
+    final empObj = json['employee'] is Map ? json['employee'] as Map : null;
+    final dept = (json['department'] ?? empObj?['department'] ?? '').toString();
+
     return UserModel(
       id: (json['_id'] ?? json['id'] ?? '').toString(),
       name: (json['name'] ?? '').toString(),
       email: (json['email'] ?? '').toString(),
       role: (roleData['slug'] ?? roleValue ?? 'employee').toString(),
-      department: (json['department'] ?? '').toString(),
+      department: dept,
       avatar: (json['avatar'] ?? '').toString(),
       isActive: json['isActive'] ?? true,
       modulesAccess: modules,

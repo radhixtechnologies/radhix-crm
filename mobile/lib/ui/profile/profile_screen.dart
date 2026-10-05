@@ -6,6 +6,7 @@ import '../../core/network/api_client.dart';
 import '../../core/utils/toast_util.dart';
 import '../../providers/auth_provider.dart';
 import '../employee/leaves_screen.dart';
+import '../widgets/logout_dialog.dart';
 import '../widgets/status_badge.dart';
 import 'server_settings_dialog.dart';
 
@@ -72,29 +73,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       final newP = _newPassController.text.trim();
                       final confP = _confirmPassController.text.trim();
 
-                      if (oldP.isEmpty || newP.isEmpty) return;
+                      if (oldP.isEmpty || newP.isEmpty) {
+                        ToastUtil.showError(ctx, 'Please fill in all password fields');
+                        return;
+                      }
+                      if (newP.length < 6) {
+                        ToastUtil.showError(ctx, 'New password must be at least 6 characters');
+                        return;
+                      }
                       if (newP != confP) {
-                        ToastUtil.showError(context, 'New passwords do not match');
+                        ToastUtil.showError(ctx, 'New passwords do not match');
                         return;
                       }
 
                       setDialogState(() => _isChangingPassword = true);
-                      final ok = await context.read<AuthProvider>().changePassword(oldP, newP);
-                      setDialogState(() => _isChangingPassword = false);
-
-                      if (ok && mounted) {
-                        _oldPassController.clear();
-                        _newPassController.clear();
-                        _confirmPassController.clear();
-                        if (ctx.mounted) {
-                          Navigator.pop(ctx);
+                      final authProvider = context.read<AuthProvider>();
+                      final ok = await authProvider.changePassword(oldP, newP);
+                      if (mounted) {
+                        setDialogState(() => _isChangingPassword = false);
+                        if (ok) {
+                          _oldPassController.clear();
+                          _newPassController.clear();
+                          _confirmPassController.clear();
+                          if (ctx.mounted) {
+                            Navigator.pop(ctx);
+                          }
+                          ToastUtil.showSuccess(null, 'Password changed successfully');
+                        } else {
+                          ToastUtil.showError(
+                            null,
+                            authProvider.errorMessage ?? 'Failed to update password. Please check your current password.',
+                          );
                         }
-                        ToastUtil.showSuccess(context, 'Password changed successfully');
-                      } else if (mounted) {
-                        ToastUtil.showError(context, 'Failed to update password');
                       }
                     },
-              child: const Text('Save'),
+              child: _isChangingPassword
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Save'),
             ),
           ],
         ),
@@ -128,7 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundColor: AppColors.primary.withOpacity(0.12),
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                     child: Text(
                       user != null && user.name.isNotEmpty
                           ? user.name[0].toUpperCase()
@@ -253,13 +272,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: ListTile(
                 leading: const Icon(Icons.logout_rounded, color: AppColors.danger),
                 title: const Text(
-                  'Sign Out',
+                  'Log Out / Switch ID',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     color: AppColors.danger,
                   ),
                 ),
-                onTap: () => auth.logout(),
+                onTap: () => LogoutDialog.show(context),
               ),
             ),
             const SizedBox(height: 30),

@@ -18,6 +18,7 @@ class InvoicesScreen extends StatefulWidget {
 class _InvoicesScreenState extends State<InvoicesScreen> {
   final TextEditingController _searchController = TextEditingController();
   final List<String> _statuses = ['all', 'paid', 'pending', 'overdue'];
+  String? _updatingInvoiceId;
 
   @override
   void initState() {
@@ -62,7 +63,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.2),
+                    color: AppColors.primary.withValues(alpha: 0.2),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -161,7 +162,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                       finance.setFilterStatus(status);
                       finance.fetchInvoices();
                     },
-                    selectedColor: AppColors.primary.withOpacity(0.15),
+                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
                     checkmarkColor: AppColors.primary,
                     labelStyle: TextStyle(
                       color: isSelected ? AppColors.primary : AppColors.textSecondary,
@@ -279,18 +280,44 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
             ),
             if (inv.status != 'paid') ...[
               const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.check_rounded, size: 16),
-                  label: const Text('Mark as Paid', style: TextStyle(fontSize: 13)),
-                  onPressed: () async {
-                    final ok = await context.read<FinanceProvider>().updateStatus(inv.id, 'paid');
-                    if (ok && context.mounted) {
-                      ToastUtil.showSuccess(context, 'Invoice marked as paid');
-                    }
-                  },
-                ),
+              Builder(
+                builder: (btnCtx) {
+                  final isUpdating = _updatingInvoiceId == inv.id;
+                  return SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      icon: isUpdating
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.check_rounded, size: 16),
+                      label: Text(
+                        isUpdating ? 'Updating...' : 'Mark as Paid',
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                      onPressed: isUpdating
+                          ? null
+                          : () async {
+                              setState(() => _updatingInvoiceId = inv.id);
+                              final finance = context.read<FinanceProvider>();
+                              final ok = await finance.updateStatus(inv.id, 'paid');
+                              if (mounted) {
+                                setState(() => _updatingInvoiceId = null);
+                                if (ok) {
+                                  ToastUtil.showSuccess(null, 'Invoice ${inv.invoiceNumber} marked as paid');
+                                } else {
+                                  ToastUtil.showError(
+                                    null,
+                                    finance.errorMessage ?? 'Failed to update invoice status',
+                                  );
+                                }
+                              }
+                            },
+                    ),
+                  );
+                },
               ),
             ],
           ],

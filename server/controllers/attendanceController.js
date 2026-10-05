@@ -32,11 +32,25 @@ exports.getAttendanceSelf = async (req, res, next) => {
 exports.getTodayStatusSelf = async (req, res, next) => {
   try {
     const employee = await getCurrentEmployee(req.user);
-    const result = await attendanceService.getAttendance(employee._id, {
-      startDate: new Date().toISOString(),
-      endDate: new Date().toISOString(),
-    }, req.user);
-    res.json({ success: true, data: result.data[0] || null });
+    const result = await attendanceService.getTodayStatus(employee._id.toString());
+    const attendance = result.data;
+
+    if (attendance) {
+      const attObj = attendance.toObject ? attendance.toObject() : { ...attendance };
+      // If checked in but not checked out, calculate active working hours dynamically
+      if (attObj.checkIn && !attObj.checkOut) {
+        const now = new Date();
+        const diffMs = now - new Date(attObj.checkIn);
+        const diffHours = Math.max(0, Math.round((diffMs / 3600000) * 10) / 10);
+        attObj.hoursWorked = diffHours;
+        if (attObj.status === 'absent') {
+          attObj.status = 'present';
+        }
+      }
+      return res.json({ success: true, data: attObj });
+    }
+
+    res.json({ success: true, data: null });
   } catch (error) { next(error); }
 };
 

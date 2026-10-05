@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/constants/app_colors.dart';
 import 'core/constants/app_constants.dart';
+import 'core/network/api_client.dart';
 import 'core/theme/app_theme.dart';
 import 'providers/attendance_provider.dart';
 import 'providers/auth_provider.dart';
@@ -15,6 +16,7 @@ import 'ui/navigation/main_navigation_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await ApiClient().init();
   runApp(const RadhixCrmApp());
 }
 
@@ -36,6 +38,7 @@ class RadhixCrmApp extends StatelessWidget {
       child: MaterialApp(
         title: AppConstants.appName,
         debugShowCheckedModeBanner: false,
+        scaffoldMessengerKey: AppConstants.scaffoldMessengerKey,
         theme: AppTheme.lightTheme,
         home: Consumer<AuthProvider>(
           builder: (context, auth, _) {
@@ -72,7 +75,7 @@ class SplashScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),

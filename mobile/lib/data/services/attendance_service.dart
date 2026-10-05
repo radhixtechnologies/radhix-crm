@@ -7,8 +7,26 @@ class AttendanceService {
   Future<TodayAttendanceStatus> getTodayStatus() async {
     try {
       final response = await _client.get('/attendance/today');
-      if (response is Map) {
+      if (response is Map && response['data'] != null) {
         return TodayAttendanceStatus.fromJson(Map<String, dynamic>.from(response));
+      }
+      // Fallback: check recent attendance history to see if punched in today
+      final history = await getHistory(limit: 5);
+      if (history.isNotEmpty) {
+        final latest = history.first;
+        final now = DateTime.now();
+        final isToday = (latest.date.year == now.year && latest.date.month == now.month && latest.date.day == now.day) ||
+            (latest.checkIn != null && now.difference(latest.checkIn!).inHours < 18);
+        if (isToday && latest.checkIn != null) {
+          return TodayAttendanceStatus(
+            isCheckedIn: true,
+            isCheckedOut: latest.checkOut != null,
+            checkInTime: latest.checkIn,
+            checkOutTime: latest.checkOut,
+            hoursWorked: latest.hoursWorked,
+            status: latest.status.toLowerCase() == 'absent' ? 'present' : latest.status,
+          );
+        }
       }
     } catch (_) {}
     return TodayAttendanceStatus();

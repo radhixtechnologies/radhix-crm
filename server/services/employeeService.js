@@ -183,7 +183,13 @@ class EmployeeService {
    * @returns {Promise<Object>}
    */
   async getEmployeeById(id, options = {}, user) {
-    let employee = await employeeRepository.findById(id, options);
+    let employee = null;
+
+    if (id === 'me' || id === user?._id?.toString()) {
+      employee = await employeeRepository.findByUserId(user._id);
+    } else {
+      employee = await employeeRepository.findById(id, options);
+    }
 
     // Fallback: if not found by Employee ID, try finding by User ID
     // This handles cases where the frontend passes User ID instead of Employee ID

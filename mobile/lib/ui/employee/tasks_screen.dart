@@ -5,6 +5,7 @@ import '../../core/utils/formatters.dart';
 import '../../core/utils/toast_util.dart';
 import '../../data/models/task_model.dart';
 import '../../providers/task_provider.dart';
+import '../widgets/custom_button.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/status_badge.dart';
 
@@ -18,6 +19,7 @@ class TasksScreen extends StatefulWidget {
 class _TasksScreenState extends State<TasksScreen> {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
+  String? _submittingTaskId;
 
   @override
   void initState() {
@@ -36,6 +38,7 @@ class _TasksScreenState extends State<TasksScreen> {
 
   void _showCreateTaskDialog() {
     String priority = 'medium';
+    bool isCreating = false;
 
     showModalBottomSheet(
       context: context,
@@ -96,17 +99,25 @@ class _TasksScreenState extends State<TasksScreen> {
                 ],
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
+              CustomButton(
+                text: 'Create Task',
+                isLoading: isCreating,
                 onPressed: () async {
                   final title = _titleController.text.trim();
-                  if (title.isEmpty) return;
+                  if (title.isEmpty) {
+                    ToastUtil.showError(ctx, 'Please enter a task title');
+                    return;
+                  }
 
-                  final ok = await context.read<TaskProvider>().createTask({
+                  setSheetState(() => isCreating = true);
+                  final taskProvider = context.read<TaskProvider>();
+                  final ok = await taskProvider.createTask({
                     'title': title,
                     'description': _descController.text.trim(),
                     'priority': priority,
                     'status': 'created',
                   });
+                  setSheetState(() => isCreating = false);
 
                   if (ok && mounted) {
                     _titleController.clear();
@@ -114,10 +125,14 @@ class _TasksScreenState extends State<TasksScreen> {
                     if (ctx.mounted) {
                       Navigator.pop(ctx);
                     }
-                    ToastUtil.showSuccess(context, 'Task created!');
+                    ToastUtil.showSuccess(null, 'Task created successfully!');
+                  } else if (mounted) {
+                    ToastUtil.showError(
+                      null,
+                      taskProvider.errorMessage ?? 'Failed to create task. Please check server.',
+                    );
                   }
                 },
-                child: const Text('Create Task'),
               ),
             ],
           ),
@@ -239,7 +254,7 @@ class _TasksScreenState extends State<TasksScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: priorityColor.withOpacity(0.12),
+                        color: priorityColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -263,18 +278,44 @@ class _TasksScreenState extends State<TasksScreen> {
                   ],
                 ),
                 if (!task.isCompleted)
-                  TextButton.icon(
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    icon: const Icon(Icons.send_rounded, size: 14),
-                    label: const Text('Submit', style: TextStyle(fontSize: 12)),
-                    onPressed: () async {
-                      final ok = await context.read<TaskProvider>().submitTask(task.id);
-                      if (ok && context.mounted) {
-                        ToastUtil.showSuccess(context, 'Submitted for approval!');
-                      }
+                  Builder(
+                    builder: (btnContext) {
+                      final isSubmittingThis = _submittingTaskId == task.id;
+                      return TextButton.icon(
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                        icon: isSubmittingThis
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.send_rounded, size: 14),
+                        label: Text(
+                          isSubmittingThis ? 'Submitting...' : 'Submit',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        onPressed: isSubmittingThis
+                            ? null
+                            : () async {
+                                setState(() => _submittingTaskId = task.id);
+                                final taskProvider = context.read<TaskProvider>();
+                                final ok = await taskProvider.submitTask(task.id);
+                                if (mounted) {
+                                  setState(() => _submittingTaskId = null);
+                                  if (ok) {
+                                    ToastUtil.showSuccess(null, 'Submitted for approval!');
+                                  } else {
+                                    ToastUtil.showError(
+                                      null,
+                                      taskProvider.errorMessage ?? 'Failed to submit task. Please check server.',
+                                    );
+                                  }
+                                }
+                              },
+                      );
                     },
                   ),
               ],

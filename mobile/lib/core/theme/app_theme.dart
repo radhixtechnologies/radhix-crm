@@ -124,7 +124,7 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.surfaceLight,
-        indicatorColor: AppColors.primaryLight.withOpacity(0.2),
+        indicatorColor: AppColors.primaryLight.withValues(alpha: 0.2),
         elevation: 4,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {

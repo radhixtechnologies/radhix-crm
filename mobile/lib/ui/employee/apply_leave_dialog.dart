@@ -60,30 +60,35 @@ class _ApplyLeaveDialogState extends State<ApplyLeaveDialog> {
   }
 
   void _submit() async {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
     final leaveProvider = context.read<LeaveProvider>();
 
-    final success = await leaveProvider.applyLeave(
-      type: _selectedType,
-      startDate: _startDate,
-      endDate: _endDate,
-      days: _calculatedDays,
-      reason: _reasonController.text.trim(),
-      halfDay: _halfDay,
-    );
-
-    setState(() => _isSubmitting = false);
-
-    if (success && mounted) {
-      ToastUtil.showSuccess(context, 'Leave application submitted successfully!');
-      Navigator.pop(context);
-    } else if (mounted) {
-      ToastUtil.showError(
-        context,
-        leaveProvider.errorMessage ?? 'Failed to submit leave application',
+    try {
+      final success = await leaveProvider.applyLeave(
+        type: _selectedType,
+        startDate: _startDate,
+        endDate: _endDate,
+        days: _calculatedDays,
+        reason: _reasonController.text.trim(),
+        halfDay: _halfDay,
       );
+
+      if (success && mounted) {
+        Navigator.pop(context);
+        ToastUtil.showSuccess(null, 'Leave application submitted successfully!');
+      } else if (mounted) {
+        ToastUtil.showError(
+          context,
+          leaveProvider.errorMessage ?? 'Failed to submit leave application. Please check connection.',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
     }
   }
 
@@ -217,7 +222,7 @@ class _ApplyLeaveDialogState extends State<ApplyLeaveDialog> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.08),
+                    color: AppColors.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(

@@ -22,6 +22,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
   late LeadModel _lead;
   final TextEditingController _noteController = TextEditingController();
   bool _isAddingNote = false;
+  bool _isUpdatingStatus = false;
 
   final List<String> _statuses = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 
@@ -54,49 +55,67 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
   }
 
   void _changeStatus(String newStatus) async {
+    if (_isUpdatingStatus) return;
+    setState(() => _isUpdatingStatus = true);
+
     final sales = context.read<SalesProvider>();
     final ok = await sales.updateStatus(_lead.id, newStatus);
-    if (ok && mounted) {
-      setState(() {
-        _lead = LeadModel(
-          id: _lead.id,
-          name: _lead.name,
-          email: _lead.email,
-          phone: _lead.phone,
-          company: _lead.company,
-          source: _lead.source,
-          status: newStatus,
-          leadTemperature: _lead.leadTemperature,
-          value: _lead.value,
-          currency: _lead.currency,
-          assignedToName: _lead.assignedToName,
-          notes: _lead.notes,
-          createdAt: _lead.createdAt,
+    if (mounted) {
+      setState(() => _isUpdatingStatus = false);
+      if (ok) {
+        setState(() {
+          _lead = LeadModel(
+            id: _lead.id,
+            name: _lead.name,
+            email: _lead.email,
+            phone: _lead.phone,
+            company: _lead.company,
+            source: _lead.source,
+            status: newStatus,
+            leadTemperature: _lead.leadTemperature,
+            value: _lead.value,
+            currency: _lead.currency,
+            assignedToName: _lead.assignedToName,
+            notes: _lead.notes,
+            createdAt: _lead.createdAt,
+          );
+        });
+        ToastUtil.showSuccess(context, 'Status updated to $newStatus');
+      } else {
+        ToastUtil.showError(
+          context,
+          sales.errorMessage ?? 'Failed to update status. Please check connection.',
         );
-      });
-      ToastUtil.showSuccess(context, 'Status updated to $newStatus');
+      }
     }
   }
 
   void _addNote() async {
+    if (_isAddingNote) return;
     final content = _noteController.text.trim();
     if (content.isEmpty) return;
 
     setState(() => _isAddingNote = true);
     final sales = context.read<SalesProvider>();
     final ok = await sales.addLeadNote(_lead.id, content);
-    setState(() => _isAddingNote = false);
-
-    if (ok && mounted) {
-      _noteController.clear();
-      Navigator.pop(context);
-      ToastUtil.showSuccess(context, 'Note added');
-      setState(() {
-        _lead.notes.insert(
-          0,
-          LeadNote(content: content, addedBy: 'You', addedAt: DateTime.now()),
+    if (mounted) {
+      setState(() => _isAddingNote = false);
+      if (ok) {
+        _noteController.clear();
+        Navigator.pop(context);
+        ToastUtil.showSuccess(null, 'Note added');
+        setState(() {
+          _lead.notes.insert(
+            0,
+            LeadNote(content: content, addedBy: 'You', addedAt: DateTime.now()),
+          );
+        });
+      } else {
+        ToastUtil.showError(
+          context,
+          sales.errorMessage ?? 'Failed to add note. Please check connection.',
         );
-      });
+      }
     }
   }
 
@@ -186,7 +205,7 @@ class _LeadDetailScreenState extends State<LeadDetailScreen> {
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor: AppColors.primary.withOpacity(0.12),
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                         child: Text(
                           _lead.name.isNotEmpty ? _lead.name[0].toUpperCase() : 'L',
                           style: const TextStyle(

@@ -20,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _rememberMe = true;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -39,27 +40,38 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _submit() async {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() => _isSubmitting = true);
     final auth = context.read<AuthProvider>();
-    final success = await auth.login(
-      _emailController.text,
-      _passwordController.text,
-      remember: _rememberMe,
-    );
 
-    if (!success && mounted) {
-      ToastUtil.showError(
-        context,
-        auth.errorMessage ?? 'Login failed. Please check credentials or server URL.',
+    try {
+      final success = await auth.login(
+        _emailController.text.trim(),
+        _passwordController.text,
+        remember: _rememberMe,
       );
+
+      if (success && mounted) {
+        ToastUtil.showSuccess(null, 'Welcome back, ${auth.user?.name ?? "User"}!');
+      } else if (!success && mounted) {
+        ToastUtil.showError(
+          context,
+          auth.errorMessage ?? 'Login failed. Please check credentials or server URL in Settings (top right).',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final isLoggingIn = auth.status == AuthStatus.authenticating;
+    final isLoggingIn = _isSubmitting || auth.status == AuthStatus.authenticating;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
@@ -91,23 +103,29 @@ class _LoginScreenState extends State<LoginScreen> {
                   // App Icon / Logo
                   Center(
                     child: Container(
-                      width: 76,
-                      height: 76,
+                      width: 90,
+                      height: 90,
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        gradient: AppColors.primaryGradient,
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(22),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.35),
-                            blurRadius: 18,
+                            color: AppColors.primary.withValues(alpha: 0.25),
+                            blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
                         ],
+                        border: Border.all(color: AppColors.borderLight),
                       ),
-                      child: const Icon(
-                        Icons.rocket_launch_rounded,
-                        color: Colors.white,
-                        size: 38,
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => const Icon(
+                          Icons.business_rounded,
+                          color: AppColors.primary,
+                          size: 40,
+                        ),
                       ),
                     ),
                   ),

@@ -83,17 +83,53 @@ class AttendanceRepository {
    * @returns {Promise<Object>}
    */
   async findTodayAttendance(employeeId) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const now = new Date();
+    // Search within +/- 24 hours window to accommodate UTC and IST (+5:30) differences
+    const windowStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const windowEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-    return await Attendance.findOne({
+    const records = await Attendance.find({
       employee: employeeId,
-      date: { $gte: today, $lt: tomorrow },
+      $or: [
+        { date: { $gte: windowStart, $lte: windowEnd } },
+        { checkIn: { $gte: windowStart, $lte: windowEnd } },
+        { createdAt: { $gte: windowStart } }
+      ]
     })
+      .sort({ checkIn: -1, date: -1, createdAt: -1 })
       .populate('employee', 'employeeId designation')
       .exec();
+
+    if (!records || records.length === 0) {
+      return null;
+    }
+
+    // Helper to check if two dates share the same calendar day in local or IST
+    const isSameDay = (d1, d2) => {
+      if (!d1 || !d2) return false;
+      const a = new Date(d1);
+      const b = new Date(d2);
+      // Check server local
+      if (a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()) {
+        return true;
+      }
+      // Check IST (+5.5h)
+      const aIST = new Date(a.getTime() + 5.5 * 3600000);
+      const bIST = new Date(b.getTime() + 5.5 * 3600000);
+      return aIST.getUTCFullYear() === bIST.getUTCFullYear() &&
+        aIST.getUTCMonth() === bIST.getUTCMonth() &&
+        aIST.getUTCDate() === bIST.getUTCDate();
+    };
+
+    // Find record matching today
+    const match = records.find(r => {
+      if (isSameDay(r.date, now) || isSameDay(r.checkIn, now)) return true;
+      // If checked in within the last 18 hours and not checked out yet
+      if (r.checkIn && !r.checkOut && (now - new Date(r.checkIn)) < 18 * 3600000) return true;
+      return false;
+    });
+
+    return match || records[0];
   }
 
   /**

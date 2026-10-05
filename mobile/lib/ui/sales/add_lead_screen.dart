@@ -50,37 +50,46 @@ class _AddLeadScreenState extends State<AddLeadScreen> {
   }
 
   void _saveLead() async {
+    if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
     final sales = context.read<SalesProvider>();
 
-    final payload = {
-      'name': _nameController.text.trim(),
-      'email': _emailController.text.trim(),
-      'phone': _phoneController.text.trim(),
-      'company': _companyController.text.trim(),
-      'source': _selectedSource,
-      'leadTemperature': _selectedTemperature,
-      'value': double.tryParse(_valueController.text.trim()) ?? 0.0,
-      'currency': 'INR',
-      'status': 'new',
-    };
+    try {
+      final payload = {
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'company': _companyController.text.trim(),
+        'source': _selectedSource,
+        'leadTemperature': _selectedTemperature,
+        'value': double.tryParse(_valueController.text.trim()) ?? 0.0,
+        'currency': 'INR',
+        'status': 'new',
+      };
 
-    if (_notesController.text.trim().isNotEmpty) {
-      payload['notes'] = [
-        {'content': _notesController.text.trim()}
-      ];
-    }
+      if (_notesController.text.trim().isNotEmpty) {
+        payload['notes'] = [
+          {'content': _notesController.text.trim()}
+        ];
+      }
 
-    final success = await sales.createLead(payload);
-    setState(() => _isSubmitting = false);
+      final success = await sales.createLead(payload);
 
-    if (success && mounted) {
-      ToastUtil.showSuccess(context, 'Lead created successfully!');
-      Navigator.pop(context);
-    } else if (mounted) {
-      ToastUtil.showError(context, sales.errorMessage ?? 'Failed to create lead');
+      if (success && mounted) {
+        Navigator.pop(context);
+        ToastUtil.showSuccess(null, 'Lead created successfully!');
+      } else if (mounted) {
+        ToastUtil.showError(
+          context,
+          sales.errorMessage ?? 'Failed to create lead. Please check connection.',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
     }
   }
 

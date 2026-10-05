@@ -11,10 +11,16 @@ import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/leave_provider.dart';
 import '../../providers/task_provider.dart';
+import '../../data/models/salary_slip_model.dart';
+import '../../data/services/payroll_service.dart';
 import '../employee/apply_leave_dialog.dart';
+import '../finance/salary_slips_screen.dart';
+import '../finance/payslip_preview_dialog.dart';
 import '../sales/lead_detail_screen.dart';
+import '../profile/profile_screen.dart';
 import '../widgets/dashboard_charts.dart';
 import '../widgets/error_banner.dart';
+import '../widgets/logout_dialog.dart';
 import '../widgets/quick_actions_sheet.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/status_badge.dart';
@@ -31,14 +37,19 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   String _activeTab = 'summary';
 
-  final List<Map<String, String>> _tabs = const [
-    {'id': 'summary', 'label': 'Summary'},
-    {'id': 'attendance', 'label': 'Attendance'},
-    {'id': 'tasks', 'label': 'Tasks'},
-    {'id': 'leaves', 'label': 'Leaves'},
-    {'id': 'payroll', 'label': 'Payroll'},
-    {'id': 'sales', 'label': 'Sales'},
-  ];
+  List<Map<String, String>> _getFilteredTabs(bool isSales) {
+    return [
+      {'id': 'summary', 'label': 'Summary'},
+      {'id': 'attendance', 'label': 'Attendance'},
+      {'id': 'tasks', 'label': 'Tasks'},
+      {'id': 'leaves', 'label': 'Leaves'},
+      {'id': 'payroll', 'label': 'Payroll & Salary'},
+      if (isSales) {'id': 'sales', 'label': 'Sales'},
+    ];
+  }
+
+  WorkDetailsModel? _workDetails;
+  SalarySlipModel? _latestSlip;
 
   @override
   void initState() {
@@ -46,6 +57,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refresh();
     });
+  }
+
+  Future<void> _loadPayrollData() async {
+    final user = context.read<AuthProvider>().user;
+    try {
+      final service = PayrollService();
+      final work = await service.getWorkDetails(user: user);
+      final slips = await service.getSalarySlips(user: user);
+      if (mounted) {
+        setState(() {
+          _workDetails = work;
+          _latestSlip = slips.isNotEmpty ? slips.first : service.createLatestSlip(work);
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        final fallbackWork = WorkDetailsModel.fromUser(user);
+        setState(() {
+          _workDetails = fallbackWork;
+          _latestSlip = PayrollService().createLatestSlip(fallbackWork);
+        });
+      }
+    }
   }
 
   Future<void> _refresh() async {
@@ -57,6 +91,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       context.read<LeaveProvider>().fetchBalance(user?.id),
       context.read<LeaveProvider>().fetchLeaves(),
       context.read<DashboardProvider>().fetchDashboardData(),
+      _loadPayrollData(),
     ]);
   }
 
@@ -69,6 +104,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final dashboard = context.watch<DashboardProvider>();
 
     final user = auth.user;
+    final isSales = user?.isSalesDepartment ?? false;
+    final tabs = _getFilteredTabs(isSales);
+    if (!isSales && _activeTab == 'sales') {
+      _activeTab = 'summary';
+    }
+
     final today = attendance.todayStatus;
     final pendingTasks = taskProvider.pendingTasks.length;
     final totalTasks = taskProvider.tasks.length;
@@ -103,7 +144,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 14),
 
                 // Tab Navigation Pills (Summary, Attendance, Tasks, Leaves, Payroll, Sales)
-                _buildTabsBar(),
+                _buildTabsBar(tabs),
                 const SizedBox(height: 14),
 
                 // Dynamic KPI Badges depending on selected tab
@@ -129,7 +170,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _buildLeavesTab(context, leaveProvider)
                 else if (_activeTab == 'payroll')
                   _buildPayrollTab(context)
-                else if (_activeTab == 'sales')
+                else if (_activeTab == 'sales' && isSales)
                   _buildSalesTab(context, dashboard),
 
                 const SizedBox(height: 32),
@@ -171,113 +212,141 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Row(
             children: [
-              // Avatar circle with gradient & online dot
-              Stack(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: const BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      userName.isNotEmpty ? userName[0].toUpperCase() : 'E',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: isCheckedIn ? AppColors.success : const Color(0xFF94A3B8),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 12),
-
-              // Title and Designation
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              // Avatar circle with gradient & online dot (taps to Profile)
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                  );
+                },
+                child: Stack(
                   children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            userName,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.success.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: AppColors.success.withValues(alpha: 0.25)),
-                          ),
-                          child: const Text(
-                            'Employee Portal',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.success,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Department: $userDept',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: const BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                        shape: BoxShape.circle,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      alignment: Alignment.center,
+                      child: Text(
+                        userName.isNotEmpty ? userName[0].toUpperCase() : 'E',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: isCheckedIn ? AppColors.success : const Color(0xFF94A3B8),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 12),
 
-              // Actions: Sync Data & Quick Actions
+              // Title and Designation (taps to Profile)
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    );
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              userName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.success.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: AppColors.success.withValues(alpha: 0.25)),
+                            ),
+                            child: const Text(
+                              'Portal',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.success,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Dept: $userDept',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Actions: Sync Data, Quick Actions, and Logout
               IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                 tooltip: 'Sync Data',
-                icon: const Icon(Icons.sync_rounded, color: AppColors.primary, size: 22),
+                icon: const Icon(Icons.sync_rounded, color: AppColors.primary, size: 21),
                 onPressed: _refresh,
               ),
               InkWell(
                 onTap: () => QuickActionsSheet.show(context, onNavigateTab: widget.onNavigateTab),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(7),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.bolt_rounded, color: AppColors.primary, size: 22),
+                  child: const Icon(Icons.bolt_rounded, color: AppColors.primary, size: 20),
                 ),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                tooltip: 'Log Out / Switch ID',
+                icon: const Icon(Icons.logout_rounded, color: AppColors.danger, size: 21),
+                onPressed: () => LogoutDialog.show(context),
               ),
             ],
           ),
@@ -292,7 +361,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _buildMetaChip(
                 icon: Icons.access_time_rounded,
                 label: isCheckedIn
-                    ? 'Logged: ${today.hoursWorked.toStringAsFixed(1)}h'
+                    ? 'Logged: ${today.activeHoursWorked.toStringAsFixed(1)}h'
                     : 'Check-in Pending',
                 color: isCheckedIn ? AppColors.success : const Color(0xFFF59E0B),
               ),
@@ -351,15 +420,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // --- Tab Navigation Pills ---
-  Widget _buildTabsBar() {
+  Widget _buildTabsBar(List<Map<String, String>> tabs) {
     return SizedBox(
       height: 40,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: _tabs.length,
+        itemCount: tabs.length,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          final tab = _tabs[index];
+          final tab = tabs[index];
           final isSelected = _activeTab == tab['id'];
 
           return InkWell(
@@ -429,7 +498,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       cards = [
         StatCard(
           title: "Today's Hours",
-          value: '${today.hoursWorked.toStringAsFixed(1)}h',
+          value: '${today.activeHoursWorked.toStringAsFixed(1)}h',
           icon: Icons.access_time_rounded,
           iconColor: const Color(0xFFF59E0B),
           subtitle: today.isCheckedIn ? 'Active' : 'Pending',
@@ -483,7 +552,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         StatCard(
           title: 'Today Status',
-          value: today.status.toUpperCase(),
+          value: today.isCheckedIn ? 'PRESENT' : today.status.toUpperCase(),
           icon: Icons.fingerprint_rounded,
           iconColor: today.isCheckedIn ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
           subtitle: today.isCheckedIn ? 'Present' : 'Not Checked In',
@@ -779,7 +848,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          '${today.hoursWorked.toStringAsFixed(1)} hrs',
+                          '${today.activeHoursWorked.toStringAsFixed(1)} hrs',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -957,7 +1026,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   _buildPunchTimeBox('Check In', today.checkIn != null ? Formatters.formatTime(today.checkIn!) : '--:--', Icons.login_rounded, AppColors.success),
                   _buildPunchTimeBox('Check Out', today.checkOut != null ? Formatters.formatTime(today.checkOut!) : '--:--', Icons.logout_rounded, AppColors.danger),
-                  _buildPunchTimeBox('Hours', '${today.hoursWorked.toStringAsFixed(1)}h', Icons.timer_outlined, AppColors.primary),
+                  _buildPunchTimeBox('Hours', '${today.activeHoursWorked.toStringAsFixed(1)}h', Icons.timer_outlined, AppColors.primary),
                 ],
               ),
               const SizedBox(height: 16),
@@ -1191,12 +1260,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // --- Payroll Tab Content ---
   Widget _buildPayrollTab(BuildContext context) {
+    final user = context.read<AuthProvider>().user;
+    final work = _workDetails ?? WorkDetailsModel.fromUser(user);
+    final slip = _latestSlip ?? PayrollService().createLatestSlip(work);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Work Details Summary Card (Matches user work profile)
         _buildSectionCard(
-          title: 'Recent Salary Slips',
-          subtitle: 'Monthly compensation and deductions',
+          title: 'Work & Employment Details',
+          subtitle: 'Official Radhix Technologies employment record',
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceSubtle,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.borderLight),
+            ),
+            child: Column(
+              children: [
+                _buildSalaryRow('Employee Name', work.employeeName),
+                _buildSalaryRow('Employee ID', work.employeeId),
+                _buildSalaryRow('Department', work.department),
+                _buildSalaryRow('Designation', work.designation),
+                _buildSalaryRow('Employment Type', work.employmentType),
+                _buildSalaryRow('Annual CTC / Salary', Formatters.formatCurrency(work.salary)),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        _buildSectionCard(
+          title: 'Latest Salary Statement',
+          subtitle: 'Monthly compensation breakdown and deductions',
           child: Column(
             children: [
               Container(
@@ -1210,32 +1308,84 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text('Month: September 2026', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                        StatusBadge(status: 'Paid'),
+                      children: [
+                        Text('Month: ${slip.monthName} ${slip.year}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        StatusBadge(status: slip.status),
                       ],
                     ),
                     const Divider(height: 20, color: AppColors.borderLight),
-                    _buildSalaryRow('Gross Salary', '₹50,000'),
-                    _buildSalaryRow('Deductions (PF / Tax)', '- ₹5,000', isDeduction: true),
+                    _buildSalaryRow('Basic Salary', Formatters.formatCurrency(slip.basicSalary)),
+                    _buildSalaryRow('House Rent Allowance (HRA)', Formatters.formatCurrency(slip.hra)),
+                    _buildSalaryRow('Special Allowances', Formatters.formatCurrency(slip.allowances)),
+                    _buildSalaryRow('Gross Monthly Salary', Formatters.formatCurrency(slip.grossSalary)),
+                    _buildSalaryRow('Deductions (Provident Fund)', '- ${Formatters.formatCurrency(slip.pf)}', isDeduction: true),
+                    if (slip.esi > 0)
+                      _buildSalaryRow('Deductions (ESI)', '- ${Formatters.formatCurrency(slip.esi)}', isDeduction: true),
+                    if (slip.tds > 0)
+                      _buildSalaryRow('Deductions (TDS / Tax)', '- ${Formatters.formatCurrency(slip.tds)}', isDeduction: true),
                     const Divider(height: 20, color: AppColors.borderLight),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text('Net Disbursed Pay', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('₹45,000', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.success)),
+                      children: [
+                        const Text('Net Disbursed Take-Home', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text(Formatters.formatCurrency(slip.netSalary), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.success)),
                       ],
                     ),
-                    const SizedBox(height: 14),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Icons.download_rounded, size: 16),
-                        label: const Text('Download Payslip PDF'),
-                        onPressed: () {
-                          ToastUtil.showSuccess(context, 'Downloading September 2026 Payslip...');
-                        },
-                      ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.receipt_long_rounded, size: 16),
+                            label: const Text('View All Slips'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const SalarySlipsScreen()),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.download_rounded, size: 16),
+                            label: const Text('Download Payslip'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              side: const BorderSide(color: AppColors.primary),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            onPressed: () async {
+                              ToastUtil.showInfo(context, 'Preparing your latest salary slip...');
+                              try {
+                                final service = PayrollService();
+                                final path = await service.saveSalarySlipToFile(slip, work);
+                                if (context.mounted) {
+                                  ToastUtil.showSuccess(context, 'Payslip saved to Downloads folder:\n$path');
+                                  PayslipPreviewDialog.show(
+                                    context,
+                                    slip: slip,
+                                    work: work,
+                                    savedPath: path,
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ToastUtil.showError(context, 'Failed to save payslip: $e');
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

@@ -88,6 +88,21 @@ class ApiClient {
     return uri;
   }
 
+  ApiException _handleNetworkError(dynamic e) {
+    if (e is SocketException) {
+      return ApiException(
+        'Cannot reach server. If testing on a physical phone (Moto Edge 60 Fusion), please make sure phone and laptop are on the same Wi-Fi and use your laptop\'s IP (e.g. http://192.168.X.X:5000/api).\n(${e.message})',
+      );
+    } else if (e is TimeoutException) {
+      return ApiException(
+        'Request timed out. If the server is on Render free tier, it may be waking up from sleep (takes up to 60s). Please try again.',
+      );
+    } else if (e is ApiException) {
+      return e;
+    }
+    return ApiException('Network error: $e');
+  }
+
   Future<dynamic> get(String path, {Map<String, dynamic>? queryParams}) async {
     try {
       final uri = _buildUri(path, queryParams);
@@ -96,13 +111,8 @@ class ApiClient {
           .get(uri, headers: _getHeaders())
           .timeout(AppConstants.connectTimeout);
       return _processResponse(response);
-    } on SocketException catch (e) {
-      throw ApiException('Cannot connect to server. Please check your internet or server URL.\n(${e.message})');
-    } on TimeoutException {
-      throw ApiException('Server request timed out. Please try again.');
     } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException('Network error: $e');
+      throw _handleNetworkError(e);
     }
   }
 
@@ -118,13 +128,8 @@ class ApiClient {
           )
           .timeout(AppConstants.connectTimeout);
       return _processResponse(response);
-    } on SocketException catch (e) {
-      throw ApiException('Cannot connect to server. Please check your internet or server URL.\n(${e.message})');
-    } on TimeoutException {
-      throw ApiException('Server request timed out. Please try again.');
     } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException('Network error: $e');
+      throw _handleNetworkError(e);
     }
   }
 
@@ -140,13 +145,8 @@ class ApiClient {
           )
           .timeout(AppConstants.connectTimeout);
       return _processResponse(response);
-    } on SocketException {
-      throw ApiException('Cannot connect to server. Please check your internet connection.');
-    } on TimeoutException {
-      throw ApiException('Server request timed out. Please try again.');
     } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException('Network error: $e');
+      throw _handleNetworkError(e);
     }
   }
 
@@ -162,13 +162,8 @@ class ApiClient {
           )
           .timeout(AppConstants.connectTimeout);
       return _processResponse(response);
-    } on SocketException {
-      throw ApiException('Cannot connect to server. Please check your internet connection.');
-    } on TimeoutException {
-      throw ApiException('Server request timed out. Please try again.');
     } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException('Network error: $e');
+      throw _handleNetworkError(e);
     }
   }
 
@@ -180,13 +175,38 @@ class ApiClient {
           .delete(uri, headers: _getHeaders())
           .timeout(AppConstants.connectTimeout);
       return _processResponse(response);
-    } on SocketException {
-      throw ApiException('Cannot connect to server. Please check your internet connection.');
-    } on TimeoutException {
-      throw ApiException('Server request timed out. Please try again.');
     } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException('Network error: $e');
+      throw _handleNetworkError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> testConnection([String? targetUrl]) async {
+    final testBase = targetUrl ?? _baseUrl;
+    final cleanBase = testBase.endsWith('/') ? testBase.substring(0, testBase.length - 1) : testBase;
+    final testUri = Uri.parse('$cleanBase/health');
+    debugPrint('[API TEST] Testing connection to $testUri');
+    try {
+      final response = await http.get(testUri).timeout(const Duration(seconds: 15));
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return {'success': true, 'message': 'Connected to server successfully!'};
+      } else {
+        return {
+          'success': false,
+          'message': 'Server reached but returned status ${response.statusCode}',
+        };
+      }
+    } on SocketException catch (e) {
+      return {
+        'success': false,
+        'message': 'Cannot reach server. On a physical phone, do NOT use localhost or 10.0.2.2. Use your PC\'s Wi-Fi IP (e.g. http://192.168.X.X:5000/api).\n(${e.message})',
+      };
+    } on TimeoutException {
+      return {
+        'success': false,
+        'message': 'Connection timed out. Server may be spinning up or IP address is unreachable.',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Connection error: $e'};
     }
   }
 
