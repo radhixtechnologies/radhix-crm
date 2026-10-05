@@ -2,6 +2,8 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
+const LOGO_PATH = path.join(__dirname, 'radhix-technologies-logo.png');
+
 // Ensure all required upload directories exist
 const uploadsDir = path.join(__dirname, '../uploads');
 const requiredDirs = ['invoices', 'payslips', 'salary-slips', 'offer-letters', 'proposals', 'quotations', 'clients'];
@@ -52,17 +54,9 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
         .rect(0, 0, 595, 120)
         .fill(primaryColor);
 
-      // Company logo/name area
-      doc
-        .fillColor('#ffffff')
-        .fontSize(28)
-        .font('Helvetica-Bold')
-        .text('ZYnextro', 50, 30)
-        .fontSize(12)
-        .font('Helvetica')
-        .text('Technology Consulting', 50, 60)
-        .fontSize(10)
-        .text('Software Development & IT Solutions', 50, 80);
+      // Company logo on a white plate
+      doc.roundedRect(40, 14, 170, 92, 6).fill('#ffffff');
+      doc.image(LOGO_PATH, 48, 18, { fit: [154, 84], align: 'center', valign: 'center' });
 
       // Invoice title
       doc
@@ -93,7 +87,7 @@ exports.generateInvoicePDF = async (invoice, client, createdBy) => {
         .fontSize(10)
         .font('Helvetica')
         .fillColor('#000000')
-        .text('Zynextro Technology Consulting', 50, yPos + 20)
+        .text('Radhix Technologies', 50, yPos + 20)
         .text('Software Development & IT Solutions', 50, yPos + 35)
         .text('Email: info@zynextro.com', 50, yPos + 50)
         .text('Phone: +1 (555) 123-4567', 50, yPos + 65)
@@ -467,6 +461,7 @@ exports.generatePayrollPDF = async (payroll, employee) => {
       doc.pipe(stream);
 
       // Header
+      doc.image(LOGO_PATH, 50, 30, { fit: [100, 58] });
       doc
         .fontSize(24)
         .font('Helvetica-Bold')
@@ -948,6 +943,7 @@ exports.generateOfferLetterPDF = async (data) => {
       let yPos = 50;
 
       // Header
+      doc.image(LOGO_PATH, 50, 30, { fit: [100, 58] });
       doc
         .fontSize(20)
         .font('Helvetica-Bold')
@@ -974,7 +970,7 @@ exports.generateOfferLetterPDF = async (data) => {
       doc
         .fontSize(12)
         .font('Helvetica-Bold')
-        .text('Zynextro Technology Consulting', 350, yPos)
+        .text('Radhix Technologies', 350, yPos)
         .fontSize(10)
         .font('Helvetica')
         .text('123 Business Street', 350, yPos + 15)
@@ -1054,7 +1050,7 @@ exports.generateOfferLetterPDF = async (data) => {
         .text('Sincerely,', 50, yPos)
         .moveDown(2)
         .text('HR Department', 50, yPos + 30)
-        .text('Zynextro Technology Consulting', 50, yPos + 45);
+        .text('Radhix Technologies', 50, yPos + 45);
 
       // Footer
       const pageHeight = doc.page.height;

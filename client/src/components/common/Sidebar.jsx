@@ -320,7 +320,7 @@ const Sidebar = () => {
         />
         <aside className={`sidebar-mobile-drawer ${isOpen ? 'open' : ''}`}>
           <div className="mobile-logo">
-            CRM
+            <img src="/radhix-logo.png" alt="Radhix Technologies" style={{ height: 34, width: "auto" }} />
           </div>
           <nav className="mobile-nav">
             {primaryModules.filter(m => m.access).map(module => renderMobileItem(module))}
@@ -338,7 +338,7 @@ const Sidebar = () => {
       <aside className="sidebar-primary">
         <div className="primary-logo">
           {/* Logo placeholder or simple icon */}
-          <div className="logo-icon__Box">CRM</div>
+          <img src="/radhix-icon.png" alt="Radhix" style={{ width: 36, height: 36, objectFit: "contain" }} />
         </div>
         <nav className="primary-nav">
           {primaryModules.filter(m => m.access).map(module => (

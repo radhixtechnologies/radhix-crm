@@ -36,6 +36,7 @@ const generateProposalPDF = async (proposal, client) => {
       };
 
       // Header
+      doc.image(path.join(__dirname, '../../utils/radhix-technologies-logo.png'), 50, 30, { fit: [100, 58] });
       doc.fontSize(24).font('Helvetica-Bold').text('PROPOSAL', { align: 'right' }).moveDown();
       doc.fontSize(12).font('Helvetica')
         .text(`Proposal #: ${proposal.proposalNumber || 'N/A'}`, { align: 'right' })
@@ -46,7 +47,7 @@ const generateProposalPDF = async (proposal, client) => {
       // Company info
       doc.fontSize(14).font('Helvetica-Bold').text('From:', 50, 120)
         .fontSize(10).font('Helvetica')
-        .text('Zynextro Technology Consulting', 50, 145)
+        .text('Radhix Technologies', 50, 145)
         .text('123 Business Street', 50, 160)
         .text('City, State 12345', 50, 175);
 
