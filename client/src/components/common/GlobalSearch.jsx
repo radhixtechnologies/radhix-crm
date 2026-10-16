@@ -69,14 +69,18 @@ const GlobalSearch = () => {
     );
 
     return (
-        <div className="navbar-search" ref={searchRef} style={{ position: 'relative' }}>
+        <div
+            className="navbar-search"
+            ref={searchRef}
+            style={{ position: 'relative', cursor: 'pointer' }}
+            onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
+        >
             <FiSearch />
             <input
                 type="text"
-                placeholder="Search employees, leads, deals..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onFocus={() => { if (query.length >= 2) setShowResults(true); }}
+                placeholder="Search anything or press Ctrl + K..."
+                readOnly
+                style={{ cursor: 'pointer' }}
             />
             <span className="search-shortcut">Ctrl + K</span>
 

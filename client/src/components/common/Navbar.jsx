@@ -121,8 +121,8 @@ const Navbar = () => {
           {isMobile && (
             <button
               className="navbar-action-btn"
-              title="Search"
-              onClick={() => setMobileSearchOpen(true)}
+              title="Search (Ctrl + K)"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
             >
               <FiSearch />
             </button>

@@ -24,6 +24,8 @@ const {
   importLeads,
 } = require('../controllers/sales/leadImportController');
 
+const studentController = require('../controllers/institute/studentController');
+
 
 // Client controllers
 const {
@@ -113,6 +115,10 @@ router.post('/leads/:id/notes', checkModuleAccess('sales'), addNote);
 router.put('/leads/:id/status', checkModuleAccess('sales'), changeStatus);
 router.post('/leads/:id/communication', checkModuleAccess('sales'), addCommunication);
 router.post('/leads/:id/convert', checkModuleAccess('sales'), convertLead);
+router.post('/leads/:id/enroll', checkModuleAccess('sales'), (req, res, next) => {
+  req.body.inquiryId = req.params.id;
+  return studentController.enrollStudent(req, res, next);
+});
 
 
 // Client routes - Admin only

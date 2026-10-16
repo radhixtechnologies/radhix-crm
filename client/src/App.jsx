@@ -6,7 +6,9 @@ import { QuickActionsProvider } from './context/QuickActionsContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Sidebar from './components/common/Sidebar';
 import Navbar from './components/common/Navbar';
+import TestingNotice from './components/common/TestingNotice';
 import Breadcrumbs from './components/common/Breadcrumbs';
+import CommandPalette from './components/common/CommandPalette';
 
 // Auth
 const Login = lazy(() => import('./pages/auth/Login'));
@@ -27,6 +29,10 @@ const HRMLeaves = lazy(() => import('./pages/hrm/HRMLeaves'));
 const Leaves = lazy(() => import('./pages/employee/Leaves'));
 const Tasks = lazy(() => import('./pages/employee/Tasks'));
 const Timesheets = lazy(() => import('./pages/employee/Timesheets'));
+const Projects = lazy(() => import('./pages/projects/Projects'));
+const DailyWorkUpdates = lazy(() => import('./pages/employee/DailyWorkUpdates'));
+const ApprovalsHub = lazy(() => import('./pages/approvals/ApprovalsHub'));
+const Announcements = lazy(() => import('./pages/company/Announcements'));
 const LeaveBalance = lazy(() => import('./pages/employee/LeaveBalance'));
 const Performance = lazy(() => import('./pages/employee/MyPerformanceReview'));
 const Payroll = lazy(() => import('./pages/employee/Payroll'));
@@ -70,6 +76,14 @@ const AddProduct = lazy(() => import('./pages/inventory/AddProduct'));
 
 // Sales
 const SalesDashboard = lazy(() => import('./pages/sales/SalesDashboard'));
+const InstituteAdmissions = lazy(() => import('./pages/institute/InstituteAdmissions'));
+const InstituteCourses = lazy(() => import('./pages/institute/InstituteCourses'));
+const InstituteFollowups = lazy(() => import('./pages/institute/InstituteFollowups'));
+const InstituteStudents = lazy(() => import('./pages/institute/InstituteStudents'));
+const InstituteStudentDetails = lazy(() => import('./pages/institute/InstituteStudentDetails'));
+const InstituteFees = lazy(() => import('./pages/institute/InstituteFees'));
+const InstituteAttendance = lazy(() => import('./pages/institute/InstituteAttendance'));
+const InstituteReports = lazy(() => import('./pages/institute/InstituteReports'));
 const LeadList = lazy(() => import('./pages/sales/LeadList'));
 const AddLead = lazy(() => import('./pages/sales/AddLead'));
 const LeadDetails = lazy(() => import('./pages/sales/LeadDetails'));
@@ -180,6 +194,7 @@ const Layout = ({ children }) => {
         <Navbar />
         <Breadcrumbs />
         {children}
+        <CommandPalette />
       </div>
     </div>
   );
@@ -342,6 +357,36 @@ const AppRoutes = () => {
           <ProtectedRoute requiredModule="employee">
             <Layout>
               <Timesheets />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/employees/daily-updates"
+        element={
+          <ProtectedRoute requiredModule="employee">
+            <Layout>
+              <DailyWorkUpdates />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/approvals"
+        element={
+          <ProtectedRoute requiredModule="employee">
+            <Layout>
+              <ApprovalsHub />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/company/announcements"
+        element={
+          <ProtectedRoute requiredModule="employee">
+            <Layout>
+              <Announcements />
             </Layout>
           </ProtectedRoute>
         }
@@ -802,6 +847,106 @@ const AppRoutes = () => {
         }
       />
 
+      <Route
+        path="/projects"
+        element={
+          <ProtectedRoute requiredModule="employee">
+            <Layout>
+              <Projects />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:id"
+        element={
+          <ProtectedRoute requiredModule="employee">
+            <Layout>
+              <Projects />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/admissions"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteAdmissions />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/courses"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteCourses />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/followups"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteFollowups />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/students"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteStudents />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/students/:id"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteStudentDetails />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/fees"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteFees />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/attendance"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteAttendance />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/reports"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteReports />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/sales"
         element={
@@ -1739,6 +1884,7 @@ function App() {
         <QuickActionsProvider>
           <Router>
             <AppRoutes />
+            <TestingNotice />
           </Router>
         </QuickActionsProvider>
       </SidebarProvider>

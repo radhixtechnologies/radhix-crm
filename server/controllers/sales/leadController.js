@@ -47,14 +47,17 @@ const addAndCondition = (query, condition) => {
 };
 
 const buildLeadListQuery = async (req) => {
-  const { page = 1, limit = 50, search, status, source, campaign, owner, myLeads } = req.query;
+  const { page = 1, limit = 50, search, status, source, campaign, owner, myLeads, instituteInquiry } = req.query;
   const query = { isDeleted: { $ne: true } };
+  if (instituteInquiry === 'true') query.isInstituteInquiry = true;
+  else if (instituteInquiry === 'false') query.isInstituteInquiry = { $ne: true };
   if (search) {
     addAndCondition(query, {
       $or: [
         { name: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
         { company: { $regex: search, $options: 'i' } },
+        { courseInterested: { $regex: search, $options: 'i' } },
       ],
     });
   }
@@ -116,7 +119,15 @@ exports.getLeads = async (req, res) => {
   try {
     const { query, page, limit } = await buildLeadListQuery(req);
     const [data, total] = await Promise.all([
-      populateAssignedTo(Lead.find(query).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit)).lean(),
+      populateAssignedTo(
+        Lead.find(query)
+          .populate('course', 'name code baseFee duration')
+          .populate('batch', 'name startDate endDate schedule capacity status')
+          .populate('convertedToStudent', 'studentId name status')
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(limit)
+      ).lean(),
       Lead.countDocuments(query),
     ]);
     res.json({ success: true, data, total, page, pages: Math.ceil(total / limit) });
@@ -128,7 +139,10 @@ exports.getLeads = async (req, res) => {
 exports.getLead = async (req, res) => {
   try {
     const data = await populateAssignedTo(Lead.findOne(await leadAccessQuery(req, req.params.id)))
-      .populate('campaign', 'name');
+      .populate('campaign', 'name')
+      .populate('course', 'name code baseFee duration')
+      .populate('batch', 'name startDate endDate schedule capacity status')
+      .populate('convertedToStudent', 'studentId name status enrollmentDate');
     if (!data) return res.status(404).json({ success: false, message: 'Lead not found' });
     res.json({ success: true, data });
   } catch (error) {

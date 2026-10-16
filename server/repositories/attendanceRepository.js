@@ -78,25 +78,53 @@ class AttendanceRepository {
   }
 
   /**
+   * Helper to check if two dates share the same calendar day in Server local or IST (+5:30)
+   * @param {Date|String} d1
+   * @param {Date|String} d2
+   * @returns {Boolean}
+   */
+  isSameDay(d1, d2) {
+    if (!d1 || !d2) return false;
+    const a = new Date(d1);
+    const b = new Date(d2);
+    if (isNaN(a.getTime()) || isNaN(b.getTime())) return false;
+
+    // Check server local
+    if (a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate()) {
+      return true;
+    }
+
+    // Check IST (+5.5h)
+    const aIST = new Date(a.getTime() + 5.5 * 3600000);
+    const bIST = new Date(b.getTime() + 5.5 * 3600000);
+    return aIST.getUTCFullYear() === bIST.getUTCFullYear() &&
+      aIST.getUTCMonth() === bIST.getUTCMonth() &&
+      aIST.getUTCDate() === bIST.getUTCDate();
+  }
+
+  /**
    * Find today's attendance for employee
+   * Strictly matches the current calendar day (local or IST).
+   * Returns null if the employee has not checked in today.
    * @param {String} employeeId - Employee ID
-   * @returns {Promise<Object>}
+   * @returns {Promise<Object|null>}
    */
   async findTodayAttendance(employeeId) {
     const now = new Date();
-    // Search within +/- 24 hours window to accommodate UTC and IST (+5:30) differences
-    const windowStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const windowEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    // Search within +/- 36 hours window to accommodate UTC and IST (+5:30) differences
+    const windowStart = new Date(now.getTime() - 36 * 60 * 60 * 1000);
+    const windowEnd = new Date(now.getTime() + 36 * 60 * 60 * 1000);
 
     const records = await Attendance.find({
       employee: employeeId,
       $or: [
         { date: { $gte: windowStart, $lte: windowEnd } },
-        { checkIn: { $gte: windowStart, $lte: windowEnd } },
-        { createdAt: { $gte: windowStart } }
+        { checkIn: { $gte: windowStart, $lte: windowEnd } }
       ]
     })
-      .sort({ checkIn: -1, date: -1, createdAt: -1 })
+      .sort({ checkIn: -1, date: -1 })
       .populate('employee', 'employeeId designation')
       .exec();
 
@@ -104,32 +132,38 @@ class AttendanceRepository {
       return null;
     }
 
-    // Helper to check if two dates share the same calendar day in local or IST
-    const isSameDay = (d1, d2) => {
-      if (!d1 || !d2) return false;
-      const a = new Date(d1);
-      const b = new Date(d2);
-      // Check server local
-      if (a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()) {
+    // Find record strictly matching today's calendar day by date or checkIn
+    const match = records.find(r => {
+      if (this.isSameDay(r.date, now) || this.isSameDay(r.checkIn, now)) {
         return true;
       }
-      // Check IST (+5.5h)
-      const aIST = new Date(a.getTime() + 5.5 * 3600000);
-      const bIST = new Date(b.getTime() + 5.5 * 3600000);
-      return aIST.getUTCFullYear() === bIST.getUTCFullYear() &&
-        aIST.getUTCMonth() === bIST.getUTCMonth() &&
-        aIST.getUTCDate() === bIST.getUTCDate();
-    };
-
-    // Find record matching today
-    const match = records.find(r => {
-      if (isSameDay(r.date, now) || isSameDay(r.checkIn, now)) return true;
-      // If checked in within the last 18 hours and not checked out yet
-      if (r.checkIn && !r.checkOut && (now - new Date(r.checkIn)) < 18 * 3600000) return true;
       return false;
     });
 
-    return match || records[0];
+    // Return the match if found for today, otherwise strictly null (NEVER fallback to records[0])
+    return match || null;
+  }
+
+  /**
+   * Find active open attendance session (checked in, not checked out yet)
+   * within a reasonable shift window (e.g. 16 hours)
+   * @param {String} employeeId
+   * @returns {Promise<Object|null>}
+   */
+  async findActiveSession(employeeId) {
+    const now = new Date();
+    const maxShiftStart = new Date(now.getTime() - 16 * 60 * 60 * 1000);
+
+    const activeRecord = await Attendance.findOne({
+      employee: employeeId,
+      checkIn: { $gte: maxShiftStart, $lte: now },
+      checkOut: null
+    })
+      .sort({ checkIn: -1 })
+      .populate('employee', 'employeeId designation')
+      .exec();
+
+    return activeRecord || null;
   }
 
   /**
