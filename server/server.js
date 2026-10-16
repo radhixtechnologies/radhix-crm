@@ -263,6 +263,8 @@ mountRoute('/api/sales', './routes/sales');
 mountRoute('/api/institute', './routes/institute');
 mountRoute('/api/projects', './routes/projects');
 mountRoute('/api/daily-updates', './routes/dailyUpdates');
+mountRoute('/api/approvals', './routes/approvals');
+mountRoute('/api/announcements', './routes/announcements');
 mountRoute('/api/hrm', './routes/hrm');
 mountRoute('/api/analytics', './routes/analytics');
 mountRoute('/api/dashboard', './routes/dashboard');
@@ -414,4 +416,3 @@ const startServer = async () => {
 
 // Start the server
 startServer();
-

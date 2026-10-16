@@ -31,36 +31,36 @@ const MyAttendance = () => {
     const [workDuration, setWorkDuration] = useState('00:00:00');
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            const todayStr = dayjs().format('YYYY-MM-DD');
-            const isCheckedIn = attendance && dayjs(attendance.date).isSame(todayStr, 'day');
-            const isCheckedOut = isCheckedIn && attendance.checkOut;
+        const updateTimer = () => {
+            const hasCheckedIn = Boolean(attendance && attendance.checkIn);
+            const hasCheckedOut = Boolean(hasCheckedIn && attendance.checkOut);
 
-            if (isCheckedIn && !isCheckedOut && attendance.checkIn) {
+            if (hasCheckedIn && !hasCheckedOut) {
                 // Calculate live duration
                 const start = dayjs(attendance.checkIn);
                 const now = dayjs();
-                const diffMs = now.diff(start);
+                const diffMs = Math.max(0, now.diff(start));
 
-                if (diffMs > 0) {
-                    const hrs = Math.floor(diffMs / 3600000);
-                    const mins = Math.floor((diffMs % 3600000) / 60000);
-                    const secs = Math.floor((diffMs % 60000) / 1000);
+                const hrs = Math.floor(diffMs / 3600000);
+                const mins = Math.floor((diffMs % 3600000) / 60000);
+                const secs = Math.floor((diffMs % 60000) / 1000);
+                setWorkDuration(
+                    `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+                );
+            } else if (hasCheckedOut) {
+                // Show final duration (static)
+                if (attendance.hoursWorked) {
+                    const totalSecs = Math.round(attendance.hoursWorked * 3600);
+                    const hrs = Math.floor(totalSecs / 3600);
+                    const mins = Math.floor((totalSecs % 3600) / 60);
+                    const secs = totalSecs % 60;
                     setWorkDuration(
                         `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
                     );
-                }
-            } else if (isCheckedOut) {
-                // Show final duration (static)
-                // NOTE: If we have hoursWorked from backend, use it, else calculate from checkIn/checkOut
-                if (attendance.hoursWorked) {
-                    // Convert float hours to HH:mm:ss ? OR keep it simple
-                    // Usually calculateDuration returns "X hrs" or "Xh Ym"
-                    // Let's stick to the HH:mm:ss format for consistency in this display if possible,
-                    // calculateDuration below uses diff.
+                } else if (attendance.checkIn && attendance.checkOut) {
                     const start = dayjs(attendance.checkIn);
                     const end = dayjs(attendance.checkOut);
-                    const diffMs = end.diff(start);
+                    const diffMs = Math.max(0, end.diff(start));
                     const hrs = Math.floor(diffMs / 3600000);
                     const mins = Math.floor((diffMs % 3600000) / 60000);
                     const secs = Math.floor((diffMs % 60000) / 1000);
@@ -73,15 +73,20 @@ const MyAttendance = () => {
             } else {
                 setWorkDuration("00:00:00");
             }
-        }, 1000);
+        };
+
+        updateTimer();
+        const timer = setInterval(updateTimer, 1000);
         return () => clearInterval(timer);
     }, [attendance]);
 
     const init = async () => {
         setInitialLoading(true);
         try {
-            await fetchTodayAttendance();
-            await fetchHistory();
+            await Promise.all([
+                fetchTodayAttendance(),
+                fetchHistory()
+            ]);
         } catch (e) {
             console.error(e);
         } finally {
@@ -93,21 +98,43 @@ const MyAttendance = () => {
     useEffect(() => { if (!initialLoading) fetchHistory(); }, [dateFrom, dateTo]);
 
     const fetchTodayAttendance = async () => {
-        const today = dayjs().format('YYYY-MM-DD');
-        const res = await employeeService.getAttendanceSelf({ startDate: today, endDate: today });
-        if (res.data.success && res.data.data.length > 0) setAttendance(res.data.data[0]);
-        else setAttendance(null);
+        try {
+            // First check dedicated today status endpoint
+            const resToday = await employeeService.getTodayStatusSelf();
+            if (resToday.data?.success && resToday.data?.data) {
+                setAttendance(resToday.data.data);
+                return;
+            }
+
+            // Fallback to date range query
+            const today = dayjs().format('YYYY-MM-DD');
+            const res = await employeeService.getAttendanceSelf({ startDate: today, endDate: today });
+            if (res.data?.success && Array.isArray(res.data.data) && res.data.data.length > 0) {
+                setAttendance(res.data.data[0]);
+            } else {
+                setAttendance(null);
+            }
+        } catch (err) {
+            console.error('Error fetching today attendance:', err);
+            setAttendance(null);
+        }
     };
 
     const fetchHistory = async () => {
         setLoadingHistory(true);
         try {
             const res = await employeeService.getAttendanceSelf({ startDate: dateFrom, endDate: dateTo });
-            if (res.data.success) {
-                setAttendanceHistory(res.data.data.sort((a, b) => new Date(b.date) - new Date(a.date)));
+            if (res.data?.success && Array.isArray(res.data.data)) {
+                setAttendanceHistory(res.data.data.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt)));
+            } else {
+                setAttendanceHistory([]);
             }
-        } catch (e) { console.error(e); }
-        finally { setLoadingHistory(false); }
+        } catch (e) {
+            console.error('Error fetching attendance history:', e);
+            setAttendanceHistory([]);
+        } finally {
+            setLoadingHistory(false);
+        }
     };
 
     const handleCheckIn = async (status = 'present') => {
@@ -115,9 +142,10 @@ const MyAttendance = () => {
         try {
             const payload = status === 'present' ? {} : { status };
             const res = await employeeService.checkInSelf(payload);
-            if (res.data.success) {
+            if (res.data?.success) {
                 setAttendance(res.data.data);
-                fetchHistory();
+                await fetchTodayAttendance();
+                await fetchHistory();
             }
         } catch (e) { alert(e.response?.data?.message || 'Check-in failed'); }
         finally { setCheckingIn(false); }
@@ -127,17 +155,24 @@ const MyAttendance = () => {
         setCheckingOut(true);
         try {
             const res = await employeeService.checkOutSelf({});
-            if (res.data.success) {
+            if (res.data?.success) {
                 setAttendance(res.data.data);
-                fetchHistory();
+                await fetchTodayAttendance();
+                await fetchHistory();
             }
         } catch (e) { alert(e.response?.data?.message || 'Check-out failed'); }
         finally { setCheckingOut(false); }
     };
 
     const todayStr = dayjs().format('YYYY-MM-DD');
-    const isCheckedIn = attendance && dayjs(attendance.date).isSame(todayStr, 'day');
-    const isCheckedOut = isCheckedIn && attendance.checkOut;
+    const isCheckedIn = Boolean(
+        attendance && (
+            attendance.checkIn ||
+            dayjs(attendance.date).isSame(todayStr, 'day') ||
+            dayjs(attendance.checkIn).isSame(todayStr, 'day')
+        )
+    );
+    const isCheckedOut = Boolean(isCheckedIn && attendance?.checkOut);
 
     const calculateDuration = (inTime, outTime, hoursWorked) => {
         if (hoursWorked) {

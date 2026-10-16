@@ -43,6 +43,31 @@ class AttendanceService {
     }
     // Admins and super_admins can check in for any employee (no additional check needed)
 
+    // Auto-close any hanging unclosed sessions from previous days so employee is never blocked
+    const now = new Date();
+    try {
+      const hangingSessions = await attendanceRepository.findAll({
+        employee: employeeId,
+        checkIn: { $exists: true, $ne: null },
+        checkOut: null,
+      }, { populate: '' });
+
+      for (const hanging of hangingSessions) {
+        if (!attendanceRepository.isSameDay(hanging.date, now) && !attendanceRepository.isSameDay(hanging.checkIn, now)) {
+          const checkInMs = new Date(hanging.checkIn).getTime();
+          const autoHours = 8;
+          const autoCheckOut = new Date(checkInMs + autoHours * 3600000);
+          hanging.checkOut = autoCheckOut;
+          hanging.checkOutMethod = 'auto_system';
+          hanging.hoursWorked = autoHours;
+          hanging.notes = (hanging.notes ? hanging.notes + '\n' : '') + '[System: Auto-closed previous unclosed shift]';
+          await hanging.save();
+        }
+      }
+    } catch (cleanupErr) {
+      console.warn('Non-blocking warning: failed to auto-close previous hanging sessions:', cleanupErr.message);
+    }
+
     // Check if already checked in today
     const todayAttendance = await attendanceRepository.findTodayAttendance(employeeId);
     if (todayAttendance && todayAttendance.checkIn) {
@@ -113,7 +138,14 @@ class AttendanceService {
     if (todayAttendance) {
       attendance = await attendanceRepository.updateById(todayAttendance._id, attendanceData);
     } else {
-      attendance = await attendanceRepository.create(attendanceData);
+      try {
+        attendance = await attendanceRepository.create(attendanceData);
+      } catch (err) {
+        if (err.code === 11000) {
+          throw new AppError('Already checked in today', 400);
+        }
+        throw err;
+      }
     }
 
     // Populate employee
@@ -162,8 +194,15 @@ class AttendanceService {
     }
     // Admins and super_admins can check out for any employee (no additional check needed)
 
-    // Get today's attendance
-    const todayAttendance = await attendanceRepository.findTodayAttendance(employeeId);
+    // Get today's attendance or active open session (e.g. night shift)
+    let todayAttendance = await attendanceRepository.findTodayAttendance(employeeId);
+    if (!todayAttendance || !todayAttendance.checkIn || todayAttendance.checkOut) {
+      const activeSession = await attendanceRepository.findActiveSession(employeeId);
+      if (activeSession) {
+        todayAttendance = activeSession;
+      }
+    }
+
     if (!todayAttendance || !todayAttendance.checkIn) {
       throw new AppError('Must check in before checking out', 400);
     }
@@ -227,7 +266,8 @@ class AttendanceService {
       roleSlug === 'hrm_employee' || roleSlug === 'finance_employee' ||
       roleSlug === 'operations_employee' || roleSlug === 'management_employee') {
       const currentEmployee = await employeeRepository.findByUserId(user._id);
-      if (!currentEmployee || currentEmployee._id.toString() !== employeeId) {
+      const targetEmployeeId = employeeId?.toString?.() || String(employeeId);
+      if (!currentEmployee || currentEmployee._id.toString() !== targetEmployeeId) {
         throw new AppError('Not authorized to view this attendance', 403);
       }
     }
@@ -312,7 +352,13 @@ class AttendanceService {
    * @returns {Promise<Object>}
    */
   async getTodayStatus(employeeId) {
-    const attendance = await attendanceRepository.findTodayAttendance(employeeId);
+    let attendance = await attendanceRepository.findTodayAttendance(employeeId);
+    if (!attendance) {
+      const activeSession = await attendanceRepository.findActiveSession(employeeId);
+      if (activeSession) {
+        attendance = activeSession;
+      }
+    }
     return {
       success: true,
       data: attendance || null,

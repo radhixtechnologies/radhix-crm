@@ -45,6 +45,7 @@ import VisitorInsightsLineChart from '../../components/dashboard/Charts/VisitorI
 import VolumeServiceBarChart from '../../components/dashboard/Charts/VolumeServiceBarChart';
 import RevenueAnalysisChart from '../../components/dashboard/Charts/RevenueAnalysisChart';
 import KPIBadge from '../../components/dashboard/KPIBadge';
+import ExecutivePulse from '../../components/dashboard/ExecutivePulse';
 import '../../styles/dashboard/superadmin-dashboard-new.css';
 
 const SuperAdminDashboard = () => {
@@ -272,6 +273,9 @@ const SuperAdminDashboard = () => {
             <button className="btn-primary-sm" onClick={toggleQuickActions}><FiZap /> Quick Actions</button>
           </div>
         </header>
+
+        {/* Executive Pulse & Operations Digest */}
+        <ExecutivePulse />
 
         {/* Tab Navigation */}
         <nav className="ep-tabs-container">

@@ -29,6 +29,7 @@ import {
   FiGrid,
   FiBookOpen,
   FiActivity,
+  FiBell,
 } from 'react-icons/fi';
 import './Sidebar.css';
 
@@ -76,15 +77,15 @@ const Sidebar = () => {
       if (activeModule !== 'my-workspace') setActiveModule('my-workspace');
       return;
     }
-    if (path.startsWith('/hrm')) {
-    if (path.startsWith('/projects')) {
+    if (path.startsWith('/projects') || path.startsWith('/approvals') || path.startsWith('/company')) {
       if (activeModule !== 'my-workspace') setActiveModule('my-workspace');
       return;
     }
+    if (path.startsWith('/hrm')) {
       if (activeModule !== 'hrm') setActiveModule('hrm');
-    } else if (path.startsWith('/finance')) {
     } else if (path.startsWith('/institute')) {
       if (activeModule !== 'institute') setActiveModule('institute');
+    } else if (path.startsWith('/finance')) {
       if (activeModule !== 'finance') setActiveModule('finance');
     } else if (path.startsWith('/sales') || path.startsWith('/leads') || path.startsWith('/contacts')) {
       if (activeModule !== 'sales') setActiveModule('sales');
@@ -116,8 +117,8 @@ const Sidebar = () => {
 
       const defaultModulePath = {
         sales: '/sales',
-        hrm: '/hrm',
         institute: '/institute/admissions',
+        hrm: '/hrm',
         finance: '/finance',
         marketing: '/marketing',
         operations: '/support',
@@ -152,9 +153,11 @@ const Sidebar = () => {
         { path: '/employees/my-attendance', label: 'My Attendance', icon: FiClock },
         { path: '/employees/my-leaves', label: 'My Leaves', icon: FiCalendar },
         { path: '/employees/tasks', label: 'My Tasks', icon: FiCheckCircle },
-        { path: '/employees/timesheets', label: 'My Timesheets', icon: FiFileText },
         { path: '/projects', label: 'Projects', icon: FiBriefcase },
         { path: '/employees/daily-updates', label: 'Daily Work Update', icon: FiActivity },
+        { path: '/approvals', label: 'Approvals Hub', icon: FiCheckCircle },
+        { path: '/company/announcements', label: 'Notice Board', icon: FiBell },
+        { path: '/employees/timesheets', label: 'My Timesheets', icon: FiFileText },
         { path: '/employees/performance', label: 'My Performance', icon: FiTrendingUp },
         { path: '/employees/salary-slips', label: 'Salary Slips', icon: FiDollarSign },
         { path: '/employees/reimbursements', label: 'Reimbursements', icon: FiCreditCard },
@@ -186,9 +189,6 @@ const Sidebar = () => {
       ]
     },
     {
-      key: 'sales',
-      label: 'Sales',
-    {
       key: 'institute',
       label: 'Institute',
       icon: FiBookOpen,
@@ -203,6 +203,9 @@ const Sidebar = () => {
         { path: '/institute/reports', label: 'Reports', icon: FiBarChart2 },
       ]
     },
+    {
+      key: 'sales',
+      label: 'Sales',
       icon: FiTrendingUp,
       access: hasModuleAccess('sales'),
       subItems: [

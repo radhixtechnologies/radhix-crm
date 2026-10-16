@@ -6,7 +6,9 @@ import { QuickActionsProvider } from './context/QuickActionsContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Sidebar from './components/common/Sidebar';
 import Navbar from './components/common/Navbar';
+import TestingNotice from './components/common/TestingNotice';
 import Breadcrumbs from './components/common/Breadcrumbs';
+import CommandPalette from './components/common/CommandPalette';
 
 // Auth
 const Login = lazy(() => import('./pages/auth/Login'));
@@ -27,10 +29,12 @@ const HRMLeaves = lazy(() => import('./pages/hrm/HRMLeaves'));
 const Leaves = lazy(() => import('./pages/employee/Leaves'));
 const Tasks = lazy(() => import('./pages/employee/Tasks'));
 const Timesheets = lazy(() => import('./pages/employee/Timesheets'));
-const LeaveBalance = lazy(() => import('./pages/employee/LeaveBalance'));
-const Performance = lazy(() => import('./pages/employee/MyPerformanceReview'));
 const Projects = lazy(() => import('./pages/projects/Projects'));
 const DailyWorkUpdates = lazy(() => import('./pages/employee/DailyWorkUpdates'));
+const ApprovalsHub = lazy(() => import('./pages/approvals/ApprovalsHub'));
+const Announcements = lazy(() => import('./pages/company/Announcements'));
+const LeaveBalance = lazy(() => import('./pages/employee/LeaveBalance'));
+const Performance = lazy(() => import('./pages/employee/MyPerformanceReview'));
 const Payroll = lazy(() => import('./pages/employee/Payroll'));
 const Assets = lazy(() => import('./pages/employee/Assets'));
 const ExitProcess = lazy(() => import('./pages/employee/ExitProcess'));
@@ -72,10 +76,6 @@ const AddProduct = lazy(() => import('./pages/inventory/AddProduct'));
 
 // Sales
 const SalesDashboard = lazy(() => import('./pages/sales/SalesDashboard'));
-const LeadList = lazy(() => import('./pages/sales/LeadList'));
-const AddLead = lazy(() => import('./pages/sales/AddLead'));
-const LeadDetails = lazy(() => import('./pages/sales/LeadDetails'));
-const LeadTracking = lazy(() => import('./pages/sales/LeadTracking'));
 const InstituteAdmissions = lazy(() => import('./pages/institute/InstituteAdmissions'));
 const InstituteCourses = lazy(() => import('./pages/institute/InstituteCourses'));
 const InstituteFollowups = lazy(() => import('./pages/institute/InstituteFollowups'));
@@ -84,6 +84,10 @@ const InstituteStudentDetails = lazy(() => import('./pages/institute/InstituteSt
 const InstituteFees = lazy(() => import('./pages/institute/InstituteFees'));
 const InstituteAttendance = lazy(() => import('./pages/institute/InstituteAttendance'));
 const InstituteReports = lazy(() => import('./pages/institute/InstituteReports'));
+const LeadList = lazy(() => import('./pages/sales/LeadList'));
+const AddLead = lazy(() => import('./pages/sales/AddLead'));
+const LeadDetails = lazy(() => import('./pages/sales/LeadDetails'));
+const LeadTracking = lazy(() => import('./pages/sales/LeadTracking'));
 const ClientList = lazy(() => import('./pages/sales/ClientList'));
 const AddClient = lazy(() => import('./pages/sales/AddClient'));
 const ClientDetails = lazy(() => import('./pages/sales/ClientDetails'));
@@ -190,6 +194,7 @@ const Layout = ({ children }) => {
         <Navbar />
         <Breadcrumbs />
         {children}
+        <CommandPalette />
       </div>
     </div>
   );
@@ -357,11 +362,6 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/employees/leave-balance"
-        element={
-          <ProtectedRoute requiredModule="employee">
-            <Layout>
-      <Route
         path="/employees/daily-updates"
         element={
           <ProtectedRoute requiredModule="employee">
@@ -371,6 +371,31 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/approvals"
+        element={
+          <ProtectedRoute requiredModule="employee">
+            <Layout>
+              <ApprovalsHub />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/company/announcements"
+        element={
+          <ProtectedRoute requiredModule="employee">
+            <Layout>
+              <Announcements />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/employees/leave-balance"
+        element={
+          <ProtectedRoute requiredModule="employee">
+            <Layout>
               <LeaveBalance />
             </Layout>
           </ProtectedRoute>
@@ -823,31 +848,6 @@ const AppRoutes = () => {
       />
 
       <Route
-        path="/sales"
-        element={
-          <ProtectedRoute requiredModule="sales">
-            <Layout>
-              <SalesRedirect />
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/sales/leads"
-        element={
-          <ProtectedRoute requiredModule="sales">
-            <Layout>
-              <LeadList />
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/sales/leads/new"
-        element={
-          <ProtectedRoute requiredModule="sales">
-            <Layout>
-      <Route
         path="/projects"
         element={
           <ProtectedRoute requiredModule="employee">
@@ -947,6 +947,31 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/sales"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <SalesRedirect />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales/leads"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <LeadList />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales/leads/new"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
               <AddLead />
             </Layout>
           </ProtectedRoute>
@@ -1859,6 +1884,7 @@ function App() {
         <QuickActionsProvider>
           <Router>
             <AppRoutes />
+            <TestingNotice />
           </Router>
         </QuickActionsProvider>
       </SidebarProvider>

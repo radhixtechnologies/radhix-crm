@@ -130,6 +130,12 @@ const Attendance = () => {
 
   const fetchAttendance = async () => {
     try {
+      const statusRes = await employeeService.getTodayStatusSelf();
+      if (statusRes.data?.success && statusRes.data?.data) {
+        setAttendance(statusRes.data.data);
+        return;
+      }
+
       const today = dayjs().format('YYYY-MM-DD');
       const response = await employeeService.getAttendanceSelf({
         startDate: today,

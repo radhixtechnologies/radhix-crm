@@ -1,0 +1,251 @@
+/* Command Palette Styles (Linear / Raycast / Spotlight Style) */
+.cmd-palette-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 10vh 1rem 2rem;
+  animation: cmdFadeIn 0.15s ease-out;
+}
+
+@keyframes cmdFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cmd-palette-container {
+  width: 100%;
+  max-width: 640px;
+  background: var(--card-bg, #ffffff);
+  color: var(--text-primary, #0f172a);
+  border-radius: 14px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border, #e2e8f0);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: cmdSlideDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cmdSlideDown {
+  from {
+    transform: translateY(-16px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.cmd-palette-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+  gap: 0.75rem;
+}
+
+.cmd-search-icon {
+  font-size: 1.25rem;
+  color: var(--primary, #3b82f6);
+  flex-shrink: 0;
+}
+
+.cmd-palette-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1.05rem;
+  color: inherit;
+  font-family: inherit;
+}
+
+.cmd-palette-input::placeholder {
+  color: var(--text-secondary, #64748b);
+}
+
+.cmd-esc-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  background: var(--bg-secondary, #f1f5f9);
+  color: var(--text-secondary, #64748b);
+  border: 1px solid var(--border, #e2e8f0);
+  cursor: pointer;
+  user-select: none;
+}
+
+.cmd-palette-body {
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  scrollbar-width: thin;
+}
+
+.cmd-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary, #64748b);
+  padding: 0.6rem 0.85rem 0.35rem;
+  user-select: none;
+}
+
+.cmd-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.1s ease, transform 0.05s ease;
+  user-select: none;
+  font-size: 0.92rem;
+  color: var(--text-primary, #0f172a);
+}
+
+.cmd-item:hover,
+.cmd-item.active {
+  background: var(--bg-hover, #f1f5f9);
+  color: var(--primary, #2563eb);
+}
+
+[data-theme='dark'] .cmd-item:hover,
+[data-theme='dark'] .cmd-item.active {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.cmd-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--bg-secondary, #f8fafc);
+  color: var(--text-secondary, #64748b);
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  border: 1px solid var(--border, #e2e8f0);
+}
+
+.cmd-item.active .cmd-item-icon,
+.cmd-item:hover .cmd-item-icon {
+  background: var(--primary, #3b82f6);
+  color: #ffffff;
+  border-color: var(--primary, #3b82f6);
+}
+
+.cmd-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.cmd-item-title {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cmd-item-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.cmd-item-badge {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  background: var(--bg-secondary, #e2e8f0);
+  color: var(--text-secondary, #475569);
+  text-transform: capitalize;
+}
+
+.cmd-item-shortcut {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #94a3b8);
+  font-family: monospace;
+}
+
+.cmd-empty-state {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--text-secondary, #64748b);
+  font-size: 0.9rem;
+}
+
+.cmd-loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  color: var(--text-secondary, #64748b);
+  font-size: 0.85rem;
+}
+
+.cmd-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border, #cbd5e1);
+  border-top-color: var(--primary, #3b82f6);
+  border-radius: 50%;
+  animation: cmdSpin 0.7s linear infinite;
+}
+
+@keyframes cmdSpin {
+  to { transform: rotate(360deg); }
+}
+
+.cmd-palette-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1.25rem;
+  background: var(--bg-secondary, #f8fafc);
+  border-top: 1px solid var(--border, #e2e8f0);
+  font-size: 0.75rem;
+  color: var(--text-secondary, #64748b);
+  user-select: none;
+}
+
+.cmd-footer-hints {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cmd-hint-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cmd-kbd {
+  display: inline-block;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.68rem;
+  font-family: monospace;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+}
+
