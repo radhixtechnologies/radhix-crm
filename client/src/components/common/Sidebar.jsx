@@ -27,6 +27,8 @@ import {
   FiPieChart,
   FiX,
   FiGrid,
+  FiBookOpen,
+  FiActivity,
 } from 'react-icons/fi';
 import './Sidebar.css';
 
@@ -75,8 +77,14 @@ const Sidebar = () => {
       return;
     }
     if (path.startsWith('/hrm')) {
+    if (path.startsWith('/projects')) {
+      if (activeModule !== 'my-workspace') setActiveModule('my-workspace');
+      return;
+    }
       if (activeModule !== 'hrm') setActiveModule('hrm');
     } else if (path.startsWith('/finance')) {
+    } else if (path.startsWith('/institute')) {
+      if (activeModule !== 'institute') setActiveModule('institute');
       if (activeModule !== 'finance') setActiveModule('finance');
     } else if (path.startsWith('/sales') || path.startsWith('/leads') || path.startsWith('/contacts')) {
       if (activeModule !== 'sales') setActiveModule('sales');
@@ -109,6 +117,7 @@ const Sidebar = () => {
       const defaultModulePath = {
         sales: '/sales',
         hrm: '/hrm',
+        institute: '/institute/admissions',
         finance: '/finance',
         marketing: '/marketing',
         operations: '/support',
@@ -144,6 +153,8 @@ const Sidebar = () => {
         { path: '/employees/my-leaves', label: 'My Leaves', icon: FiCalendar },
         { path: '/employees/tasks', label: 'My Tasks', icon: FiCheckCircle },
         { path: '/employees/timesheets', label: 'My Timesheets', icon: FiFileText },
+        { path: '/projects', label: 'Projects', icon: FiBriefcase },
+        { path: '/employees/daily-updates', label: 'Daily Work Update', icon: FiActivity },
         { path: '/employees/performance', label: 'My Performance', icon: FiTrendingUp },
         { path: '/employees/salary-slips', label: 'Salary Slips', icon: FiDollarSign },
         { path: '/employees/reimbursements', label: 'Reimbursements', icon: FiCreditCard },
@@ -177,6 +188,21 @@ const Sidebar = () => {
     {
       key: 'sales',
       label: 'Sales',
+    {
+      key: 'institute',
+      label: 'Institute',
+      icon: FiBookOpen,
+      access: hasModuleAccess('sales'),
+      subItems: [
+        { path: '/institute/admissions', label: 'Admissions', icon: FiUsers },
+        { path: '/institute/courses', label: 'Courses & Batches', icon: FiBookOpen },
+        { path: '/institute/followups', label: 'Follow-ups', icon: FiClock },
+        { path: '/institute/students', label: 'Students', icon: FiUser },
+        { path: '/institute/fees', label: 'Fee Records', icon: FiDollarSign },
+        { path: '/institute/attendance', label: 'Attendance', icon: FiCalendar },
+        { path: '/institute/reports', label: 'Reports', icon: FiBarChart2 },
+      ]
+    },
       icon: FiTrendingUp,
       access: hasModuleAccess('sales'),
       subItems: [

@@ -38,6 +38,7 @@ export const salesService = {
   changeLeadStatus: (id, status) => api.put(`/sales/leads/${id}/status`, { status }),
   addCommunication: (id, data) => api.post(`/sales/leads/${id}/communication`, data),
   convertLead: (id, data) => api.post(`/sales/leads/${id}/convert`, data),
+  enrollLeadStudent: (id, data) => api.post(`/sales/leads/${id}/enroll`, data),
 
   // Lead Import services
   downloadLeadTemplate: () => api.get('/sales/leads/import/template', { responseType: 'blob' }),

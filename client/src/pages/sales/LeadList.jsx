@@ -117,7 +117,8 @@ const LeadList = () => {
         limit: pagination.limit,
         search: debouncedSearch,
         ...activeFilters,
-        myLeads: showMyLeadsOnly
+        myLeads: showMyLeadsOnly,
+        instituteInquiry: false
       };
 
       const res = await salesService.getLeads(params);

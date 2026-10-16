@@ -29,6 +29,8 @@ const Tasks = lazy(() => import('./pages/employee/Tasks'));
 const Timesheets = lazy(() => import('./pages/employee/Timesheets'));
 const LeaveBalance = lazy(() => import('./pages/employee/LeaveBalance'));
 const Performance = lazy(() => import('./pages/employee/MyPerformanceReview'));
+const Projects = lazy(() => import('./pages/projects/Projects'));
+const DailyWorkUpdates = lazy(() => import('./pages/employee/DailyWorkUpdates'));
 const Payroll = lazy(() => import('./pages/employee/Payroll'));
 const Assets = lazy(() => import('./pages/employee/Assets'));
 const ExitProcess = lazy(() => import('./pages/employee/ExitProcess'));
@@ -74,6 +76,14 @@ const LeadList = lazy(() => import('./pages/sales/LeadList'));
 const AddLead = lazy(() => import('./pages/sales/AddLead'));
 const LeadDetails = lazy(() => import('./pages/sales/LeadDetails'));
 const LeadTracking = lazy(() => import('./pages/sales/LeadTracking'));
+const InstituteAdmissions = lazy(() => import('./pages/institute/InstituteAdmissions'));
+const InstituteCourses = lazy(() => import('./pages/institute/InstituteCourses'));
+const InstituteFollowups = lazy(() => import('./pages/institute/InstituteFollowups'));
+const InstituteStudents = lazy(() => import('./pages/institute/InstituteStudents'));
+const InstituteStudentDetails = lazy(() => import('./pages/institute/InstituteStudentDetails'));
+const InstituteFees = lazy(() => import('./pages/institute/InstituteFees'));
+const InstituteAttendance = lazy(() => import('./pages/institute/InstituteAttendance'));
+const InstituteReports = lazy(() => import('./pages/institute/InstituteReports'));
 const ClientList = lazy(() => import('./pages/sales/ClientList'));
 const AddClient = lazy(() => import('./pages/sales/AddClient'));
 const ClientDetails = lazy(() => import('./pages/sales/ClientDetails'));
@@ -351,6 +361,16 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute requiredModule="employee">
             <Layout>
+      <Route
+        path="/employees/daily-updates"
+        element={
+          <ProtectedRoute requiredModule="employee">
+            <Layout>
+              <DailyWorkUpdates />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
               <LeaveBalance />
             </Layout>
           </ProtectedRoute>
@@ -827,6 +847,106 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute requiredModule="sales">
             <Layout>
+      <Route
+        path="/projects"
+        element={
+          <ProtectedRoute requiredModule="employee">
+            <Layout>
+              <Projects />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:id"
+        element={
+          <ProtectedRoute requiredModule="employee">
+            <Layout>
+              <Projects />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/admissions"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteAdmissions />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/courses"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteCourses />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/followups"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteFollowups />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/students"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteStudents />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/students/:id"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteStudentDetails />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/fees"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteFees />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/attendance"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteAttendance />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/institute/reports"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <InstituteReports />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
               <AddLead />
             </Layout>
           </ProtectedRoute>

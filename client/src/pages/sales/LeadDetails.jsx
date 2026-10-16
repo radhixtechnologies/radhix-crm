@@ -3,7 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   FiPhone, FiMail, FiMessageCircle, FiEdit, FiCheck, FiCalendar,
   FiDollarSign, FiBriefcase, FiGlobe, FiTarget,
-  FiUser, FiMoreHorizontal, FiArrowLeft, FiCheckCircle, FiThermometer, FiActivity
+  FiUser, FiMoreHorizontal, FiArrowLeft, FiCheckCircle, FiThermometer, FiActivity,
+  FiUserCheck, FiBookOpen
 } from 'react-icons/fi';
 import { salesService } from '../../services/salesService';
 import StatusBadge from '../../components/Sales/StatusBadge';
@@ -12,6 +13,7 @@ import ScheduleFollowUpModal from '../../components/Sales/ScheduleFollowUpModal'
 import EmailComposeModal from '../../components/Sales/EmailComposeModal';
 import ChatModal from '../../components/Sales/ChatModal';
 import ActivitySection from '../../components/activities/ActivitySection';
+import EnrollStudentModal from '../../components/institute/EnrollStudentModal';
 import Loader from '../../components/common/Loader';
 import { formatCurrency, formatDate } from '../../utils/format';
 import '../../styles/sales/lead-details.css';
@@ -28,6 +30,7 @@ const LeadDetails = () => {
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
+  const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [isInitiatingCall, setIsInitiatingCall] = useState(false);
   const [activeActivityTab, setActiveActivityTab] = useState('activities');
 
@@ -159,6 +162,21 @@ const LeadDetails = () => {
         />
       )}
 
+      {/* Enroll Student Modal for Institute inquiries */}
+      {showEnrollModal && (
+        <EnrollStudentModal
+          isOpen={showEnrollModal}
+          onClose={() => setShowEnrollModal(false)}
+          inquiry={lead}
+          onSuccess={(data) => {
+            setToastMessage(`Student ${data?.student?.name} enrolled successfully with ID ${data?.student?.studentId}!`);
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 4000);
+            fetchLead();
+          }}
+        />
+      )}
+
       {/* COMPACT PROFESSIONAL HEADER - OPTIMIZED */}
       <header className="details-header-compact">
         {/* TOP ROW: Info & Meta */}
@@ -241,8 +259,29 @@ const LeadDetails = () => {
           </div>
 
           <div className="primary-actions">
-            {/* Show Convert button if qualified OR hot/qualified temperature */}
-            {((lead.status === 'qualified' || lead.leadTemperature === 'qualified' || lead.leadTemperature === 'hot' || (lead.qualificationScore && lead.qualificationScore >= 60)) && lead.status !== 'converted') && (
+            {/* Institute Inquiry Enrollment Actions */}
+            {lead.isInstituteInquiry && !lead.convertedToStudent && lead.status !== 'lost' && (
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => setShowEnrollModal(true)}
+                title="Enroll as student and setup course & fee plan"
+              >
+                <FiUserCheck size={14} className="mr-1" /> Enroll Student
+              </button>
+            )}
+
+            {lead.isInstituteInquiry && lead.convertedToStudent && (
+              <button
+                className="btn btn-success btn-sm"
+                onClick={() => navigate(`/institute/students/${lead.convertedToStudent?._id || lead.convertedToStudent}`)}
+                title="View Enrolled Student Profile"
+              >
+                <FiUserCheck size={14} className="mr-1" /> Enrolled Student {lead.convertedToStudent?.studentId ? `(${lead.convertedToStudent.studentId})` : ''}
+              </button>
+            )}
+
+            {/* Standard Sales Lead Convert to Deal button */}
+            {!lead.isInstituteInquiry && ((lead.status === 'qualified' || lead.leadTemperature === 'qualified' || lead.leadTemperature === 'hot' || (lead.qualificationScore && lead.qualificationScore >= 60)) && lead.status !== 'converted') && (
               <button
                 className="btn btn-success btn-sm"
                 onClick={() => setShowConvertModal(true)}
@@ -252,8 +291,8 @@ const LeadDetails = () => {
                 <FiCheckCircle size={14} className="mr-1" /> Convert
               </button>
             )}
-            {/* Show read-only badge if converted */}
-            {lead.status === 'converted' && (
+            {/* Show read-only badge if converted for sales leads */}
+            {!lead.isInstituteInquiry && lead.status === 'converted' && (
               <span className="badge-converted" role="status" aria-label="Lead converted to deal">
                 <FiCheckCircle size={12} /> Converted
               </span>
@@ -346,6 +385,46 @@ const LeadDetails = () => {
 
         {/* LEFT COLUMN */}
         <div className="left-column">
+
+          {/* Institute Inquiry Details Card */}
+          {lead.isInstituteInquiry && (
+            <div className="card details-card compact-card" style={{ borderLeft: '4px solid #4f46e5' }}>
+              <div className="card-header-sm" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FiBookOpen size={16} color="#4f46e5" /> Academic Course & Batch Details
+                </h3>
+                {lead.convertedToStudent && (
+                  <span style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 700 }}>
+                    Enrolled ({lead.convertedToStudent?.studentId || 'Active'})
+                  </span>
+                )}
+              </div>
+              <div className="card-body">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', fontSize: '13px' }}>
+                  <div>
+                    <span style={{ color: '#64748b', display: 'block', fontSize: '11px', textTransform: 'uppercase' }}>Course Interested</span>
+                    <strong style={{ color: '#0f172a' }}>{lead.course?.name || lead.courseInterested || '—'}</strong>
+                    {lead.course?.code && <span style={{ display: 'block', fontSize: '11px', color: '#64748b' }}>Code: {lead.course.code} (Base: ₹{lead.course.baseFee})</span>}
+                  </div>
+                  <div>
+                    <span style={{ color: '#64748b', display: 'block', fontSize: '11px', textTransform: 'uppercase' }}>Preferred Batch</span>
+                    <strong style={{ color: '#0f172a' }}>{lead.batch?.name || lead.preferredBatch || '—'}</strong>
+                    {lead.batch?.schedule && <span style={{ display: 'block', fontSize: '11px', color: '#64748b' }}>{lead.batch.schedule}</span>}
+                  </div>
+                  <div>
+                    <span style={{ color: '#64748b', display: 'block', fontSize: '11px', textTransform: 'uppercase' }}>Education Level</span>
+                    <strong style={{ color: '#0f172a' }}>{lead.educationLevel || '—'}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#64748b', display: 'block', fontSize: '11px', textTransform: 'uppercase' }}>Scheduled Follow-up</span>
+                    <strong style={{ color: lead.followUpDate && new Date(lead.followUpDate) < new Date() ? '#dc2626' : '#0f172a' }}>
+                      {lead.followUpDate ? formatDate(lead.followUpDate) : 'Not scheduled'}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Contact Information */}
           <div className="card details-card compact-card">

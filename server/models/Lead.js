@@ -21,6 +21,35 @@ const leadSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  isInstituteInquiry: {
+    type: Boolean,
+    default: false,
+  },
+  courseInterested: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  preferredBatch: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  course: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course',
+    default: null,
+  },
+  batch: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Batch',
+    default: null,
+  },
+  educationLevel: {
+    type: String,
+    default: '',
+    trim: true,
+  },
   companySize: {
     type: String,
     enum: ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'],
@@ -151,6 +180,12 @@ const leadSchema = new mongoose.Schema({
     ref: 'Contact',
     default: null,
   },
+  // Student conversion tracking for institute inquiries
+  convertedToStudent: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Student',
+    default: null,
+  },
   conversionDate: {
     type: Date,
     default: null,
@@ -181,6 +216,7 @@ leadSchema.index({ assignedTo: 1, status: 1 });
 leadSchema.index({ campaign: 1 });
 leadSchema.index({ createdAt: -1 });
 leadSchema.index({ leadTemperature: 1 });
+leadSchema.index({ isInstituteInquiry: 1, createdAt: -1 });
 // leadSchema.index({ status: 1 }); // Removed duplicate index
 
 
