@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 
 const dealSchema = new mongoose.Schema({
+  tenantCompany: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
   title: {
     type: String,
     required: [true, 'Deal title is required'],
@@ -216,6 +218,14 @@ dealSchema.virtual('weightedValue').get(function () {
 // Ensure virtuals are included in JSON
 dealSchema.set('toJSON', { virtuals: true });
 dealSchema.set('toObject', { virtuals: true });
+
+dealSchema.index({ stage: 1 });
+dealSchema.index({ status: 1 });
+dealSchema.index({ isDeleted: 1 });
+dealSchema.index({ expectedCloseDate: 1 });
+dealSchema.index({ assignedTo: 1, status: 1 });
+dealSchema.index({ tenantCompany: 1, stage: 1 });
+dealSchema.index({ updatedAt: -1 });
 
 module.exports = mongoose.model('Deal', dealSchema);
 

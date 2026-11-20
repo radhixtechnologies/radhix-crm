@@ -20,47 +20,55 @@ exports.getSuperAdminOverview = async (req, res) => {
   try {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfDay = new Date(now.setHours(0, 0, 0, 0));
 
-    // Employee stats
-    const totalEmployees = await Employee.countDocuments();
-    const activeEmployees = await Employee.countDocuments({ status: 'active' });
-    const newHiresThisMonth = await Employee.countDocuments({
-      joiningDate: { $gte: startOfMonth },
-    });
-
-    // Department-wise count
-    const departmentCounts = await Employee.aggregate([
-      { $match: { status: 'active' } },
-      { $group: { _id: '$department', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-    ]);
-
-    // Headcount trend (last 6 months)
-    const headcountTrend = [];
+    // Prepare headcount trend date ranges
+    const monthRanges = [];
     for (let i = 5; i >= 0; i--) {
-      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
-      const count = await Employee.countDocuments({
-        joiningDate: { $lte: monthEnd },
-        $or: [
-          { leavingDate: { $exists: false } },
-          { leavingDate: { $gt: monthEnd } },
-        ],
-      });
-      headcountTrend.push({
-        month: monthStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-        count,
+      monthRanges.push({
+        monthStart: new Date(now.getFullYear(), now.getMonth() - i, 1),
+        monthEnd: new Date(now.getFullYear(), now.getMonth() - i + 1, 0),
       });
     }
 
-    // Attrition rate (last 6 months)
-    const resignedLast6Months = await Employee.countDocuments({
-      status: { $in: ['resigned', 'terminated'] },
-      leavingDate: {
-        $gte: new Date(now.getFullYear(), now.getMonth() - 6, 1),
-      },
-    });
+    // Run all queries in parallel
+    const [
+      totalEmployees,
+      activeEmployees,
+      newHiresThisMonth,
+      departmentCounts,
+      resignedLast6Months,
+      trendCounts,
+    ] = await Promise.all([
+      Employee.countDocuments(),
+      Employee.countDocuments({ status: 'active' }),
+      Employee.countDocuments({ joiningDate: { $gte: startOfMonth } }),
+      Employee.aggregate([
+        { $match: { status: 'active' } },
+        { $group: { _id: '$department', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
+      Employee.countDocuments({
+        status: { $in: ['resigned', 'terminated'] },
+        leavingDate: { $gte: new Date(now.getFullYear(), now.getMonth() - 6, 1) },
+      }),
+      Promise.all(
+        monthRanges.map((r) =>
+          Employee.countDocuments({
+            joiningDate: { $lte: r.monthEnd },
+            $or: [
+              { leavingDate: { $exists: false } },
+              { leavingDate: { $gt: r.monthEnd } },
+            ],
+          })
+        )
+      ),
+    ]);
+
+    const headcountTrend = monthRanges.map((r, idx) => ({
+      month: r.monthStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      count: trendCounts[idx],
+    }));
+
     const avgHeadcount = totalEmployees;
     const attritionRate = avgHeadcount > 0 ? ((resignedLast6Months / avgHeadcount) * 100).toFixed(2) : 0;
 
@@ -71,7 +79,7 @@ exports.getSuperAdminOverview = async (req, res) => {
           total: totalEmployees,
           active: activeEmployees,
           newHiresThisMonth,
-          departmentCounts: departmentCounts.map(d => ({ department: d._id || 'Unassigned', count: d.count })),
+          departmentCounts: departmentCounts.map((d) => ({ department: d._id || 'Unassigned', count: d.count })),
           headcountTrend,
           attritionRate: parseFloat(attritionRate),
         },
@@ -90,48 +98,55 @@ exports.getSuperAdminOverview = async (req, res) => {
 // @access  Private (Super Admin)
 exports.getHRMInsights = async (req, res) => {
   try {
-    const totalJobPosts = await JobPosting.countDocuments();
-    const openJobPosts = await JobPosting.countDocuments({ status: 'open' });
-    const totalApplicants = await JobApplication.countDocuments();
-
-    // Upcoming interviews (next 7 days)
     const sevenDaysFromNow = new Date();
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-    const upcomingInterviews = await JobApplication.countDocuments({
-      'interviews.date': {
-        $gte: new Date(),
-        $lte: sevenDaysFromNow,
-      },
-    });
 
-    // Pending onboarding tasks
-    const pendingOnboarding = await OnboardingTask.countDocuments({
-      status: 'pending',
-    });
-
-    // Pending leave approvals
-    const pendingLeaves = await Leave.countDocuments({
-      status: 'pending',
-    });
-
-    // Leave usage summary (last 6 months)
-    const leaveSummary = [];
+    // Prepare 6-month ranges for leave summary
+    const monthRanges = [];
     for (let i = 5; i >= 0; i--) {
       const monthStart = new Date();
       monthStart.setMonth(monthStart.getMonth() - i);
       monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
       const monthEnd = new Date(monthStart);
       monthEnd.setMonth(monthEnd.getMonth() + 1);
-
-      const leaves = await Leave.countDocuments({
-        startDate: { $gte: monthStart, $lt: monthEnd },
-        status: 'approved',
-      });
-      leaveSummary.push({
-        month: monthStart.toLocaleDateString('en-US', { month: 'short' }),
-        count: leaves,
-      });
+      monthRanges.push({ monthStart, monthEnd });
     }
+
+    const [
+      totalJobPosts,
+      openJobPosts,
+      totalApplicants,
+      upcomingInterviews,
+      pendingOnboarding,
+      pendingLeaves,
+      leaveCounts,
+    ] = await Promise.all([
+      JobPosting.countDocuments(),
+      JobPosting.countDocuments({ status: 'open' }),
+      JobApplication.countDocuments(),
+      JobApplication.countDocuments({
+        'interviews.date': {
+          $gte: new Date(),
+          $lte: sevenDaysFromNow,
+        },
+      }),
+      OnboardingTask.countDocuments({ status: 'pending' }),
+      Leave.countDocuments({ status: 'pending' }),
+      Promise.all(
+        monthRanges.map((r) =>
+          Leave.countDocuments({
+            startDate: { $gte: r.monthStart, $lt: r.monthEnd },
+            status: 'approved',
+          })
+        )
+      ),
+    ]);
+
+    const leaveSummary = monthRanges.map((r, idx) => ({
+      month: r.monthStart.toLocaleDateString('en-US', { month: 'short' }),
+      count: leaveCounts[idx],
+    }));
 
     res.status(200).json({
       success: true,
@@ -163,21 +178,29 @@ exports.getAttendanceOverview = async (req, res) => {
     const todayEnd = new Date(today);
     todayEnd.setHours(23, 59, 59, 999);
 
-    // Today's attendance
-    const todayAttendance = await Attendance.find({
-      date: { $gte: today, $lte: todayEnd },
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+
+    // Fetch past 7 days attendance in a single lean query instead of 7 queries!
+    const allAttendance = await Attendance.find({
+      date: { $gte: sevenDaysAgo, $lte: todayEnd },
+    }).select('date status checkIn checkOut').lean();
+
+    const todayAttendance = allAttendance.filter((a) => {
+      const d = new Date(a.date);
+      return d >= today && d <= todayEnd;
     });
 
-    const present = todayAttendance.filter(a => a.status === 'present').length;
-    const absent = todayAttendance.filter(a => a.status === 'absent').length;
-    const late = todayAttendance.filter(a => a.status === 'late').length;
+    const present = todayAttendance.filter((a) => a.status === 'present').length;
+    const absent = todayAttendance.filter((a) => a.status === 'absent').length;
+    const late = todayAttendance.filter((a) => a.status === 'late').length;
 
     // Live check-ins (currently working)
     const liveCheckIns = todayAttendance.filter(
-      a => a.status === 'present' && a.checkIn && !a.checkOut
+      (a) => a.status === 'present' && a.checkIn && !a.checkOut
     ).length;
 
-    // Attendance trend (last 7 days)
+    // Attendance trend (last 7 days) computed in memory
     const attendanceTrend = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
@@ -185,15 +208,16 @@ exports.getAttendanceOverview = async (req, res) => {
       const dateEnd = new Date(date);
       dateEnd.setHours(23, 59, 59, 999);
 
-      const dayAttendance = await Attendance.find({
-        date: { $gte: date, $lte: dateEnd },
+      const dayAttendance = allAttendance.filter((a) => {
+        const d = new Date(a.date);
+        return d >= date && d <= dateEnd;
       });
 
       attendanceTrend.push({
         date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        present: dayAttendance.filter(a => a.status === 'present').length,
-        absent: dayAttendance.filter(a => a.status === 'absent').length,
-        late: dayAttendance.filter(a => a.status === 'late').length,
+        present: dayAttendance.filter((a) => a.status === 'present').length,
+        absent: dayAttendance.filter((a) => a.status === 'absent').length,
+        late: dayAttendance.filter((a) => a.status === 'late').length,
       });
     }
 
@@ -223,37 +247,119 @@ exports.getAttendanceOverview = async (req, res) => {
 // @access  Private (Super Admin)
 exports.getSalesSummary = async (req, res) => {
   try {
-    const totalLeads = await Lead.countDocuments();
-    const newLeads = await Lead.countDocuments({ status: 'new' });
-    const contactedLeads = await Lead.countDocuments({ status: 'contacted' });
-    const qualifiedLeads = await Lead.countDocuments({ status: 'qualified' });
-    const closedLeads = await Lead.countDocuments({ status: 'won' });
+    const now = new Date();
+    const threeMonthsAhead = new Date(now.getFullYear(), now.getMonth() + 3, 1);
 
-    // Deal pipeline
-    const dealsByStage = await Deal.aggregate([
-      { $group: { _id: '$stage', count: { $sum: 1 }, totalValue: { $sum: '$value' } } },
+    // Prepare 12 months for lead trend
+    const monthRanges = [];
+    for (let i = 11; i >= 0; i--) {
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+      monthRanges.push({ monthStart, monthEnd });
+    }
+
+    // Run parallel queries
+    const [
+      totalLeads,
+      newLeads,
+      contactedLeads,
+      qualifiedLeads,
+      closedLeads,
+      dealsByStage,
+      topPerformers,
+      proposalDealsCount,
+      negotiationDealsCount,
+      totalOrders,
+      productsSoldAgg,
+      topProducts,
+      upcomingDeals,
+      leadTrendData,
+    ] = await Promise.all([
+      Lead.countDocuments(),
+      Lead.countDocuments({ status: 'new' }),
+      Lead.countDocuments({ status: 'contacted' }),
+      Lead.countDocuments({ status: 'qualified' }),
+      Lead.countDocuments({ status: 'won' }),
+      Deal.aggregate([
+        { $group: { _id: '$stage', count: { $sum: 1 }, totalValue: { $sum: '$value' } } },
+      ]),
+      Deal.aggregate([
+        { $match: { stage: 'closed-won' } },
+        {
+          $group: {
+            _id: '$assignedTo',
+            totalValue: { $sum: '$value' },
+            dealCount: { $sum: 1 },
+          },
+        },
+        { $sort: { totalValue: -1 } },
+        { $limit: 5 },
+        {
+          $lookup: {
+            from: 'users',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'user',
+          },
+        },
+      ]),
+      Deal.countDocuments({ stage: 'proposal-sent' }),
+      Deal.countDocuments({ stage: 'negotiation' }),
+      Invoice.countDocuments({ status: { $in: ['paid', 'pending', 'sent'] } }),
+      Invoice.aggregate([
+        { $match: { status: 'paid' } },
+        { $unwind: '$items' },
+        { $group: { _id: null, total: { $sum: '$items.quantity' } } },
+      ]),
+      Invoice.aggregate([
+        { $match: { status: 'paid' } },
+        { $unwind: '$items' },
+        {
+          $group: {
+            _id: '$items.name',
+            sales: { $sum: '$items.quantity' },
+            value: { $sum: '$items.amount' },
+          },
+        },
+        { $sort: { sales: -1 } },
+        { $limit: 5 },
+      ]),
+      Deal.find({
+        expectedCloseDate: { $gte: new Date(now.getFullYear(), now.getMonth(), 1), $lt: threeMonthsAhead },
+        status: 'open',
+      }).select('expectedCloseDate value probability').lean(),
+      Promise.all(
+        monthRanges.map(async (r) => {
+          const [nLeads, wLeads, lLeads] = await Promise.all([
+            Lead.countDocuments({ createdAt: { $gte: r.monthStart, $lt: r.monthEnd } }),
+            Lead.countDocuments({ status: 'won', updatedAt: { $gte: r.monthStart, $lt: r.monthEnd } }),
+            Lead.countDocuments({ status: 'lost', updatedAt: { $gte: r.monthStart, $lt: r.monthEnd } }),
+          ]);
+          return {
+            month: r.monthStart.toLocaleDateString('en-US', { month: 'short' }),
+            new: nLeads,
+            loyal: wLeads,
+            lost: lLeads,
+          };
+        })
+      ),
     ]);
 
-    // Monthly revenue forecast (next 3 months)
-    // Monthly revenue forecast (next 3 months)
+    // Monthly revenue forecast from upcomingDeals in memory
     const revenueForecast = [];
     for (let i = 0; i < 3; i++) {
-      const monthStart = new Date();
-      monthStart.setMonth(monthStart.getMonth() + i);
-      monthStart.setDate(1);
-      const monthEnd = new Date(monthStart);
-      monthEnd.setMonth(monthEnd.getMonth() + 1);
+      const monthStart = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() + i + 1, 1);
 
-      // Estimate revenue from deals likely to close
-      // Logic: Sum of (Value * Probability) for deals with expectedCloseDate in this month
-      const deals = await Deal.find({
-        expectedCloseDate: { $gte: monthStart, $lt: monthEnd },
-        status: 'open'
+      const matchingDeals = upcomingDeals.filter((d) => {
+        if (!d.expectedCloseDate) return false;
+        const dt = new Date(d.expectedCloseDate);
+        return dt >= monthStart && dt < monthEnd;
       });
 
-      const estimatedRevenue = deals.reduce((sum, deal) => {
+      const estimatedRevenue = matchingDeals.reduce((sum, deal) => {
         const prob = deal.probability || 0;
-        return sum + (deal.value * (prob / 100));
+        return sum + ((deal.value || 0) * (prob / 100));
       }, 0);
 
       revenueForecast.push({
@@ -262,92 +368,15 @@ exports.getSalesSummary = async (req, res) => {
       });
     }
 
-    // Top sales performers (by deal value)
-    const topPerformers = await Deal.aggregate([
-      { $match: { stage: 'closed-won' } },
-      {
-        $group: {
-          _id: '$assignedTo',
-          totalValue: { $sum: '$value' },
-          dealCount: { $sum: 1 },
-        },
-      },
-      { $sort: { totalValue: -1 } },
-      { $limit: 5 },
-      {
-        $lookup: {
-          from: 'users',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'user',
-        },
-      },
-    ]);
-
-    // Sales funnel data
     const funnelData = [
       { stage: 'Leads', value: totalLeads },
       { stage: 'Qualified', value: qualifiedLeads },
-      { stage: 'Proposal', value: await Deal.countDocuments({ stage: 'proposal-sent' }) },
-      { stage: 'Negotiation', value: await Deal.countDocuments({ stage: 'negotiation' }) },
+      { stage: 'Proposal', value: proposalDealsCount },
+      { stage: 'Negotiation', value: negotiationDealsCount },
       { stage: 'Won', value: closedLeads },
     ];
 
-    // Total Orders (Paid & Pending Invoices as Orders)
-    const totalOrders = await Invoice.countDocuments({ status: { $in: ['paid', 'pending', 'sent'] } });
-
-    // Products Sold (Sum of quantities in paid invoices)
-    const productsSoldAgg = await Invoice.aggregate([
-      { $match: { status: 'paid' } },
-      { $unwind: '$items' },
-      { $group: { _id: null, total: { $sum: '$items.quantity' } } }
-    ]);
     const productsSold = productsSoldAgg[0]?.total || 0;
-
-    // Top Selling Products (Sales Analytics)
-    const topProducts = await Invoice.aggregate([
-      { $match: { status: 'paid' } },
-      { $unwind: '$items' },
-      {
-        $group: {
-          _id: '$items.name',
-          sales: { $sum: '$items.quantity' },
-          value: { $sum: '$items.amount' }
-        }
-      },
-      { $sort: { sales: -1 } },
-      { $limit: 5 }
-    ]);
-
-    // Lead Acquisition Trend (Visitor Insights replacement)
-    // 12 months trend
-    const leadTrend = [];
-    for (let i = 11; i >= 0; i--) {
-      const monthStart = new Date();
-      monthStart.setMonth(monthStart.getMonth() - i);
-      monthStart.setDate(1);
-      const monthEnd = new Date(monthStart);
-      monthEnd.setMonth(monthEnd.getMonth() + 1);
-
-      const newLeads = await Lead.countDocuments({
-        createdAt: { $gte: monthStart, $lt: monthEnd }
-      });
-      const wonLeads = await Lead.countDocuments({
-        status: 'won',
-        updatedAt: { $gte: monthStart, $lt: monthEnd }
-      });
-      const lostLeads = await Lead.countDocuments({
-        status: 'lost',
-        updatedAt: { $gte: monthStart, $lt: monthEnd }
-      });
-
-      leadTrend.push({
-        month: monthStart.toLocaleDateString('en-US', { month: 'short' }),
-        new: newLeads,
-        loyal: wonLeads, // Mapping 'Won' to 'Loyal'
-        lost: lostLeads
-      });
-    }
 
     res.status(200).json({
       success: true,
@@ -359,28 +388,27 @@ exports.getSalesSummary = async (req, res) => {
           qualified: qualifiedLeads,
           closed: closedLeads,
         },
-        dealsByStage: dealsByStage.map(s => ({
+        dealsByStage: dealsByStage.map((s) => ({
           stage: s._id,
           count: s.count,
           totalValue: s.totalValue || 0,
         })),
         revenueForecast,
-        topPerformers: topPerformers.map(p => ({
+        topPerformers: topPerformers.map((p) => ({
           userId: p._id,
           name: p.user[0]?.name || 'Unknown',
           totalValue: p.totalValue || 0,
           dealCount: p.dealCount,
         })),
         funnelData,
-        // Added for Dashboard
         totalOrders,
         productsSold,
-        topProducts: topProducts.map(p => ({
+        topProducts: topProducts.map((p) => ({
           name: p._id,
           sales: p.sales,
-          value: p.value
+          value: p.value,
         })),
-        leadTrend
+        leadTrend: leadTrendData,
       },
     });
   } catch (error) {
@@ -396,72 +424,77 @@ exports.getSalesSummary = async (req, res) => {
 // @access  Private (Super Admin)
 exports.getFinanceSummary = async (req, res) => {
   try {
-    // Invoice stats
-    const totalInvoices = await Invoice.countDocuments();
-    const paidInvoices = await Invoice.countDocuments({ status: 'paid' });
-    const pendingInvoices = await Invoice.countDocuments({ status: 'sent' });
-    const overdueInvoices = await Invoice.countDocuments({
-      status: { $in: ['sent', 'overdue'] },
-      dueDate: { $lt: new Date() },
-    });
+    const now = new Date();
 
-    // Income vs expense (last 6 months)
-    const incomeExpenseTrend = [];
+    // Prepare 6-month ranges for income vs expense trend
+    const monthRanges = [];
     for (let i = 5; i >= 0; i--) {
-      const monthStart = new Date();
-      monthStart.setMonth(monthStart.getMonth() - i);
-      monthStart.setDate(1);
-      const monthEnd = new Date(monthStart);
-      monthEnd.setMonth(monthEnd.getMonth() + 1);
-
-      const income = await Invoice.aggregate([
-        { $match: { status: 'paid', paidDate: { $gte: monthStart, $lt: monthEnd } } },
-        { $group: { _id: null, total: { $sum: '$total' } } },
-      ]);
-
-      const expense = await Expense.aggregate([
-        { $match: { status: 'approved', date: { $gte: monthStart, $lt: monthEnd } } },
-        { $group: { _id: null, total: { $sum: '$amount' } } },
-      ]);
-
-      incomeExpenseTrend.push({
-        month: monthStart.toLocaleDateString('en-US', { month: 'short' }),
-        income: income[0]?.total || 0,
-        expense: expense[0]?.total || 0,
-      });
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+      monthRanges.push({ monthStart, monthEnd });
     }
 
-    // Expense breakdown by category
-    const expenseBreakdown = await Expense.aggregate([
-      { $match: { status: 'approved' } },
-      { $group: { _id: '$category', total: { $sum: '$amount' } } },
-      { $sort: { total: -1 } },
-    ]);
-
-    // Payroll summary
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const processedPayroll = await Payroll.countDocuments({
-      month: now.getMonth() + 1,
-      year: now.getFullYear(),
-      status: 'processed',
-    });
-    const pendingPayroll = await Payroll.countDocuments({
-      month: now.getMonth() + 1,
-      year: now.getFullYear(),
-      status: 'pending',
-    });
-
-    // Total revenue
-    const totalRevenue = await Invoice.aggregate([
-      { $match: { status: { $regex: /^paid$/i } } }, // Case insensitive match
-      { $group: { _id: null, total: { $sum: '$total' } } },
-    ]);
-
-    // Total expenses
-    const totalExpenses = await Expense.aggregate([
-      { $match: { status: { $regex: /^approved$/i } } }, // Case insensitive
-      { $group: { _id: null, total: { $sum: '$amount' } } },
+    const [
+      totalInvoices,
+      paidInvoices,
+      pendingInvoices,
+      overdueInvoices,
+      expenseBreakdown,
+      processedPayroll,
+      pendingPayroll,
+      totalRevenueAgg,
+      totalExpensesAgg,
+      trendData,
+    ] = await Promise.all([
+      Invoice.countDocuments(),
+      Invoice.countDocuments({ status: 'paid' }),
+      Invoice.countDocuments({ status: 'sent' }),
+      Invoice.countDocuments({
+        status: { $in: ['sent', 'overdue'] },
+        dueDate: { $lt: now },
+      }),
+      Expense.aggregate([
+        { $match: { status: 'approved' } },
+        { $group: { _id: '$category', total: { $sum: '$amount' } } },
+        { $sort: { total: -1 } },
+      ]),
+      Payroll.countDocuments({
+        month: now.getMonth() + 1,
+        year: now.getFullYear(),
+        status: 'processed',
+      }),
+      Payroll.countDocuments({
+        month: now.getMonth() + 1,
+        year: now.getFullYear(),
+        status: 'pending',
+      }),
+      Invoice.aggregate([
+        { $match: { status: { $in: ['paid', 'Paid'] } } },
+        { $group: { _id: null, total: { $sum: '$total' } } },
+      ]),
+      Expense.aggregate([
+        { $match: { status: { $in: ['approved', 'Approved'] } } },
+        { $group: { _id: null, total: { $sum: '$amount' } } },
+      ]),
+      Promise.all(
+        monthRanges.map(async (r) => {
+          const [income, expense] = await Promise.all([
+            Invoice.aggregate([
+              { $match: { status: 'paid', paidDate: { $gte: r.monthStart, $lt: r.monthEnd } } },
+              { $group: { _id: null, total: { $sum: '$total' } } },
+            ]),
+            Expense.aggregate([
+              { $match: { status: 'approved', date: { $gte: r.monthStart, $lt: r.monthEnd } } },
+              { $group: { _id: null, total: { $sum: '$amount' } } },
+            ]),
+          ]);
+          return {
+            month: r.monthStart.toLocaleDateString('en-US', { month: 'short' }),
+            income: income[0]?.total || 0,
+            expense: expense[0]?.total || 0,
+          };
+        })
+      ),
     ]);
 
     res.status(200).json({
@@ -473,8 +506,8 @@ exports.getFinanceSummary = async (req, res) => {
           pending: pendingInvoices,
           overdue: overdueInvoices,
         },
-        incomeExpenseTrend,
-        expenseBreakdown: expenseBreakdown.map(e => ({
+        incomeExpenseTrend: trendData,
+        expenseBreakdown: expenseBreakdown.map((e) => ({
           category: e._id || 'Uncategorized',
           total: e.total,
         })),
@@ -482,8 +515,8 @@ exports.getFinanceSummary = async (req, res) => {
           processed: processedPayroll,
           pending: pendingPayroll,
         },
-        totalRevenue: totalRevenue[0]?.total || 0,
-        totalExpenses: totalExpenses[0]?.total || 0,
+        totalRevenue: totalRevenueAgg[0]?.total || 0,
+        totalExpenses: totalExpensesAgg[0]?.total || 0,
       },
     });
   } catch (error) {
@@ -499,32 +532,42 @@ exports.getFinanceSummary = async (req, res) => {
 // @access  Private (Super Admin)
 exports.getNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find({
-      recipient: req.user._id,
-      read: false,
-    })
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .populate('sender', 'name email');
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const now = new Date();
 
-    // System notifications
-    const pendingLeaves = await Leave.countDocuments({ status: 'pending' });
-    const newApplicants = await JobApplication.countDocuments({
-      status: 'applied',
-      createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-    });
-    const overdueInvoices = await Invoice.countDocuments({
-      status: { $in: ['sent', 'overdue'] },
-      dueDate: { $lt: new Date() },
-    });
-    const unprocessedPayroll = await Payroll.countDocuments({
-      status: 'pending',
-    });
+    const [
+      notifications,
+      pendingLeaves,
+      newApplicants,
+      overdueInvoices,
+      unprocessedPayroll,
+    ] = await Promise.all([
+      Notification.find({
+        recipient: req.user._id,
+        read: false,
+      })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .populate('sender', 'name email')
+        .lean(),
+      Leave.countDocuments({ status: 'pending' }),
+      JobApplication.countDocuments({
+        status: 'applied',
+        createdAt: { $gte: yesterday },
+      }),
+      Invoice.countDocuments({
+        status: { $in: ['sent', 'overdue'] },
+        dueDate: { $lt: now },
+      }),
+      Payroll.countDocuments({
+        status: 'pending',
+      }),
+    ]);
 
     res.status(200).json({
       success: true,
       data: {
-        notifications: notifications.map(n => ({
+        notifications: notifications.map((n) => ({
           id: n._id,
           type: n.type,
           title: n.title,
@@ -557,18 +600,20 @@ exports.getActivityLog = async (req, res) => {
     const limit = parseInt(req.query.limit) || 50;
     const skip = (page - 1) * limit;
 
-    const logs = await ActivityLog.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate('user', 'name email role');
-
-    const total = await ActivityLog.countDocuments();
+    const [logs, total] = await Promise.all([
+      ActivityLog.find()
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('user', 'name email role')
+        .lean(),
+      ActivityLog.estimatedDocumentCount ? ActivityLog.estimatedDocumentCount() : ActivityLog.countDocuments(),
+    ]);
 
     res.status(200).json({
       success: true,
       data: {
-        logs: logs.map(log => ({
+        logs: logs.map((log) => ({
           id: log._id,
           user: log.user,
           action: log.action,
@@ -592,4 +637,3 @@ exports.getActivityLog = async (req, res) => {
     });
   }
 };
-

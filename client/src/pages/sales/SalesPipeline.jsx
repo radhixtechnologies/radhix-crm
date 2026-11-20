@@ -4,6 +4,7 @@ import { FiSearch } from 'react-icons/fi';
 import { salesService, normalizeSalesListResponse } from '../../services/salesService';
 import Loader from '../../components/common/Loader';
 import PipelineColumn from '../../components/Sales/PipelineColumn';
+import { triggerConfetti } from '../../utils/confetti';
 import '../../styles/sales/pipeline.css';
 
 const STAGES = [
@@ -53,6 +54,9 @@ const SalesPipeline = () => {
     setDeals(deals.map((d) => (d._id === dealId ? { ...d, stage: stageId } : d)));
     try {
       await salesService.changeDealStage(dealId, stageId);
+      if (stageId === 'closed-won') {
+        triggerConfetti();
+      }
       fetchPipeline();
     } catch (error) {
       console.error('Error changing deal stage:', error);

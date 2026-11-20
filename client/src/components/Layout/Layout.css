@@ -1,14 +1,21 @@
 .layout {
     display: flex;
     min-height: 100vh;
-    background-color: var(--background-color, #f5f7fa);
+    background-color: var(--background, #f8fafc);
 }
 
 .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
-    transition: margin-left 0.3s ease;
+    transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    background-color: var(--background, #f8fafc);
+}
+
+[data-theme='dark'] .layout,
+[data-theme='dark'] .main-content,
+[data-theme='dark'] .page-content {
+    background-color: var(--bg-main, #0a0d14);
 }
 
 .main-content.sidebar-open {
@@ -21,8 +28,9 @@
 
 .page-content {
     flex: 1;
-    padding: 20px;
+    padding: 24px 28px;
     overflow-y: auto;
+    background-color: var(--background, #f8fafc);
 }
 
 @media (max-width: 768px) {

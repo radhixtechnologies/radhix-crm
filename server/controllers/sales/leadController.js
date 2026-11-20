@@ -3,6 +3,8 @@ const Lead = require('../../models/Lead');
 const Employee = require('../../models/Employee');
 const Client = require('../../models/Client');
 const Deal = require('../../models/Deal');
+const { executeWorkflowEngine } = require('../workflowController');
+const { applyTenantScope, getTenantCompanyId } = require('../../utils/tenantHelper');
 
 const sendError = (res, error) => res.status(error.statusCode || 500).json({ success: false, message: error.message });
 const roleSlug = (user) => typeof user?.role === 'object' ? user.role?.slug : user?.role;
@@ -47,8 +49,9 @@ const addAndCondition = (query, condition) => {
 };
 
 const buildLeadListQuery = async (req) => {
-  const { page = 1, limit = 50, search, status, source, campaign, owner, myLeads, instituteInquiry } = req.query;
+  const { page = 1, limit = 50, search, status, source, campaign, owner, myLeads, instituteInquiry, industry } = req.query;
   const query = { isDeleted: { $ne: true } };
+  if (industry) query.industry = industry;
   if (instituteInquiry === 'true') query.isInstituteInquiry = true;
   else if (instituteInquiry === 'false') query.isInstituteInquiry = { $ne: true };
   if (search) {
@@ -74,8 +77,9 @@ const buildLeadListQuery = async (req) => {
     query.assignedTo = owner;
   }
 
+  const scopedQuery = await applyTenantScope(query, req.user, 'lead');
   return {
-    query,
+    query: scopedQuery,
     page: Math.max(1, Number(page)),
     limit: Math.min(100, Math.max(1, Number(limit))),
   };
@@ -152,7 +156,8 @@ exports.getLead = async (req, res) => {
 
 exports.createLead = async (req, res) => {
   try {
-    const leadData = { ...req.body };
+    const leadCompanyId = await getTenantCompanyId(req.user);
+    const leadData = { ...req.body, tenantCompany: leadCompanyId || null, createdBy: req.user._id };
     if (!canManageSalesTeam(req.user)) {
       const [employeeId] = await getOwnLeadAssignment(req.user);
       leadData.assignedTo = employeeId;
@@ -169,12 +174,35 @@ exports.createLead = async (req, res) => {
       const employee = await getCurrentEmployee(req.user);
       if (employee?.department === 'Sales') leadData.assignedTo = employee._id;
     }
+    // Enforce tenant company subscription quota for active leads
+    if (leadCompanyId) {
+      const Company = require('../../models/Company');
+      const SubscriptionPlan = require('../../models/SubscriptionPlan');
+      const company = await Company.findById(leadCompanyId).populate('subscription.plan');
+      if (company) {
+        const plan = company.subscription?.plan || await SubscriptionPlan.findOne({ slug: company.subscription?.planSlug || 'starter' });
+        const maxLeads = plan?.limits?.maxLeads ?? (company.subscription?.planSlug === 'starter' ? 1000 : 10000);
+        const currentCount = await Lead.countDocuments({ tenantCompany: leadCompanyId, isDeleted: { $ne: true } });
+        if (currentCount >= maxLeads) {
+          return res.status(403).json({
+            success: false,
+            code: 'QUOTA_EXCEEDED',
+            message: `Subscription Lead Limit Reached: Your current plan (${plan?.name || 'Starter'}) allows up to ${maxLeads.toLocaleString()} active leads. Please upgrade your subscription to add more leads.`,
+          });
+        }
+      }
+    }
+
     const data = await Lead.create(leadData);
     await data.populate({
       path: 'assignedTo',
       select: 'user employeeId department designation',
       populate: { path: 'user', select: 'name email' },
     });
+
+    // Execute active automation workflows asynchronously without blocking response
+    executeWorkflowEngine('lead_created', data).catch(err => console.warn('Workflow execution warning:', err.message));
+
     res.status(201).json({ success: true, data });
   } catch (error) {
     sendError(res, error);

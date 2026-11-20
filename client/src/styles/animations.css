@@ -93,31 +93,31 @@
 
 /* Animation classes */
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .animate-fade-out {
-  animation: fadeOut 0.3s ease-in-out;
+  animation: fadeOut 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .animate-slide-in-right {
-  animation: slideInRight 0.3s ease-in-out;
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .animate-slide-in-left {
-  animation: slideInLeft 0.3s ease-in-out;
+  animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .animate-slide-in-up {
-  animation: slideInUp 0.3s ease-in-out;
+  animation: slideInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .animate-slide-in-down {
-  animation: slideInDown 0.3s ease-in-out;
+  animation: slideInDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.3s ease-in-out;
+  animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .animate-pulse {
@@ -126,19 +126,79 @@
 
 /* Hover effects */
 .hover-lift {
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hover-lift:hover {
   transform: translateY(-2px);
+  box-shadow: 0 10px 20px -3px rgba(16, 24, 40, 0.08);
 }
 
 .hover-glow {
-  transition: box-shadow 0.2s ease-in-out;
+  transition: box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hover-glow:hover {
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 24px rgba(99, 102, 241, 0.35);
+  transform: translateY(-1.5px);
+}
+
+/* High-Impact Interactive Card */
+.card-interactive {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px -4px rgba(16, 24, 40, 0.1), 0 4px 8px -2px rgba(16, 24, 40, 0.04);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* Pulse Dot for Live Status */
+@keyframes pulseDot {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.live-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  display: inline-block;
+  animation: pulseDot 2s infinite;
+}
+
+/* Table Row Smooth Hover */
+table tbody tr {
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+table tbody tr:hover {
+  background-color: rgba(248, 250, 252, 0.95);
+}
+
+[data-theme='dark'] table tbody tr:hover {
+  background-color: rgba(30, 41, 59, 0.6);
+}
+
+/* Responsive Table Wrapper */
+.responsive-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
 }
 
 /* Loading skeleton */
@@ -159,6 +219,19 @@
   }
   100% {
     background-position: -200% 0;
+  }
+}
+
+/* Mobile & Tablet Smooth Responsiveness */
+@media (max-width: 768px) {
+  .btn {
+    padding: 9px 16px;
+    font-size: 13px;
+  }
+
+  .card {
+    padding: 16px;
+    border-radius: 10px;
   }
 }
 

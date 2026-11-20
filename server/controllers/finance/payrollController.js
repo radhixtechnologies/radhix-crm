@@ -1,8 +1,37 @@
 const Payroll = require('../../models/Payroll');
 const Employee = require('../../models/Employee');
 const SalaryStructure = require('../../models/SalaryStructure');
-exports.getPayrolls = async (req, res) => { try { res.json({ success: true, data: await Payroll.find().populate('employee') }); } catch (e) { res.status(500).json({ success: false, message: e.message }); } };
-exports.getPayroll = async (req, res) => { try { res.json({ success: true, data: await Payroll.findById(req.params.id).populate('employee') }); } catch (e) { res.status(500).json({ success: false, message: e.message }); } };
+exports.getPayrolls = async (req, res) => {
+  try {
+    const filter = {};
+    if (req.query.month) filter.month = Number(req.query.month);
+    if (req.query.year) filter.year = Number(req.query.year);
+
+    const payrolls = await Payroll.find(filter)
+      .populate({
+        path: 'employee',
+        populate: { path: 'user', select: 'name email avatar' }
+      })
+      .sort({ year: -1, month: -1, createdAt: -1 });
+
+    res.json({ success: true, data: payrolls });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+};
+
+exports.getPayroll = async (req, res) => {
+  try {
+    const payroll = await Payroll.findById(req.params.id)
+      .populate({
+        path: 'employee',
+        populate: { path: 'user', select: 'name email avatar' }
+      });
+    res.json({ success: true, data: payroll });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+};
 exports.generatePayroll = async (req, res) => {
 	try {
 		const month = Number(req.body.month || new Date().getMonth() + 1);

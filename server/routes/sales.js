@@ -22,7 +22,14 @@ const {
   downloadLeadTemplate,
   previewLeads,
   importLeads,
+  exportLeads,
 } = require('../controllers/sales/leadImportController');
+
+// Meta Ads Integration controllers
+const {
+  getMetaConfig,
+  createMetaTestLead,
+} = require('../controllers/sales/metaIntegrationController');
 
 const studentController = require('../controllers/institute/studentController');
 
@@ -75,6 +82,7 @@ const {
 // Follow-up controllers
 const {
   getFollowUps,
+  getFollowUpsSummary,
   getFollowUp,
   scheduleFollowUp,
   updateFollowUp,
@@ -88,7 +96,17 @@ const {
 
 // Multer configuration for file uploads
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/temp/' });
+const fs = require('fs');
+const tempUploadDir = 'uploads/temp/';
+if (!fs.existsSync(tempUploadDir)) {
+  fs.mkdirSync(tempUploadDir, { recursive: true });
+}
+const upload = multer({
+  dest: tempUploadDir,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB max file size
+  }
+});
 
 // Protect all routes - require authentication
 router.use(protect);
@@ -96,9 +114,14 @@ router.use(protect);
 
 // Lead Import routes - Must come BEFORE /leads/:id to avoid route conflicts
 router.get('/leads/import/template', checkModuleAccess('sales'), downloadLeadTemplate);
+router.get('/leads/export/csv', checkModuleAccess('sales'), exportLeads);
 router.post('/leads/import/preview', checkModuleAccess('sales'), upload.single('file'), previewLeads);
 router.post('/leads/import', checkModuleAccess('sales'), upload.single('file'), importLeads);
 router.get('/lead-owners', checkModuleAccess('sales'), getLeadOwners);
+
+// Meta Ads Integration routes
+router.get('/meta-integration/config', checkModuleAccess('sales'), getMetaConfig);
+router.post('/meta-integration/test-lead', checkModuleAccess('sales'), createMetaTestLead);
 
 // Lead routes - Accessible only to Sales module users
 router.route('/leads')
@@ -179,6 +202,8 @@ router.post('/quotations/:id/generate-pdf', checkModuleAccess('sales'), generate
 router.route('/followups')
   .get(checkModuleAccess('sales'), getFollowUps)
   .post(checkModuleAccess('sales'), scheduleFollowUp);
+
+router.get('/followups/summary', checkModuleAccess('sales'), getFollowUpsSummary);
 
 router.route('/followups/:id')
   .get(checkModuleAccess('sales'), getFollowUp)

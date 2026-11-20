@@ -88,6 +88,12 @@ const expenseSchema = new mongoose.Schema({
   },
 });
 
+expenseSchema.index({ status: 1 });
+expenseSchema.index({ date: 1 });
+expenseSchema.index({ category: 1 });
+expenseSchema.index({ createdBy: 1 });
+expenseSchema.index({ status: 1, date: 1 });
+
 // Calculate tax and total before saving
 expenseSchema.pre('save', function(next) {
   if (this.isModified('amount') || this.isModified('taxRate')) {

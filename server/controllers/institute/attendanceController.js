@@ -1,6 +1,7 @@
 const StudentAttendance = require('../../models/StudentAttendance');
 const Batch = require('../../models/Batch');
 const Student = require('../../models/Student');
+const { applyTenantScope, getTenantCompanyId } = require('../../utils/tenantHelper');
 
 const sendError = (res, error) => res.status(error.statusCode || 500).json({ success: false, message: error.message });
 
@@ -130,7 +131,7 @@ exports.saveBatchAttendance = async (req, res) => {
 exports.getAttendanceHistory = async (req, res) => {
   try {
     const { batchId, startDate, endDate } = req.query;
-    const query = {};
+    let query = {};
 
     if (batchId) query.batch = batchId;
     if (startDate || endDate) {
@@ -139,6 +140,7 @@ exports.getAttendanceHistory = async (req, res) => {
       if (endDate) query.date.$lte = normalizeDate(endDate);
     }
 
+    query = await applyTenantScope(query, req.user);
     const history = await StudentAttendance.find(query)
       .populate('batch', 'name schedule')
       .populate('markedBy', 'name email')

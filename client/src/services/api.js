@@ -50,7 +50,13 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      localStorage.removeItem('sessionId');
+      // Do not reload or redirect if already on login or public routes to prevent infinite refresh loops
+      const publicPaths = ['/login', '/forgot-password', '/reset-password', '/forms'];
+      const isPublicPath = publicPaths.some((p) => window.location.pathname.startsWith(p));
+      if (!isPublicPath) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

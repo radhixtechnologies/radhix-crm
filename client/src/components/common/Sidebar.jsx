@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSidebar } from '../../context/SidebarContext';
+import { useIndustrySuite } from '../../context/IndustrySuiteContext';
+import { useBranding } from '../../context/BrandingContext';
+import { INDUSTRY_SUITES, getIndustrySuiteById } from '../../constants/industrySuites';
 import {
   FiLayout,
   FiUsers,
@@ -27,14 +30,19 @@ import {
   FiPieChart,
   FiX,
   FiGrid,
-  FiBookOpen,
   FiActivity,
   FiBell,
+  FiLayers,
+  FiGlobe,
+  FiZap,
+  FiMapPin,
 } from 'react-icons/fi';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const { user, hasModuleAccess, isAdmin, isSuperAdmin } = useAuth();
+  const { activeSuiteId, currentSuite, isAllSuites, availableSuites } = useIndustrySuite();
+  const { branding } = useBranding();
   const { isOpen, toggleSidebar, activeModule, setActiveModule, closeSidebar, openSidebar } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
@@ -69,6 +77,18 @@ const Sidebar = () => {
       setActiveModule('dashboard');
       return;
     }
+    if (path === '/industry-hub') {
+      if (activeModule !== 'industry_hub') setActiveModule('industry_hub');
+      return;
+    }
+    if (path === '/subscription') {
+      if (activeModule !== 'subscription') setActiveModule('subscription');
+      return;
+    }
+    if (path === '/branches') {
+      if (activeModule !== 'branches') setActiveModule('branches');
+      return;
+    }
     if (path === '/reports' || path.startsWith('/reports/')) {
       if (activeModule !== 'reports_analytics') setActiveModule('reports_analytics');
       return;
@@ -85,6 +105,26 @@ const Sidebar = () => {
       if (activeModule !== 'hrm') setActiveModule('hrm');
     } else if (path.startsWith('/institute')) {
       if (activeModule !== 'institute') setActiveModule('institute');
+    } else if (path.startsWith('/real-estate')) {
+      if (activeModule !== 'real-estate') setActiveModule('real-estate');
+    } else if (path.startsWith('/construction')) {
+      if (activeModule !== 'construction') setActiveModule('construction');
+    } else if (path.startsWith('/healthcare')) {
+      if (activeModule !== 'healthcare') setActiveModule('healthcare');
+    } else if (path.startsWith('/automotive')) {
+      if (activeModule !== 'automotive') setActiveModule('automotive');
+    } else if (path.startsWith('/travel')) {
+      if (activeModule !== 'travel') setActiveModule('travel');
+    } else if (path.startsWith('/manufacturing')) {
+      if (activeModule !== 'manufacturing') setActiveModule('manufacturing');
+    } else if (path.startsWith('/restaurant')) {
+      if (activeModule !== 'restaurant') setActiveModule('restaurant');
+    } else if (path.startsWith('/salon')) {
+      if (activeModule !== 'salon') setActiveModule('salon');
+    } else if (path.startsWith('/retail')) {
+      if (activeModule !== 'retail') setActiveModule('retail');
+    } else if (path.startsWith('/gym')) {
+      if (activeModule !== 'gym') setActiveModule('gym');
     } else if (path.startsWith('/finance')) {
       if (activeModule !== 'finance') setActiveModule('finance');
     } else if (path.startsWith('/sales') || path.startsWith('/leads') || path.startsWith('/contacts')) {
@@ -117,7 +157,19 @@ const Sidebar = () => {
 
       const defaultModulePath = {
         sales: '/sales',
+        subscription: '/subscription',
+        industry_hub: '/industry-hub',
         institute: '/institute/admissions',
+        'real-estate': '/real-estate',
+        construction: '/construction',
+        healthcare: '/healthcare',
+        automotive: '/automotive',
+        travel: '/travel',
+        manufacturing: '/manufacturing',
+        restaurant: '/restaurant',
+        salon: '/salon',
+        retail: '/retail',
+        gym: '/gym',
         hrm: '/hrm',
         finance: '/finance',
         marketing: '/marketing',
@@ -134,147 +186,208 @@ const Sidebar = () => {
   };
 
   // Define Groups / Modules for Primary Rail
-  // This abstracts the existing complex menu structure into high-level Modules
-  const primaryModules = [
-    {
-      key: 'dashboard',
-      label: 'Home',
-      icon: FiLayout,
-      path: '/dashboard',
-      access: true,
-    },
-    {
-      key: 'my-workspace',
-      label: 'My Workspace',
-      icon: FiUser,
-      access: true, // Everyone has a workspace
-      subItems: [
-        { path: '/employees/me', label: 'My Profile', icon: FiUser },
-        { path: '/employees/my-attendance', label: 'My Attendance', icon: FiClock },
-        { path: '/employees/my-leaves', label: 'My Leaves', icon: FiCalendar },
-        { path: '/employees/tasks', label: 'My Tasks', icon: FiCheckCircle },
-        { path: '/projects', label: 'Projects', icon: FiBriefcase },
-        { path: '/employees/daily-updates', label: 'Daily Work Update', icon: FiActivity },
-        { path: '/approvals', label: 'Approvals Hub', icon: FiCheckCircle },
-        { path: '/company/announcements', label: 'Notice Board', icon: FiBell },
-        { path: '/employees/timesheets', label: 'My Timesheets', icon: FiFileText },
-        { path: '/employees/performance', label: 'My Performance', icon: FiTrendingUp },
-        { path: '/employees/salary-slips', label: 'Salary Slips', icon: FiDollarSign },
-        { path: '/employees/reimbursements', label: 'Reimbursements', icon: FiCreditCard },
-      ]
-    },
-    {
-      key: 'hrm',
-      label: 'HRM',
-      icon: FiBriefcase,
-      access: hasModuleAccess('hrm'),
-      subItems: [
-        { path: '/hrm', label: 'Dashboard', icon: FiLayout },
-        { path: '/hrm/attendance', label: 'Attendance', icon: FiClock },
-        { path: '/hrm/leaves', label: 'Leaves', icon: FiCalendar },
-        { path: '/hrm/directory', label: 'Directory', icon: FiUsers },
-        ...(isAdmin || isSuperAdmin ? [{ path: '/hrm/timesheets', label: 'Timesheets', icon: FiFileText }] : []),
-        { path: '/hrm/recruitment/jobs', label: 'Recruitment', icon: FiUsers }, // Simplified group
-        { path: '/hrm/performance', label: 'Performance', icon: FiTrendingUp },
-        ...(isAdmin || isSuperAdmin ? [
-          { path: '/admin/all-reviews', label: 'All Reviews', icon: FiFileText },
-          { path: '/admin/appraisal-cycles', label: 'Appraisal Cycles', icon: FiCalendar }
-        ] : []),
-        { path: '/hrm/training', label: 'Training', icon: FiFileText },
-        { path: '/hrm/skills', label: 'Skills', icon: FiCheckCircle },
-        { path: '/hrm/policies', label: 'Policies', icon: FiFileText },
-        { path: '/hrm/exit', label: 'Exit Mgmt', icon: FiX },
-        { path: '/hrm/analytics', label: 'Analytics', icon: FiBarChart2 },
-        { path: '/hrm/reports', label: 'Reports', icon: FiFileText },
-      ]
-    },
-    {
-      key: 'institute',
-      label: 'Institute',
-      icon: FiBookOpen,
-      access: hasModuleAccess('sales'),
-      subItems: [
-        { path: '/institute/admissions', label: 'Admissions', icon: FiUsers },
-        { path: '/institute/courses', label: 'Courses & Batches', icon: FiBookOpen },
-        { path: '/institute/followups', label: 'Follow-ups', icon: FiClock },
-        { path: '/institute/students', label: 'Students', icon: FiUser },
-        { path: '/institute/fees', label: 'Fee Records', icon: FiDollarSign },
-        { path: '/institute/attendance', label: 'Attendance', icon: FiCalendar },
-        { path: '/institute/reports', label: 'Reports', icon: FiBarChart2 },
-      ]
-    },
-    {
-      key: 'sales',
-      label: 'Sales',
-      icon: FiTrendingUp,
-      access: hasModuleAccess('sales'),
-      subItems: [
-        { path: '/sales', label: 'Dashboard', icon: FiLayout },
-        { path: '/sales/leads', label: 'Leads', icon: FiUsers },
-        { path: '/sales/leads/tracking', label: 'Tracking', icon: FiTrendingUp },
-        { path: '/calendar', label: 'Calendar', icon: FiCalendar },
-        { path: '/sales/pipeline', label: 'Pipeline', icon: FiBarChart2 },
-        { path: '/sales/deals', label: 'Deals', icon: FiDollarSign },
-        { path: '/sales/clients', label: 'Clients', icon: FiBriefcase },
-        { path: '/contacts', label: 'Contacts', icon: FiUsers }, // Moved contacts here
-        { path: '/sales/proposals', label: 'Documents', icon: FiFileText },
-      ]
-    },
-    {
-      key: 'marketing',
-      label: 'Marketing',
-      icon: FiTarget,
-      access: hasModuleAccess('marketing'),
-      subItems: [
-        { path: '/marketing', label: 'Dashboard', icon: FiLayout },
-        { path: '/marketing/campaigns', label: 'Campaigns', icon: FiTarget },
-        { path: '/marketing/emails', label: 'Emails', icon: FiMail },
-        { path: '/marketing/segments', label: 'Segments', icon: FiUsers },
-      ]
-    },
-    {
-      key: 'finance',
-      label: 'Finance',
-      icon: FiDollarSign,
-      access: hasModuleAccess('finance'),
-      subItems: [
-        { path: '/finance', label: 'Dashboard', icon: FiLayout },
-        { path: '/finance/invoices', label: 'Invoices', icon: FiFileText },
-        { path: '/finance/payments', label: 'Payments', icon: FiCreditCard },
-        { path: '/finance/expenses', label: 'Expenses', icon: FiShoppingBag },
-        { path: '/finance/payroll', label: 'Payroll', icon: FiCreditCard },
-        { path: '/finance/salary-structures', label: 'Salary Structures', icon: FiDollarSign },
-        ...(isAdmin || isSuperAdmin || user?.role?.slug === 'accountant' ? [{ path: '/finance/taxes', label: 'Tax Settings', icon: FiPercent }] : []),
-        { path: '/finance/reports', label: 'Reports', icon: FiBarChart2 },
-      ]
-    },
-    {
-      key: 'operations',
-      label: 'Operations',
-      icon: FiGrid, // Package or Grid
-      access: isSuperAdmin || hasModuleAccess('inventory') || hasModuleAccess('support'),
-      subItems: [
-        { path: '/inventory/products', label: 'Inventory', icon: FiPackage, access: isSuperAdmin || hasModuleAccess('inventory') },
-        { path: '/support', label: 'Support', icon: FiCheckCircle, access: isSuperAdmin || hasModuleAccess('support') },
-      ].filter(item => item.access)
-    },
-    {
-      key: 'reports_analytics',
-      label: 'Reports',
-      icon: FiBarChart2,
-      access: isSuperAdmin || hasModuleAccess('reports_analytics'),
-      subItems: [
-        { path: '/reports', label: 'Overview', icon: FiBarChart2 },
-      ]
-    },
-    {
-      key: 'settings',
-      label: 'Settings',
-      icon: FiSettings,
-      access: isSuperAdmin,
-      path: '/settings',
+  // Dynamically configured according to the active SaaS industry suite
+  const primaryModules = useMemo(() => {
+    // Determine the active industry module(s)
+    let industryRailModules = [];
+
+    if (!isAllSuites && currentSuite) {
+      // User or tenant selected a specific vertical (e.g. Real Estate, Clinic, Coaching)
+      industryRailModules = [
+        {
+          key: currentSuite.id,
+          label: currentSuite.shortName,
+          icon: currentSuite.icon,
+          access: hasModuleAccess('sales'),
+          subItems: currentSuite.subItems,
+        },
+      ];
+    } else if (isAllSuites) {
+      // In all-suites mode, check if user is currently browsing an industry
+      const browsingSuite = INDUSTRY_SUITES.find((s) => s.id === activeModule);
+      if (browsingSuite) {
+        industryRailModules = [
+          {
+            key: browsingSuite.id,
+            label: browsingSuite.shortName,
+            icon: browsingSuite.icon,
+            access: hasModuleAccess('sales'),
+            subItems: browsingSuite.subItems,
+          },
+        ];
+      }
     }
-  ];
+
+    return [
+      {
+        key: 'dashboard',
+        label: 'Home',
+        icon: FiLayout,
+        path: '/dashboard',
+        access: true,
+      },
+      {
+        key: 'my-workspace',
+        label: 'My Workspace',
+        icon: FiUser,
+        access: true,
+        subItems: [
+          { path: '/employees/me', label: 'My Profile', icon: FiUser },
+          { path: '/employees/my-attendance', label: 'My Attendance', icon: FiClock },
+          { path: '/employees/my-leaves', label: 'My Leaves', icon: FiCalendar },
+          { path: '/employees/tasks', label: 'My Tasks', icon: FiCheckCircle },
+          { path: '/projects', label: 'Projects', icon: FiBriefcase },
+          { path: '/employees/daily-updates', label: 'Daily Work Update', icon: FiActivity },
+          { path: '/approvals', label: 'Approvals Hub', icon: FiCheckCircle },
+          { path: '/company/announcements', label: 'Notice Board', icon: FiBell },
+          { path: '/employees/timesheets', label: 'My Timesheets', icon: FiFileText },
+          { path: '/employees/performance', label: 'My Performance', icon: FiTrendingUp },
+          { path: '/employees/salary-slips', label: 'Salary Slips', icon: FiDollarSign },
+          { path: '/employees/reimbursements', label: 'Reimbursements', icon: FiCreditCard },
+        ],
+      },
+      ...industryRailModules,
+      {
+        key: 'sales',
+        label: 'Sales CRM',
+        icon: FiTrendingUp,
+        access: hasModuleAccess('sales'),
+        subItems: [
+          { path: '/sales', label: 'Dashboard', icon: FiLayout },
+          { path: '/sales/leads', label: 'Leads', icon: FiUsers },
+          { path: '/sales/leads/tracking', label: 'Tracking', icon: FiTrendingUp },
+          { path: '/calendar', label: 'Calendar', icon: FiCalendar },
+          { path: '/sales/pipeline', label: 'Pipeline', icon: FiBarChart2 },
+          { path: '/sales/deals', label: 'Deals', icon: FiDollarSign },
+          { path: '/sales/clients', label: 'Clients', icon: FiBriefcase },
+          { path: '/contacts', label: 'Contacts', icon: FiUsers },
+          { path: '/sales/form-builder', label: 'Web Forms', icon: FiGlobe },
+          { path: '/sales/proposals', label: 'Documents', icon: FiFileText },
+        ],
+      },
+      {
+        key: 'hrm',
+        label: 'HRM',
+        icon: FiBriefcase,
+        access: hasModuleAccess('hrm'),
+        subItems: [
+          { path: '/hrm', label: 'Dashboard', icon: FiLayout },
+          { path: '/hrm/attendance', label: 'Attendance', icon: FiClock },
+          { path: '/hrm/leaves', label: 'Leaves', icon: FiCalendar },
+          { path: '/hrm/directory', label: 'Directory', icon: FiUsers },
+          ...(isAdmin || isSuperAdmin ? [{ path: '/hrm/timesheets', label: 'Timesheets', icon: FiFileText }] : []),
+          { path: '/hrm/recruitment/jobs', label: 'Recruitment', icon: FiUsers },
+          { path: '/hrm/performance', label: 'Performance', icon: FiTrendingUp },
+          ...(isAdmin || isSuperAdmin ? [
+            { path: '/admin/all-reviews', label: 'All Reviews', icon: FiFileText },
+            { path: '/admin/appraisal-cycles', label: 'Appraisal Cycles', icon: FiCalendar },
+          ] : []),
+          { path: '/hrm/training', label: 'Training', icon: FiFileText },
+          { path: '/hrm/skills', label: 'Skills', icon: FiCheckCircle },
+          { path: '/hrm/policies', label: 'Policies', icon: FiFileText },
+          { path: '/hrm/exit', label: 'Exit Mgmt', icon: FiX },
+          { path: '/hrm/analytics', label: 'Analytics', icon: FiBarChart2 },
+          { path: '/hrm/reports', label: 'Reports', icon: FiFileText },
+        ],
+      },
+      {
+        key: 'finance',
+        label: 'Finance',
+        icon: FiDollarSign,
+        access: hasModuleAccess('finance'),
+        subItems: [
+          { path: '/finance', label: 'Dashboard', icon: FiLayout },
+          { path: '/finance/invoices', label: 'Invoices', icon: FiFileText },
+          { path: '/finance/payments', label: 'Payments', icon: FiCreditCard },
+          { path: '/finance/expenses', label: 'Expenses', icon: FiShoppingBag },
+          { path: '/finance/payroll', label: 'Payroll', icon: FiCreditCard },
+          { path: '/finance/salary-structures', label: 'Salary Structures', icon: FiDollarSign },
+          ...(isAdmin || isSuperAdmin || user?.role?.slug === 'accountant' ? [{ path: '/finance/taxes', label: 'Tax Settings', icon: FiPercent }] : []),
+          { path: '/finance/reports', label: 'Reports', icon: FiBarChart2 },
+        ],
+      },
+      {
+        key: 'marketing',
+        label: 'Marketing',
+        icon: FiTarget,
+        access: hasModuleAccess('marketing'),
+        subItems: [
+          { path: '/marketing', label: 'Dashboard', icon: FiLayout },
+          { path: '/marketing/campaigns', label: 'Campaigns', icon: FiTarget },
+          { path: '/marketing/emails', label: 'Emails', icon: FiMail },
+          { path: '/marketing/segments', label: 'Segments', icon: FiUsers },
+        ],
+      },
+      {
+        key: 'operations',
+        label: 'Operations',
+        icon: FiGrid,
+        access: isSuperAdmin || hasModuleAccess('inventory') || hasModuleAccess('support'),
+        subItems: [
+          { path: '/inventory/products', label: 'Inventory', icon: FiPackage, access: isSuperAdmin || hasModuleAccess('inventory') },
+          { path: '/support', label: 'Support', icon: FiCheckCircle, access: isSuperAdmin || hasModuleAccess('support') },
+        ].filter((item) => item.access),
+      },
+      {
+        key: 'reports_analytics',
+        label: 'Reports',
+        icon: FiBarChart2,
+        access: isSuperAdmin || hasModuleAccess('reports_analytics'),
+        subItems: [
+          { path: '/reports', label: 'Overview', icon: FiBarChart2 },
+        ],
+      },
+      {
+        key: 'industry_hub',
+        label: isAllSuites ? 'Suites Hub' : 'Switch Suite',
+        icon: FiLayers,
+        access: isSuperAdmin || (Boolean(availableSuites) && availableSuites.length > 1),
+        subItems: [
+          ...(isSuperAdmin ? [{ path: '/industry-hub', label: 'All 11 Suites Hub', icon: FiLayers }] : []),
+          ...(availableSuites || []).map((s) => ({
+            path: s.defaultPath,
+            label: s.shortName,
+            icon: s.icon,
+          })),
+        ],
+      },
+      {
+        key: 'subscription',
+        label: 'Plans & Quotas',
+        icon: FiCreditCard,
+        access: isAdmin || isSuperAdmin,
+        path: '/subscription',
+      },
+      {
+        key: 'branches',
+        label: 'Branch Hub',
+        icon: FiMapPin,
+        access: isAdmin || isSuperAdmin,
+        path: '/branches',
+      },
+      {
+        key: 'branding',
+        label: 'Brand & Theme',
+        icon: FiLayers,
+        access: isAdmin || isSuperAdmin,
+        path: '/settings/branding',
+      },
+      {
+        key: 'automation',
+        label: 'Automations',
+        icon: FiZap,
+        access: isAdmin || isSuperAdmin,
+        path: '/automation/workflows',
+      },
+      {
+        key: 'settings',
+        label: 'Settings',
+        icon: FiSettings,
+        access: isSuperAdmin,
+        path: '/settings',
+      },
+    ];
+  }, [isAllSuites, currentSuite, activeModule, hasModuleAccess, isAdmin, isSuperAdmin, user]);
 
   // Toggle function for mobile menus
   const toggleMobileMenu = (key) => {
@@ -349,7 +462,11 @@ const Sidebar = () => {
         />
         <aside className={`sidebar-mobile-drawer ${isOpen ? 'open' : ''}`}>
           <div className="mobile-logo">
-            <img src="/radhix-logo.png" alt="Radhix Technologies" style={{ height: 34, width: "auto" }} />
+            {branding?.logo ? (
+              <img src={branding.logo} alt={branding.companyDisplayName || 'Logo'} style={{ height: 34, width: 'auto', objectFit: 'contain' }} />
+            ) : (
+              <img src="/radhix-logo.png" alt="Radhix Technologies" style={{ height: 34, width: "auto" }} />
+            )}
           </div>
           <nav className="mobile-nav">
             {primaryModules.filter(m => m.access).map(module => renderMobileItem(module))}
@@ -366,8 +483,11 @@ const Sidebar = () => {
       {/* PRIMARY RAIL */}
       <aside className="sidebar-primary">
         <div className="primary-logo">
-          {/* Logo placeholder or simple icon */}
-          <img src="/radhix-icon.png" alt="Radhix" style={{ width: 36, height: 36, objectFit: "contain" }} />
+          {branding?.logo ? (
+            <img src={branding.logo} alt={branding.companyDisplayName || 'Logo'} style={{ width: 36, height: 36, objectFit: 'contain' }} />
+          ) : (
+            <img src="/radhix-icon.png" alt="Radhix" style={{ width: 36, height: 36, objectFit: "contain" }} />
+          )}
         </div>
         <nav className="primary-nav">
           {primaryModules.filter(m => m.access).map(module => (
@@ -385,7 +505,7 @@ const Sidebar = () => {
       </aside>
 
       {/* SECONDARY PANEL */}
-      <aside className={`sidebar-secondary ${isOpen ? 'open' : ''}`}>
+      <aside className={`sidebar-secondary ${isOpen && currentSubItems.length > 0 ? 'open' : ''}`}>
         <div className="secondary-header">
           <h3>{getSecondaryTitle()}</h3>
           <button className="secondary-close-btn" onClick={() => toggleSidebar()}>

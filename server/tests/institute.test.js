@@ -529,4 +529,10 @@ describe('Institute Admissions MVP Test Suite', () => {
       assert.ok(res.data.data.feeStats);
     });
   });
+
+  after(async () => {
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.disconnect();
+    }
+  });
 });

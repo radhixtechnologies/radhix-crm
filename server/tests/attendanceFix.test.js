@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { test, describe, before, after } = require('node:test');
+const { test, describe, before, after, beforeEach } = require('node:test');
 const assert = require('node:assert');
 const mongoose = require('mongoose');
 
@@ -19,7 +19,7 @@ describe('Attendance Verification & Check-in Fix Test Suite', () => {
     const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
     if (mongoUri && mongoose.connection.readyState === 0) {
       try {
-        await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 10000, family: 4 });
+        await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 3000, connectTimeoutMS: 3000 });
       } catch (err) {
         console.warn('MongoDB connection failed in test runner:', err.message);
       }
@@ -51,6 +51,12 @@ describe('Attendance Verification & Check-in Fix Test Suite', () => {
         designation: 'Software Engineer',
         status: 'active',
       });
+    }
+  });
+
+  beforeEach(async () => {
+    if (mongoose.connection.readyState === 1 && testEmployee) {
+      await Attendance.deleteMany({ employee: testEmployee._id });
     }
   });
 
@@ -196,6 +202,15 @@ describe('Attendance Verification & Check-in Fix Test Suite', () => {
 
     // Clean up
     await Attendance.deleteMany({ employee: testEmployee._id });
+  });
+
+  after(async () => {
+    if (mongoose.connection.readyState === 1) {
+      if (testEmployee) await Employee.deleteOne({ _id: testEmployee._id });
+      if (testUser) await User.deleteOne({ _id: testUser._id });
+      if (adminUser) await User.deleteOne({ _id: adminUser._id });
+      await mongoose.disconnect();
+    }
   });
 });
 

@@ -48,6 +48,10 @@ const followUpSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  overdueNotified: {
+    type: Boolean,
+    default: false,
+  },
   assignedTo: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Employee',
@@ -76,8 +80,9 @@ const followUpSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('FollowUp', followUpSchema);
+followUpSchema.index({ status: 1, scheduledDate: 1, reminderSent: 1 });
 
+module.exports = mongoose.model('FollowUp', followUpSchema);
 
 
 

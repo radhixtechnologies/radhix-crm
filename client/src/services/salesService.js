@@ -42,6 +42,7 @@ export const salesService = {
 
   // Lead Import services
   downloadLeadTemplate: () => api.get('/sales/leads/import/template', { responseType: 'blob' }),
+  exportLeadsCsv: () => api.get('/sales/leads/export/csv', { responseType: 'blob' }),
   previewLeadImport: (file) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -56,6 +57,10 @@ export const salesService = {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
+
+  // Meta Ads Integration services
+  getMetaConfig: () => api.get('/sales/meta-integration/config'),
+  sendMetaTestLead: (data) => api.post('/sales/meta-integration/test-lead', data),
 
 
   // Client services
@@ -97,6 +102,7 @@ export const salesService = {
 
   // Follow-up services
   getFollowUps: (params) => api.get('/sales/followups', { params }),
+  getFollowUpsSummary: (params) => api.get('/sales/followups/summary', { params }),
   getFollowUp: (id) => api.get(`/sales/followups/${id}`),
   scheduleFollowUp: (data) => api.post('/sales/followups', data),
   updateFollowUp: (id, data) => api.put(`/sales/followups/${id}`, data),

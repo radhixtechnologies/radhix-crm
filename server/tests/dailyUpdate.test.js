@@ -396,5 +396,12 @@ describe('Daily Work Update (DSR / Daily Standup) Module Test Suite', () => {
       const found = await DailyUpdate.findById(createdUpdateId);
       assert.strictEqual(found, null);
     });
+
+    after(async () => {
+      if (mongoose.connection.readyState === 1) {
+        if (createdUpdateId) await DailyUpdate.deleteOne({ _id: createdUpdateId });
+        await mongoose.disconnect();
+      }
+    });
   });
 });

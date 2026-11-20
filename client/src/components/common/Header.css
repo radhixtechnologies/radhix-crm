@@ -15,26 +15,26 @@
   /* Reduced to 60px for compact feel */
   min-height: 60px;
   max-height: 60px;
-  background-color: #ffffff;
-  /* Crisp white or very light gray */
-  background-color: #f9fafb;
-  /* Keeping off-white as requested previously, or switch to white for crispness? User said "off-white" before. */
-  border-bottom: 1px solid #e5e7eb;
-  /* Light crisp border for separation */
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(229, 231, 235, 0.85);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
   z-index: 100;
-  box-shadow: none;
-  /* REMOVED shadow to avoid "both", keeping crisp border */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
   box-sizing: border-box;
   transition: all 0.3s ease;
 }
 
 [data-theme='dark'] .navbar {
-  background-color: #111827;
-  border-bottom-color: #374151;
+  background: rgba(17, 24, 39, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom-color: rgba(55, 65, 81, 0.85);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* ========== NAVBAR SECTIONS ========== */
@@ -775,4 +775,56 @@ body:has(.mobile-search-overlay) {
     animation: none;
     transition: none;
   }
+}
+
+/* Impersonation Banner in Navbar */
+.impersonation-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fee2e2 100%);
+  border: 1px solid #f59e0b;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  color: #92400e;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+  margin-left: 10px;
+}
+
+[data-theme='dark'] .impersonation-badge-pill {
+  background: linear-gradient(135deg, #451a03 0%, #78350f 100%);
+  border-color: #f59e0b;
+  color: #fef3c7;
+}
+
+.live-impersonate-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #dc2626;
+  box-shadow: 0 0 6px #dc2626;
+  animation: blink 1.2s infinite ease-in-out;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.85); }
+}
+
+.btn-exit-impersonate {
+  background: #b45309;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-exit-impersonate:hover {
+  background: #92400e;
+  transform: translateY(-1px);
 }

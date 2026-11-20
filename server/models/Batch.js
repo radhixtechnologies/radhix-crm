@@ -39,6 +39,7 @@ const batchSchema = new mongoose.Schema({
     enum: ['upcoming', 'active', 'completed', 'cancelled'],
     default: 'upcoming',
   },
+  company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

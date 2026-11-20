@@ -29,12 +29,12 @@
   box-sizing: border-box;
   z-index: 1;
   position: relative;
-  background-color: var(--surface);
+  background-color: var(--background, #f8fafc);
   min-height: calc(100vh - 60px);
 }
 
 [data-theme='dark'] .main-content {
-  background-color: var(--bg-main);
+  background-color: var(--bg-main, #0a0d14);
 }
 
 .main-content.main-content-open {
@@ -365,7 +365,7 @@
   border: 1px solid var(--border-light);
   border-radius: 14px;
   padding: 20px;
-  box-shadow: none;
+  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.4);
 }
 
 /* Growth/Highlighted cards in two-column grid */
@@ -375,12 +375,14 @@
 }
 
 .dashboard-grid-two-col .card:hover {
-  box-shadow: none;
+  box-shadow: 0 12px 24px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.03);
   transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.25);
 }
 
 [data-theme='dark'] .dashboard-grid-two-col .card:hover {
-  box-shadow: none;
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.6);
+  border-color: rgba(99, 102, 241, 0.45);
 }
 
 .stat-card-header {
@@ -470,7 +472,7 @@
   background-color: var(--background);
   border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: none;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
   z-index: 1000;
   display: none;
   flex-direction: column;
@@ -1175,9 +1177,9 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 18px 20px;
-  box-shadow: none;
+  box-shadow: 0 1px 3px 0 rgba(16, 24, 40, 0.08), 0 1px 2px -1px rgba(16, 24, 40, 0.04);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1190,16 +1192,18 @@
   border: 1px solid var(--border-light);
   border-radius: 14px;
   padding: 20px;
-  box-shadow: none;
+  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.35);
 }
 
 .kpi-card:hover {
-  box-shadow: none;
+  box-shadow: 0 12px 24px -4px rgba(16, 24, 40, 0.1), 0 4px 8px -2px rgba(16, 24, 40, 0.05);
   transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.3);
 }
 
 [data-theme='dark'] .kpi-card:hover {
-  box-shadow: none;
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.6);
+  border-color: rgba(99, 102, 241, 0.5);
 }
 
 .kpi-content {

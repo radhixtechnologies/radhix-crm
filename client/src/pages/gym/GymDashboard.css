@@ -1,0 +1,145 @@
+.gym-page {
+  --gym-ink: #23313c;
+  --gym-muted: #788894;
+  --gym-line: #e4ebea;
+  --gym-brand: #287a68;
+  min-height: 100%;
+  padding: 30px clamp(16px, 3vw, 36px) 48px;
+  color: var(--gym-ink);
+  background: #f6f8f7;
+}
+.gym-header, .gym-tabs, .gym-alert, .gym-overview, .gym-panel { max-width: 1500px; margin-right: auto; margin-left: auto; }
+.gym-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+.gym-header h1 { margin: 6px 0 0; font-size: clamp(27px, 3vw, 36px); line-height: 1.1; letter-spacing: -.045em; }
+.gym-header p { margin: 9px 0 0; color: var(--gym-muted); font-size: 13px; line-height: 1.6; }
+.gym-eyebrow, .gym-kicker { display: inline-flex; align-items: center; gap: 7px; color: var(--gym-brand); font-size: 10px; font-weight: 800; letter-spacing: .14em; }
+.gym-header__actions { display: flex; flex: 0 0 auto; gap: 8px; }
+.gym-button { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; gap: 8px; padding: 0 14px; border: 1px solid transparent; border-radius: 9px; font: inherit; font-size: 11px; font-weight: 750; text-decoration: none; white-space: nowrap; cursor: pointer; transition: transform .18s ease, background .18s ease; }
+.gym-button:hover { transform: translateY(-1px); }
+.gym-button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.gym-button--primary { color: #fff; background: var(--gym-brand); box-shadow: 0 6px 14px #287a6823; }
+.gym-button--primary:hover { background: #216453; }
+.gym-button--neutral { color: #596876; border-color: var(--gym-line); background: #fff; }
+.gym-button--light { color: #245d4e; background: #fff; }
+.gym-button--ghost { color: #fff; border-color: #ffffff70; background: #ffffff12; }
+.gym-button--small { min-height: 29px; padding: 0 9px; color: #3a7667; border-color: #d8e9e4; background: #f8fcfa; font-size: 9px; }
+.gym-tabs { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 19px; padding: 6px; border: 1px solid var(--gym-line); border-radius: 12px; background: #fff; scrollbar-width: thin; }
+.gym-tab { display: inline-flex; min-height: 37px; flex: 0 0 auto; align-items: center; gap: 7px; padding: 0 12px; border-radius: 8px; color: #70808c; font-size: 11px; font-weight: 650; text-decoration: none; }
+.gym-tab:hover { color: var(--gym-brand); background: #edf7f3; }
+.gym-tab.is-active { color: #fff; background: var(--gym-brand); }
+.gym-alert { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; padding: 12px 14px; border: 1px solid; border-radius: 9px; font-size: 12px; }
+.gym-alert--success { color: #176248; border-color: #c2e9d8; background: #f0fbf6; }
+.gym-alert--error { color: #97363f; border-color: #f2c9ce; background: #fff4f5; }
+.gym-alert button { display: grid; place-items: center; border: 0; color: inherit; background: none; cursor: pointer; }
+.gym-loading { display: grid; min-height: 300px; place-items: center; }
+.gym-hero { position: relative; display: flex; min-height: 245px; overflow: hidden; align-items: center; padding: clamp(25px, 4vw, 42px); border-radius: 20px; color: #fff; background: linear-gradient(115deg, #193b37 0%, #287a68 57%, #68a68d 100%); box-shadow: 0 17px 40px #245b4c21; }
+.gym-hero > div:first-child { position: relative; z-index: 1; max-width: 600px; }
+.gym-hero > div:first-child > span { color: #bee5d7; font-size: 9px; font-weight: 800; letter-spacing: .16em; }
+.gym-hero h2 { max-width: 520px; margin: 12px 0 9px; font-size: clamp(28px, 3.6vw, 41px); line-height: 1.1; letter-spacing: -.05em; }
+.gym-hero p { max-width: 450px; margin: 0; color: #d9ede5; font-size: 13px; line-height: 1.65; }
+.gym-hero > div:first-child > div { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 20px; }
+.gym-hero__art { position: absolute; top: 50%; right: 10%; display: grid; width: 205px; height: 205px; place-items: center; border: 1px solid #ffffff3a; border-radius: 50%; color: #ffffffa8; background: #ffffff0d; font-size: 82px; transform: translateY(-50%) rotate(-12deg); box-shadow: 0 0 0 15px #ffffff0c, 0 0 0 30px #ffffff07; }
+.gym-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; margin: 17px 0; }
+.gym-stat { display: flex; min-width: 0; align-items: flex-start; gap: 11px; padding: 16px; border: 1px solid var(--gym-line); border-radius: 13px; background: #fff; box-shadow: 0 3px 10px #14213b05; }
+.gym-stat__icon { display: grid; width: 39px; height: 39px; flex: 0 0 auto; place-items: center; border-radius: 11px; font-size: 17px; }
+.gym-stat__icon--blue { color: #337eae; background: #eaf5fc; }
+.gym-stat__icon--green { color: #1e805c; background: #e9f7ef; }
+.gym-stat__icon--amber { color: #aa711e; background: #fff5e4; }
+.gym-stat__icon--violet { color: #7358a1; background: #f1edfa; }
+.gym-stat > div { display: grid; min-width: 0; gap: 4px; }
+.gym-stat small { color: #7f8c98; font-size: 9px; line-height: 1.45; }
+.gym-stat strong { overflow: hidden; font-size: clamp(18px, 2vw, 23px); letter-spacing: -.04em; text-overflow: ellipsis; white-space: nowrap; }
+.gym-overview-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr); gap: 14px; }
+.gym-panel { min-width: 0; margin-bottom: 15px; padding: 21px; border: 1px solid var(--gym-line); border-radius: 15px; background: #fff; box-shadow: 0 3px 10px #14213b05; }
+.gym-panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+.gym-panel-heading h2 { margin: 5px 0 0; font-size: 17px; letter-spacing: -.025em; }
+.gym-link { display: inline-flex; align-items: center; gap: 5px; color: var(--gym-brand); font-size: 10px; font-weight: 750; text-decoration: none; white-space: nowrap; }
+.gym-class-row, .gym-checkin-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-top: 1px solid #eef2f1; }
+.gym-class-row > span, .gym-checkin-row > span { display: grid; width: 33px; height: 33px; flex: 0 0 auto; place-items: center; border-radius: 10px; color: var(--gym-brand); background: #edf7f3; }
+.gym-class-row > div, .gym-checkin-row > div { display: grid; flex: 1; min-width: 0; gap: 4px; }
+.gym-class-row strong, .gym-checkin-row strong { overflow: hidden; color: #293945; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.gym-class-row small, .gym-checkin-row small { overflow: hidden; color: #7c8a95; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.gym-class-row > b { color: #628173; font-size: 10px; white-space: nowrap; }
+.gym-badge { display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 18px; color: #647382; background: #f0f3f5; font-size: 9px; font-weight: 750; white-space: nowrap; }
+.gym-badge--active, .gym-badge--checked_in, .gym-badge--completed { color: #176e4b; background: #e8f7ef; }
+.gym-badge--expired, .gym-badge--cancelled, .gym-badge--checked_out { color: #8b5964; background: #fbedf0; }
+.gym-badge--paused, .gym-badge--in_progress { color: #82621d; background: #fff6e5; }
+.gym-badge--scheduled { color: #3b6d96; background: #edf5fc; }
+.gym-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.gym-search { display: flex; width: min(100%, 430px); height: 39px; align-items: center; gap: 8px; padding: 0 11px; border: 1px solid var(--gym-line); border-radius: 9px; color: #919da6; background: #fff; }
+.gym-search:focus-within { border-color: #9bc8bb; box-shadow: 0 0 0 3px #287a6813; }
+.gym-search input { width: 100%; min-width: 0; border: 0; outline: 0; color: var(--gym-ink); background: transparent; font: inherit; font-size: 11px; }
+.gym-toolbar > select { min-height: 34px; max-width: 175px; padding: 0 8px; border: 1px solid var(--gym-line); border-radius: 8px; color: #607080; background: #fff; font: inherit; font-size: 9px; }
+.gym-count { margin-left: auto; color: #7c8996; font-size: 10px; font-weight: 650; white-space: nowrap; }
+.gym-table-wrap { overflow-x: auto; }
+.gym-table { width: 100%; border-collapse: collapse; font-size: 10px; text-align: left; }
+.gym-table th { padding: 11px 9px; border-bottom: 1px solid var(--gym-line); color: #7f8d99; font-size: 9px; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
+.gym-table td { padding: 12px 9px; border-bottom: 1px solid #eef2f1; color: #657584; vertical-align: middle; white-space: nowrap; }
+.gym-table td:first-child { min-width: 135px; white-space: normal; }
+.gym-table td strong { color: #2b3a46; }
+.gym-table td small { display: block; margin-top: 4px; color: #8996a0; font-size: 9px; }
+.gym-icon-button { display: inline-grid; width: 29px; height: 29px; place-items: center; border: 1px solid transparent; border-radius: 7px; color: #778693; background: transparent; cursor: pointer; }
+.gym-icon-button:hover { color: var(--gym-brand); background: #edf7f3; }
+.gym-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.gym-card { min-width: 0; padding: 15px; border: 1px solid var(--gym-line); border-radius: 12px; background: #fff; }
+.gym-card__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #748a80; font-size: 9px; font-weight: 750; }
+.gym-card h3 { overflow: hidden; margin: 12px 0 5px; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.gym-card p { display: -webkit-box; min-height: 30px; overflow: hidden; margin: 0; color: #84919b; font-size: 10px; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.gym-card__meta { display: flex; justify-content: space-between; gap: 8px; margin-top: 11px; padding-top: 9px; border-top: 1px solid #eff2f1; color: #73817d; font-size: 9px; }
+.gym-card__actions { display: flex; align-items: center; justify-content: flex-end; gap: 5px; margin-top: 5px; }
+.gym-enroll { display: flex; gap: 6px; margin-top: 10px; }
+.gym-enroll select { flex: 1; min-width: 0; min-height: 30px; padding: 0 7px; border: 1px solid var(--gym-line); border-radius: 7px; color: #657485; background: #fff; font: inherit; font-size: 9px; }
+.gym-checkin-form { display: flex; align-items: flex-end; gap: 9px; margin-bottom: 17px; padding: 14px; border: 1px solid #e4eeea; border-radius: 11px; background: #f8fcfa; }
+.gym-checkin-form label { display: grid; flex: 1; gap: 6px; color: #627269; font-size: 10px; font-weight: 700; }
+.gym-checkin-form select { min-height: 37px; padding: 0 9px; border: 1px solid #dfe9e4; border-radius: 8px; background: #fff; font: inherit; font-size: 10px; }
+.gym-empty { display: grid; min-height: 195px; justify-items: center; align-content: center; padding: 20px; text-align: center; }
+.gym-empty > span { display: grid; width: 43px; height: 43px; place-items: center; border-radius: 13px; color: var(--gym-brand); background: #edf7f3; font-size: 18px; }
+.gym-empty h3 { margin: 11px 0 5px; font-size: 13px; }
+.gym-empty p { max-width: 380px; margin: 0 0 13px; color: #84919c; font-size: 10px; line-height: 1.6; }
+.gym-dialog-backdrop { position: fixed; z-index: 1200; inset: 0; display: grid; overflow: auto; place-items: center; padding: 20px; background: #17251fba; backdrop-filter: blur(3px); }
+.gym-dialog { width: min(100%, 720px); max-height: min(90vh, 870px); overflow-y: auto; border: 1px solid #e6ede9; border-radius: 16px; background: #fff; box-shadow: 0 24px 75px #17251f42; }
+.gym-dialog > header { position: sticky; z-index: 1; top: 0; display: flex; align-items: center; justify-content: space-between; padding: 17px 21px; border-bottom: 1px solid var(--gym-line); background: #fff; }
+.gym-dialog > header h2 { margin: 0; font-size: 16px; }
+.gym-dialog > header button { display: grid; width: 31px; height: 31px; place-items: center; border: 0; border-radius: 8px; color: #687780; background: #f1f5f3; cursor: pointer; }
+.gym-form { padding: 18px 21px 21px; }
+.gym-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.gym-field { display: grid; min-width: 0; gap: 6px; color: #5f6d72; font-size: 10px; font-weight: 700; }
+.gym-field--wide { grid-column: 1 / -1; }
+.gym-field input, .gym-field select, .gym-field textarea { width: 100%; min-width: 0; box-sizing: border-box; min-height: 38px; padding: 9px 10px; border: 1px solid #dfe7e3; border-radius: 8px; outline: 0; color: #2d3d41; background: #fff; font: inherit; font-size: 11px; font-weight: 450; }
+.gym-field textarea { min-height: 65px; resize: vertical; }
+.gym-field input:focus, .gym-field select:focus, .gym-field textarea:focus { border-color: #9bc8bb; box-shadow: 0 0 0 3px #287a6813; }
+.gym-form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #eef2f0; }
+@media (max-width: 1050px) {
+  .gym-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gym-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gym-overview-grid { grid-template-columns: 1fr; }
+  .gym-hero__art { right: 4%; opacity: .55; }
+}
+@media (max-width: 700px) {
+  .gym-page { padding-top: 21px; }
+  .gym-header { align-items: flex-start; flex-direction: column; }
+  .gym-header__actions { width: 100%; }
+  .gym-header__actions .gym-button { flex: 1; }
+  .gym-toolbar { flex-wrap: wrap; }
+  .gym-toolbar .gym-search { width: 100%; }
+  .gym-toolbar > select { max-width: 100%; }
+  .gym-hero__art { width: 150px; height: 150px; font-size: 60px; }
+}
+@media (max-width: 540px) {
+  .gym-page { padding-right: 12px; padding-left: 12px; }
+  .gym-stats { gap: 8px; }
+  .gym-stat { gap: 8px; padding: 11px 9px; }
+  .gym-stat__icon { width: 32px; height: 32px; font-size: 14px; }
+  .gym-stat strong { font-size: 17px; }
+  .gym-panel { padding: 15px 12px; }
+  .gym-hero { min-height: 260px; padding: 22px 17px; }
+  .gym-hero h2 { max-width: 290px; font-size: 28px; }
+  .gym-hero p { max-width: 290px; font-size: 11px; }
+  .gym-hero__art { display: none; }
+  .gym-card-grid { grid-template-columns: 1fr; }
+  .gym-checkin-form { align-items: stretch; flex-direction: column; }
+  .gym-form-grid { grid-template-columns: 1fr; }
+  .gym-field--wide { grid-column: auto; }
+  .gym-dialog-backdrop { align-items: end; padding: 0; }
+  .gym-dialog { width: 100%; max-height: 94vh; border-radius: 16px 16px 0 0; }
+}

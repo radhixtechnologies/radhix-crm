@@ -67,6 +67,7 @@ const studentSchema = new mongoose.Schema({
     enum: ['enrolled', 'active', 'completed', 'dropped'],
     default: 'enrolled',
   },
+  company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

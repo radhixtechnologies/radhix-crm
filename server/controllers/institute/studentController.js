@@ -5,6 +5,7 @@ const Batch = require('../../models/Batch');
 const Lead = require('../../models/Lead');
 const InstituteFee = require('../../models/InstituteFee');
 const StudentAttendance = require('../../models/StudentAttendance');
+const { applyTenantScope, getTenantCompanyId } = require('../../utils/tenantHelper');
 
 const sendError = (res, error) => res.status(error.statusCode || 500).json({ success: false, message: error.message });
 
@@ -26,7 +27,7 @@ const generateStudentId = async () => {
 exports.getStudents = async (req, res) => {
   try {
     const { course, batch, status, search, page = 1, limit = 20 } = req.query;
-    const query = {};
+    let query = {};
 
     if (course) query.enrolledCourse = course;
     if (batch) query.enrolledBatch = batch;
@@ -44,6 +45,7 @@ exports.getStudents = async (req, res) => {
     const currentPage = Math.max(1, Number(page));
     const pageLimit = Math.min(100, Math.max(1, Number(limit)));
 
+    query = await applyTenantScope(query, req.user);
     const [students, total] = await Promise.all([
       Student.find(query)
         .populate('enrolledCourse', 'name code baseFee duration')
@@ -228,7 +230,9 @@ exports.enrollStudent = async (req, res) => {
     const studentId = await generateStudentId();
 
     // 1. Create Student
+    const stuCompanyId = await getTenantCompanyId(req.user);
     createdStudent = await Student.create({
+      company: stuCompanyId || null,
       studentId,
       name: name.trim(),
       phone: phone.trim(),
@@ -308,7 +312,9 @@ exports.enrollStudent = async (req, res) => {
     if (finalPayable === 0 || dueAmount === 0) feeStatus = 'paid';
     else if (initialPaid > 0) feeStatus = 'partial';
 
+    const feeCompanyId = await getTenantCompanyId(req.user);
     createdFee = await InstituteFee.create({
+      company: feeCompanyId || null,
       student: createdStudent._id,
       course: course._id,
       batch: batch._id,

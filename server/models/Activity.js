@@ -5,7 +5,7 @@ const activitySchema = new mongoose.Schema({
     type: {
         type: String,
         enum: [
-            'call', 'email', 'meeting', 'task', 'note', 'sms', 'demo', 'presentation',
+            'call', 'email', 'meeting', 'task', 'note', 'sms', 'whatsapp', 'demo', 'presentation',
             'leave', 'interview', 'reminder', 'holiday', 'announcement',
             'field-change', 'status-change', 'assignment', 'system'
         ],

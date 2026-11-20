@@ -33,6 +33,7 @@ const studentAttendanceSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
+  company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
 }, { timestamps: true });
 
 studentAttendanceSchema.index({ batch: 1, date: 1 }, { unique: true });

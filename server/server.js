@@ -1,15 +1,20 @@
 const express = require('express'); // Force restart - SMTP port fix
 const cors = require('cors');
+const helmet = require('helmet');
 const dotenv = require('dotenv');
 const path = require('path');
 const fs = require('fs');
 const connectDB = require('./config/db');
 const { startReminderCron } = require('./utils/reminderCron');
+const { validateJwtSecret } = require('./utils/jwtSecret');
 
 // Load environment variables
+dotenv.config({ path: path.join(__dirname, '.env') });
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1);
+app.use(helmet());
 
 // CORS Configuration
 const allowedOrigins = [
@@ -221,6 +226,38 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Lightweight Gzip compression middleware using Node built-in zlib for fast API responses
+const zlib = require('zlib');
+app.use((req, res, next) => {
+  const acceptEncoding = req.headers['accept-encoding'] || '';
+  if (!acceptEncoding.includes('gzip')) return next();
+
+  const originalJson = res.json.bind(res);
+  res.json = function (body) {
+    try {
+      const jsonString = typeof body === 'string' ? body : JSON.stringify(body);
+      // Only compress payloads larger than 1KB
+      if (jsonString && jsonString.length >= 1024) {
+        zlib.gzip(Buffer.from(jsonString), (err, buffer) => {
+          if (err || !buffer) return originalJson(body);
+          if (!res.headersSent) {
+            res.setHeader('Content-Encoding', 'gzip');
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.setHeader('Vary', 'Accept-Encoding');
+            res.setHeader('Content-Length', buffer.length);
+            res.send(buffer);
+          }
+        });
+        return res;
+      }
+    } catch {
+      // Fallback
+    }
+    return originalJson(body);
+  };
+  next();
+});
+
 // Log requests for debugging
 app.use((req, res, next) => {
   if (req.method === 'POST' || req.method === 'PUT') {
@@ -261,6 +298,16 @@ mountRoute('/api/payroll', './routes/payroll');
 mountRoute('/api/sales/dashboard', './routes/salesDashboard');
 mountRoute('/api/sales', './routes/sales');
 mountRoute('/api/institute', './routes/institute');
+mountRoute('/api/real-estate', './routes/realEstate');
+mountRoute('/api/construction', './routes/construction');
+mountRoute('/api/healthcare', './routes/healthcare');
+mountRoute('/api/automotive', './routes/automotive');
+mountRoute('/api/travel', './routes/travel');
+mountRoute('/api/manufacturing', './routes/manufacturing');
+mountRoute('/api/restaurant', './routes/restaurant');
+mountRoute('/api/salon', './routes/salon');
+mountRoute('/api/retail', './routes/retail');
+mountRoute('/api/gym', './routes/gym');
 mountRoute('/api/projects', './routes/projects');
 mountRoute('/api/daily-updates', './routes/dailyUpdates');
 mountRoute('/api/approvals', './routes/approvals');
@@ -281,6 +328,11 @@ mountRoute('/api/calendar', './routes/calendar');
 mountRoute('/api/activities', './routes/activities');
 mountRoute('/api/deals', './routes/deals');
 mountRoute('/api/pipeline-stages', './routes/pipelineStages');
+mountRoute('/api/subscription', './routes/subscription');
+mountRoute('/api/lead-forms', './routes/leadForms');
+mountRoute('/api/branding', './routes/branding');
+mountRoute('/api/workflows', './routes/workflows');
+mountRoute('/api/branches', './routes/branches');
 
 
 // Health check route
@@ -297,6 +349,8 @@ app.use(errorHandler);
 // Start server function
 const startServer = async () => {
   try {
+    validateJwtSecret();
+
     // Connect to database first - REQUIRED for the application to work
     console.log('Connecting to database...');
     try {
@@ -348,13 +402,23 @@ const startServer = async () => {
       try {
         const cron = require('node-cron');
         const activityReminders = require('./jobs/activityReminders');
+        const followUpReminders = require('./jobs/followUpReminders');
+        const { sendSiteVisitReminders } = require('./controllers/realEstateController');
 
-        // Run every minute for faster response
-        cron.schedule('* * * * *', activityReminders);
-        console.log('✅ Activity reminders cron job started (runs every minute)');
+        // Run every 5 minutes to prevent continuous DB load
+        cron.schedule('*/5 * * * *', activityReminders);
+        console.log('✅ Activity reminders cron job started (runs every 5 minutes)');
+        cron.schedule('*/15 * * * *', followUpReminders);
+        console.log('✅ Follow-up reminders cron job started (runs every 15 minutes)');
+        cron.schedule('*/5 * * * *', () => {
+          sendSiteVisitReminders().catch((error) => {
+            console.error('[Real Estate reminders] Scheduled check failed:', error);
+          });
+        });
+        console.log('✅ Real Estate site visit reminders started (runs every 5 minutes)');
       } catch (cronError) {
-        console.error('⚠ Warning: Failed to start activity reminders cron:', cronError.message);
-        console.error('   Server will continue without activity reminders');
+        console.error('⚠ Warning: Failed to start activity/follow-up reminder cron:', cronError.message);
+        console.error('   Server will continue without activity or follow-up reminders');
       }
 
       // Start cron jobs if enabled

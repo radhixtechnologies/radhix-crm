@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FiEdit, FiMail, FiFileText, FiDownload, FiDollarSign, FiPrinter, FiCalendar, FiUser, FiCheckCircle, FiXCircle, FiClock, FiTag } from 'react-icons/fi';
 import { salesService } from '../../services/salesService';
 import Loader from '../../components/common/Loader';
+import DigitalSignatureModal from '../../components/common/DigitalSignatureModal';
+import { triggerConfetti } from '../../utils/confetti';
 import { formatDate } from '../../utils/format';
 import '../../styles/sales/proposal-details.css';
 
@@ -11,6 +13,7 @@ const ProposalDetails = () => {
     const navigate = useNavigate();
     const [proposal, setProposal] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showSignModal, setShowSignModal] = useState(false);
 
     useEffect(() => {
         fetchProposal();
@@ -174,6 +177,16 @@ const ProposalDetails = () => {
                     <button className="btn btn-secondary" onClick={handleSendEmail}>
                         <FiMail /> Send Email
                     </button>
+                    {proposal.status !== 'accepted' && (
+                        <button
+                            className="btn btn-success"
+                            onClick={() => setShowSignModal(true)}
+                            style={{ background: '#059669', color: '#ffffff', border: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                            title="Digitally Sign and Accept this Proposal"
+                        >
+                            <FiCheckCircle /> E-Signature &amp; Accept
+                        </button>
+                    )}
                     {proposal.status === 'accepted' && (
                         <button className="btn btn-primary" onClick={handleConvertToInvoice}>
                             <FiDollarSign /> Convert to Invoice
@@ -833,6 +846,40 @@ const ProposalDetails = () => {
                     </div>
                 )}
 
+                {/* Verified Digital E-Signature Certificate */}
+                {proposal.signature?.signatureImage && (
+                    <div className="proposal-section signature-certificate-card" style={{
+                        background: '#f8fafc',
+                        border: '2px solid #a7f3d0',
+                        borderRadius: '16px',
+                        padding: '24px',
+                        margin: '24px 0',
+                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.08)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#065f46', fontWeight: 700, fontSize: '15px' }}>
+                                <FiCheckCircle size={20} color="#10b981" />
+                                <span>Legally Binding Digital Acceptance Certificate</span>
+                            </div>
+                            <span style={{ fontSize: '12px', background: '#ecfdf5', color: '#047857', padding: '4px 10px', borderRadius: '12px', fontWeight: 600 }}>
+                                Signed: {formatDate(proposal.signature?.signedAt || proposal.acceptedDate)}
+                            </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+                            <img
+                                src={proposal.signature.signatureImage}
+                                alt="Verified Digital Signature"
+                                style={{ maxHeight: '70px', maxWidth: '220px', objectFit: 'contain', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '6px' }}
+                            />
+                            <div>
+                                <div style={{ fontWeight: 700, fontSize: '16px', color: '#1e293b' }}>{proposal.signature.signedByName}</div>
+                                <div style={{ fontSize: '13px', color: '#64748b' }}>{proposal.signature.signerDesignation || 'Authorized Signatory'}</div>
+                                <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>Verified via Radhix Digital Sign Engine • Status: Accepted</div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Footer */}
                 {(hasValue(proposal.createdBy) || hasValue(proposal.lastModifiedBy)) && (
                     <div className="proposal-footer">
@@ -847,6 +894,22 @@ const ProposalDetails = () => {
                     </div>
                 )}
             </div>
+
+            {/* Digital E-Signature Modal */}
+            <DigitalSignatureModal
+                isOpen={showSignModal}
+                onClose={() => setShowSignModal(false)}
+                proposalTitle={proposal.title}
+                onSaveSignature={async (signatureData) => {
+                    await salesService.updateProposal(id, {
+                        status: 'accepted',
+                        acceptedDate: new Date(),
+                        signature: signatureData,
+                    });
+                    triggerConfetti();
+                    fetchProposal();
+                }}
+            />
         </div>
     );
 };

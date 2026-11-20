@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiPlus, FiSearch, FiFilter, FiGrid, FiList, FiDownload, FiX, FiChevronDown, FiChevronUp, FiUsers, FiCheckCircle, FiTarget, FiTrendingUp } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiFilter, FiGrid, FiList, FiDownload, FiUpload, FiX, FiChevronDown, FiChevronUp, FiUsers, FiCheckCircle, FiTarget, FiTrendingUp } from 'react-icons/fi';
+import { FaFacebook } from 'react-icons/fa';
 import { salesService, normalizeSalesListResponse } from '../../services/salesService';
 import { marketingService } from '../../services/marketingService';
 import LeadTable from '../../components/Sales/LeadTable';
 import LeadKanban from '../../components/Sales/LeadKanban';
 import ImportLeadsModal from '../../components/Sales/ImportLeadsModal';
+import MetaAdsModal from '../../components/Sales/MetaAdsModal';
 import Loader from '../../components/common/Loader';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/employee/timesheets.css';
@@ -57,7 +59,29 @@ const LeadList = () => {
   const [selectedLeads, setSelectedLeads] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, pages: 0 });
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showMetaModal, setShowMetaModal] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [showMyLeadsOnly, setShowMyLeadsOnly] = useState(isSalesRep);
+
+  const handleExportCsv = async () => {
+    try {
+      setExporting(true);
+      const res = await salesService.exportLeadsCsv();
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'text/csv' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Leads_Export_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('Failed to export leads. Please try again.');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const [showFilters, setShowFilters] = useState(false);
   const filterRef = useRef(null);
@@ -189,8 +213,27 @@ const LeadList = () => {
           </div>
         </div>
         <div className="header-actions">
-          <button className="btn btn-outline" onClick={() => setShowImportModal(true)}>
-            <FiDownload /> Import
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowMetaModal(true)}
+            title="Meta Ads Integration (Facebook & Instagram Lead Forms)"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              borderColor: '#1877f2',
+              color: '#1877f2',
+              backgroundColor: '#f0f6ff',
+              fontWeight: 600,
+            }}
+          >
+            <FaFacebook style={{ fontSize: '15px' }} /> Meta Ads Sync
+          </button>
+          <button className="btn btn-outline" onClick={() => setShowImportModal(true)} title="Import leads from Excel or CSV">
+            <FiUpload /> Import
+          </button>
+          <button className="btn btn-outline" onClick={handleExportCsv} disabled={exporting} title="Export all leads to CSV">
+            <FiDownload /> {exporting ? 'Exporting...' : 'Export'}
           </button>
           <button className="btn btn-primary" onClick={() => navigate('/sales/leads/new')}>
             <FiPlus /> Add Lead
@@ -521,10 +564,14 @@ const LeadList = () => {
                     }}
                   >
                     <option value="">All Sources</option>
+                    <option value="meta">Meta (Facebook / Instagram)</option>
                     <option value="website">Website</option>
                     <option value="referral">Referral</option>
-                    <option value="social-media">Social</option>
+                    <option value="social-media">Social Media</option>
                     <option value="campaign">Campaign</option>
+                    <option value="email">Email</option>
+                    <option value="phone">Phone Call</option>
+                    <option value="other">Other</option>
                   </select>
                   <FiChevronDown style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', pointerEvents: 'none' }} />
                 </div>
@@ -722,6 +769,12 @@ const LeadList = () => {
           fetchLeads(false);
           setShowImportModal(false);
         }}
+      />
+
+      <MetaAdsModal
+        isOpen={showMetaModal}
+        onClose={() => setShowMetaModal(false)}
+        onLeadCreated={() => fetchLeads(false)}
       />
     </div>
   );

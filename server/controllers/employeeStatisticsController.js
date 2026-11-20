@@ -15,12 +15,12 @@ exports.getEmployeeStatistics = asyncHandler(async (req, res) => {
   const yearEnd = new Date(currentYear, 11, 31, 23, 59, 59);
 
   // Build query
-  const query = { deletedAt: null };
+  let query = { deletedAt: null };
   if (department) {
     query.department = department;
   }
-
-  // Filter out Super Admin data for Admin users
+  const { applyTenantScope } = require('../utils/tenantHelper');
+  query = await applyTenantScope(query, req.user, 'employee');
   const { addSuperAdminFilter } = require('../utils/roleFilter');
   await addSuperAdminFilter(query, req.user);
 
@@ -114,9 +114,7 @@ exports.getEmployeeStatistics = asyncHandler(async (req, res) => {
   // Attendance statistics
   const attendanceStats = await Attendance.aggregate([
     {
-      $match: {
-        date: { $gte: yearStart, $lte: yearEnd },
-      },
+      $match: await applyTenantScope({ date: { $gte: yearStart, $lte: yearEnd } }, req.user, 'attendance'),
     },
     {
       $group: {
@@ -144,9 +142,7 @@ exports.getEmployeeStatistics = asyncHandler(async (req, res) => {
   // Leave statistics
   const leaveStats = await Leave.aggregate([
     {
-      $match: {
-        startDate: { $gte: yearStart, $lte: yearEnd },
-      },
+      $match: await applyTenantScope({ startDate: { $gte: yearStart, $lte: yearEnd } }, req.user, 'leave'),
     },
     {
       $group: {

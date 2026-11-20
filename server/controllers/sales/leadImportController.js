@@ -1,184 +1,247 @@
+const XLSX = require('xlsx');
 const ExcelJS = require('exceljs');
 const fs = require('fs');
 const path = require('path');
 const Lead = require('../../models/Lead');
 const Employee = require('../../models/Employee');
+const Company = require('../../models/Company');
+const SubscriptionPlan = require('../../models/SubscriptionPlan');
+const { getTenantCompanyId } = require('../../utils/tenantHelper');
 const { asyncHandler } = require('../../utils/asyncHandler');
 const AppError = require('../../utils/AppError');
-const logActivity = require('../../utils/activityLogger'); // Ensure this utility exists
 
 /**
  * Validate email format
  */
 const isValidEmail = (email) => {
+    if (!email) return false;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return emailRegex.test(String(email).trim());
 };
 
-// Helper to normalized Enums
 const VALID_SOURCES = ['website', 'referral', 'social-media', 'email', 'phone', 'campaign', 'meta', 'other'];
 const VALID_STATUSES = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 
-const normalizeSource = (source) => {
+const normalizeSource = (source, hasMetaInfo = false) => {
+    if (hasMetaInfo) return 'meta';
     if (!source) return 'website';
-    const s = source.toLowerCase().replace(' ', '-');
+    const s = String(source).toLowerCase().trim().replace(/\s+/g, '-');
+    if (s.includes('meta') || s.includes('facebook') || s.includes('instagram') || s === 'fb' || s === 'ig') return 'meta';
     return VALID_SOURCES.includes(s) ? s : 'other';
 };
 
 const normalizeStatus = (status) => {
     if (!status) return 'new';
-    const s = status.toLowerCase();
+    const s = String(status).toLowerCase().trim();
     return VALID_STATUSES.includes(s) ? s : 'new';
 };
 
-// Helper to normalize headers
-const normalizeHeader = (header) => {
-    if (!header) return '';
-    const h = header.toLowerCase().trim();
-    if (h.includes('name')) return 'name';
-    if (h.includes('mail')) return 'email'; // matches email, e-mail, mail
-    if (h.includes('phone') || h.includes('mobile') || h.includes('contact')) return 'phone';
-    if (h.includes('company') || h.includes('organization')) return 'company';
-    if (h.includes('source')) return 'source';
-    if (h.includes('status')) return 'status';
-    if (h.includes('value') || h.includes('amount') || h.includes('revenue')) return 'value';
-    return h;
+/**
+ * Clean phone number from Meta prefixes (e.g. "p:+919876543210")
+ */
+const cleanPhone = (phone) => {
+    if (!phone) return '';
+    let p = String(phone).trim();
+    p = p.replace(/^p:\s*/i, '');
+    p = p.replace(/["']/g, '').trim();
+    return p;
 };
 
 /**
- * Parse file (Excel or CSV) using ExcelJS
+ * Intelligently maps an arbitrary row object from CSV/Excel into a standardized Lead object
  */
-const parseFile = async (filePath, fileExtension) => {
-    let rows = [];
-    const workbook = new ExcelJS.Workbook();
+const mapRowToLead = (rawRow) => {
+    const data = {};
+    let firstName = '';
+    let lastName = '';
+    let directName = '';
+    let companyName = '';
+    let email = '';
+    let phone = '';
+    let source = '';
+    let status = '';
+    let value = 0;
+    let notes = '';
+    let industry = '';
+    let adName = '';
+    let campaignName = '';
+    let formName = '';
+    let platform = '';
+    let metaLeadId = '';
 
-    // Strategy 1: Attempt standard ExcelJS parse
+    for (const [rawKey, rawVal] of Object.entries(rawRow)) {
+        if (rawVal === undefined || rawVal === null) continue;
+        const key = rawKey.toLowerCase().replace(/[^a-z0-9_]/g, '_').trim();
+        const val = typeof rawVal === 'string' ? rawVal.trim() : String(rawVal).trim();
+        if (!val) continue;
+
+        // Meta specific attribution
+        if (key === 'ad_name' || key === 'adname') adName = val;
+        else if (key === 'campaign_name' || key === 'campaignname') campaignName = val;
+        else if (key === 'form_name' || key === 'formname') formName = val;
+        else if (key === 'platform') platform = val;
+        else if (key === 'id' && /^\d{10,}$/.test(val)) metaLeadId = val;
+
+        // Company
+        else if (key === 'company' || key === 'company_name' || key === 'business_name' || key === 'organization' || key === 'org_name') {
+            companyName = val;
+        }
+
+        // Person Name (guarded against ad_name, campaign_name, company_name)
+        else if (key === 'full_name' || key === 'fullname' || key === 'name' || key === 'lead_name' || key === 'client_name' || key === 'contact_name' || key === 'prospect_name' || key === 'student_name') {
+            directName = val;
+        } else if (key === 'first_name' || key === 'firstname' || key === 'fname') {
+            firstName = val;
+        } else if (key === 'last_name' || key === 'lastname' || key === 'lname') {
+            lastName = val;
+        }
+
+        // Email
+        else if (key === 'email' || key === 'e_mail' || key === 'email_address' || key === 'mail') {
+            email = val.toLowerCase();
+        }
+
+        // Phone
+        else if (key.includes('phone') || key.includes('mobile') || key.includes('contact') || key.includes('whatsapp') || key === 'tel') {
+            phone = cleanPhone(val);
+        }
+
+        // Source
+        else if (key === 'source' || key === 'lead_source' || key === 'channel') {
+            source = val;
+        }
+
+        // Status
+        else if (key === 'status' || key === 'lead_status' || key === 'stage') {
+            status = val;
+        }
+
+        // Value
+        else if (key === 'value' || key === 'budget' || key === 'amount' || key === 'revenue' || key === 'price') {
+            const num = parseFloat(val.replace(/[^0-9.]/g, ''));
+            if (!isNaN(num)) value = num;
+        }
+
+        // Industry
+        else if (key === 'industry' || key === 'sector') {
+            industry = val;
+        }
+
+        // Notes / Query
+        else if (key === 'notes' || key === 'note' || key === 'message' || key === 'comments' || key === 'query' || key === 'inquiry') {
+            notes = val;
+        }
+    }
+
+    // Name resolution
+    let finalName = directName;
+    if (!finalName && (firstName || lastName)) {
+        finalName = `${firstName} ${lastName}`.trim();
+    }
+    if (!finalName) {
+        if (companyName) finalName = companyName;
+        else if (phone) finalName = `Lead (${phone})`;
+        else if (email) finalName = email.split('@')[0];
+        else finalName = 'Unnamed Lead';
+    }
+
+    const hasMeta = Boolean(adName || campaignName || formName || metaLeadId || (platform && (platform.includes('fb') || platform.includes('ig'))));
+
+    return {
+        name: finalName,
+        email: email || '',
+        phone: phone || '',
+        company: companyName || '',
+        source: normalizeSource(source, hasMeta),
+        status: normalizeStatus(status),
+        value: value || 0,
+        industry: industry || '',
+        notes: notes || '',
+        metaLeadId: metaLeadId || undefined,
+        metaAttribution: hasMeta ? {
+            adName,
+            adsetName: campaignName,
+            formId: formName,
+            platform: platform || (hasMeta ? 'fb' : undefined),
+        } : undefined,
+    };
+};
+
+/**
+ * Robust Spreadsheet / CSV Parser using SheetJS with Fallback
+ */
+const parseSpreadsheetFile = (filePath) => {
+    // Strategy 1: SheetJS (XLSX) - handles CSV, XLSX, XLS with any encoding
     try {
-        if (fileExtension === '.csv') {
-            await workbook.csv.readFile(filePath);
-        } else {
-            await workbook.xlsx.readFile(filePath);
-        }
-
-        const worksheet = workbook.getWorksheet(1);
-        if (worksheet) {
-            // Get headers from first row
-            const headers = {};
-            const firstRow = worksheet.getRow(1);
-
-            // Note: For CSVs, sometimes cellCount is 0 if empty, but we'll check rows later too.
-            if (firstRow.cellCount > 0) {
-                firstRow.eachCell((cell, colNumber) => {
-                    const rawHeader = cell.value?.toString().toLowerCase().trim();
-                    headers[colNumber] = normalizeHeader(rawHeader);
-                });
-
-                console.log('Detected Headers:', headers);
-
-                worksheet.eachRow((row, rowNumber) => {
-                    if (rowNumber === 1) return; // Skip header
-
-                    const rowData = {};
-                    let hasData = false;
-
-                    row.eachCell((cell, colNumber) => {
-                        const header = headers[colNumber];
-                        if (header) {
-                            let value = cell.value;
-                            if (typeof value === 'object' && value !== null) {
-                                if (value.text) value = value.text;
-                                else if (value.result) value = value.result;
-                                else if (value.hyperlink) value = value.text; // common in exports
-                            }
-                            if (typeof value === 'string') value = value.trim();
-
-                            rowData[header] = value;
-                            if (value !== null && value !== undefined && value !== '') hasData = true;
-                        }
-                    });
-
-                    if (hasData) {
-                        rows.push({ rowNumber, data: rowData });
-                    }
-                });
+        const workbook = XLSX.readFile(filePath, { raw: false, cellDates: true, defval: '' });
+        if (workbook && workbook.SheetNames && workbook.SheetNames.length > 0) {
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const rawRows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+            if (Array.isArray(rawRows) && rawRows.length > 0) {
+                return rawRows.map((row, index) => ({
+                    rowNumber: index + 2, // 1-indexed row number excluding header
+                    data: mapRowToLead(row),
+                    raw: row
+                }));
             }
         }
-    } catch (err) {
-        console.warn('ExcelJS parse failed, trying fallback:', err.message);
+    } catch (xlsxErr) {
+        console.warn('SheetJS read failed, attempting fallback parser:', xlsxErr.message);
     }
 
-    // Strategy 2: Manual CSV Fallback 
-    // If ExcelJS found nothing or very few rows (possible parsing error), and it's a CSV
-    if (fileExtension === '.csv' && rows.length === 0) {
-        console.log('Using manual CSV fallback parser...');
-        try {
-            const fileContent = fs.readFileSync(filePath, 'utf-8');
-            // Split by newline, handling various EOL
-            // Only keep lines that have some non-whitespace content
-            const lines = fileContent.split(/\r\n|\n|\r/).filter(line => line.trim().length > 0);
+    // Strategy 2: Raw Line Parser Fallback (for standard text/CSV)
+    try {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const lines = content.split(/\r?\n/).filter(line => line.trim().length > 0);
+        if (lines.length > 1) {
+            const firstLine = lines[0];
+            let delimiter = ',';
+            if ((firstLine.match(/;/g) || []).length > (firstLine.match(/,/g) || []).length) delimiter = ';';
+            if ((firstLine.match(/\t/g) || []).length > (firstLine.match(/,/g) || []).length) delimiter = '\t';
 
-            if (lines.length > 0) {
-                // simple delimiter detection strategy: count delimiters in first line
-                const firstLine = lines[0];
-                let delimiter = ',';
-                if ((firstLine.match(/;/g) || []).length > (firstLine.match(/,/g) || []).length) delimiter = ';';
-                if ((firstLine.match(/\t/g) || []).length > (firstLine.match(/,/g) || []).length) delimiter = '\t';
-                // Pipe?
-                if ((firstLine.match(/\|/g) || []).length > (firstLine.match(/,/g) || []).length) delimiter = '|';
+            const headers = lines[0].split(delimiter).map(h => h.replace(/^["']|["']$/g, '').trim());
+            const parsedRows = [];
 
-                console.log('Fallback detected delimiter:', delimiter);
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                const cells = line.split(delimiter).map(c => c.replace(/^["']|["']$/g, '').trim());
+                const rawObj = {};
+                headers.forEach((h, idx) => {
+                    if (h && cells[idx] !== undefined) rawObj[h] = cells[idx];
+                });
 
-                const headers = lines[0].split(delimiter).map((h, i) => ({ index: i, key: normalizeHeader(h) }));
-
-                // Parse remaining lines
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i];
-                    // Basic split (not robust for quotes, but better than nothing)
-                    const values = line.split(delimiter);
-
-                    const rowData = {};
-                    let hasData = false;
-
-                    headers.forEach(header => {
-                        if (header.key && values[header.index] !== undefined) {
-                            let val = values[header.index].trim();
-                            // strip quotes if present
-                            val = val.replace(/^"|"$/g, '');
-
-                            rowData[header.key] = val;
-                            if (val) hasData = true;
-                        }
-                    });
-
-                    if (hasData) {
-                        rows.push({
-                            rowNumber: i + 1,
-                            data: rowData
-                        });
-                    }
-                }
+                parsedRows.push({
+                    rowNumber: i + 1,
+                    data: mapRowToLead(rawObj),
+                    raw: rawObj
+                });
             }
-        } catch (fallbackErr) {
-            console.error('Manual fallback failed:', fallbackErr);
+            return parsedRows;
         }
+    } catch (lineErr) {
+        console.error('Line fallback parser failed:', lineErr.message);
     }
 
-    console.log(`Final Parse Count: ${rows.length} rows`);
-    return rows;
+    return [];
 };
 
 /**
- * Validate row data
+ * Validate parsed lead row
  */
-const validateRow = (rowData) => {
+const validateRow = (leadData) => {
     const errors = [];
+    if (!leadData.name || leadData.name.trim() === '') {
+        errors.push('Name is required');
+    }
 
-    // Loose check: If 'name' is missing, maybe it mapped to something else? 
-    // But we normalized headers, so it should be 'name'.
-    if (!rowData.name) errors.push('Name is required');
-
-    if (rowData.email && !isValidEmail(rowData.email)) {
+    if (leadData.email && !isValidEmail(leadData.email)) {
         errors.push('Invalid email format');
+    }
+
+    // Must have at least phone or email or valid contact
+    if (!leadData.phone && !leadData.email) {
+        errors.push('Provide at least Phone or Email for contact');
     }
 
     return {
@@ -194,56 +257,57 @@ const validateRow = (rowData) => {
  */
 exports.downloadLeadTemplate = asyncHandler(async (req, res) => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Leads');
+    const worksheet = workbook.addWorksheet('Leads Template');
 
     worksheet.columns = [
-        { header: 'Name', key: 'name', width: 25 },
+        { header: 'Full Name', key: 'name', width: 25 },
         { header: 'Email', key: 'email', width: 30 },
-        { header: 'Phone', key: 'phone', width: 15 },
-        { header: 'Company', key: 'company', width: 20 },
-        { header: 'Source', key: 'source', width: 15 },
+        { header: 'Phone Number', key: 'phone', width: 20 },
+        { header: 'Company Name', key: 'company', width: 25 },
+        { header: 'Lead Source', key: 'source', width: 16 },
         { header: 'Status', key: 'status', width: 15 },
-        { header: 'Value', key: 'value', width: 10 },
+        { header: 'Budget / Value', key: 'value', width: 15 },
+        { header: 'Notes', key: 'notes', width: 35 },
     ];
 
     worksheet.getRow(1).font = { bold: true };
     worksheet.getRow(1).fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' },
+        fgColor: { argb: 'FFE8F0FE' },
     };
 
-    // Example Rows - Adding 2 examples to show multiple rows work
     worksheet.addRow({
-        name: 'Example Lead',
-        email: 'lead@example.com',
-        phone: '1234567890',
-        company: 'Acme Corp',
-        source: 'Website',
-        status: 'New',
-        value: 5000
-    });
-    worksheet.addRow({
-        name: 'Another Lead',
-        email: 'lead2@example.com',
-        phone: '0987654321',
-        company: 'Globex',
-        source: 'Referral',
-        status: 'New',
-        value: 10000
+        name: 'Aarav Sharma',
+        email: 'aarav.sharma@example.com',
+        phone: '+91 98765 43210',
+        company: 'Apex Global Technologies',
+        source: 'meta',
+        status: 'new',
+        value: 75000,
+        notes: 'Interested in enterprise subscription & demo.',
     });
 
-    const fileName = `leads_template.xlsx`;
+    worksheet.addRow({
+        name: 'Pooja Verma',
+        email: 'pooja.verma@example.com',
+        phone: '+91 98111 22334',
+        company: 'Verma Healthcare',
+        source: 'website',
+        status: 'qualified',
+        value: 120000,
+        notes: 'Inquired from website contact form.',
+    });
+
     const uploadsDir = path.join(__dirname, '../../../uploads/exports');
-
     if (!fs.existsSync(uploadsDir)) {
         fs.mkdirSync(uploadsDir, { recursive: true });
     }
 
-    const filePath = path.join(uploadsDir, fileName);
+    const filePath = path.join(uploadsDir, 'leads_template.xlsx');
     await workbook.xlsx.writeFile(filePath);
 
-    res.download(filePath, fileName);
+    res.download(filePath, 'leads_template.xlsx');
 });
 
 /**
@@ -253,16 +317,18 @@ exports.downloadLeadTemplate = asyncHandler(async (req, res) => {
  */
 exports.previewLeads = asyncHandler(async (req, res) => {
     if (!req.file) {
-        throw new AppError('No file uploaded', 400);
+        throw new AppError('No file uploaded. Please select an Excel or CSV file.', 400);
     }
 
     const filePath = req.file.path;
-    const fileExtension = path.extname(req.file.originalname).toLowerCase();
 
     try {
-        const rows = await parseFile(filePath, fileExtension);
+        const rows = parseSpreadsheetFile(filePath);
 
-        // Validate each row for preview
+        if (!rows || rows.length === 0) {
+            throw new AppError('The uploaded file is empty or could not be read. Please upload a valid CSV or Excel file.', 400);
+        }
+
         const preview = rows.map(({ rowNumber, data }) => {
             const validation = validateRow(data);
             return {
@@ -273,26 +339,26 @@ exports.previewLeads = asyncHandler(async (req, res) => {
             };
         });
 
-        // Cleanup
+        // Cleanup temp file safely
         if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
+            try { fs.unlinkSync(filePath); } catch (_) {}
         }
 
         res.status(200).json({
             success: true,
             data: {
-                preview,
+                preview: preview.slice(0, 50), // Send first 50 rows for preview UI
                 totalRows: preview.length,
                 validRows: preview.filter(p => p.isValid).length,
                 invalidRows: preview.filter(p => !p.isValid).length,
                 headers: Object.keys(rows[0]?.data || {}),
             },
         });
-
     } catch (error) {
         if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
+            try { fs.unlinkSync(filePath); } catch (_) {}
         }
+        if (error instanceof AppError) throw error;
         throw new AppError(`Preview failed: ${error.message}`, 500);
     }
 });
@@ -304,85 +370,134 @@ exports.previewLeads = asyncHandler(async (req, res) => {
  */
 exports.importLeads = asyncHandler(async (req, res) => {
     if (!req.file) {
-        throw new AppError('No file uploaded', 400);
+        throw new AppError('No file uploaded. Please select an Excel or CSV file.', 400);
     }
 
     const filePath = req.file.path;
-    const fileExtension = path.extname(req.file.originalname).toLowerCase();
 
     try {
-        const rows = await parseFile(filePath, fileExtension);
-        const results = { success: [], failed: [], total: rows.length };
-        const uploaderEmployee = await Employee.findOne({ user: req.user._id, department: 'Sales', deletedAt: null });
-        const role = typeof req.user.role === 'object' ? req.user.role?.slug : req.user.role;
-        const isSalesManager = role === 'super_admin' || role === 'admin' ||
-            role?.endsWith('_admin') || role?.endsWith('_manager');
-        if (!isSalesManager && !uploaderEmployee) {
-            throw new AppError('Your Sales employee profile is missing. Please contact your administrator.', 403);
+        const rows = parseSpreadsheetFile(filePath);
+
+        if (!rows || rows.length === 0) {
+            throw new AppError('The file contains no readable data rows.', 400);
         }
 
-        console.log(`Starting import for ${rows.length} rows...`);
+        // Multi-tenant company resolution
+        const leadCompanyId = await getTenantCompanyId(req.user);
 
-        for (const { rowNumber, data: rowData } of rows) {
-            const validation = validateRow(rowData);
+        // Quota verification
+        if (leadCompanyId) {
+            const company = await Company.findById(leadCompanyId).populate('subscription.plan');
+            if (company) {
+                const plan = company.subscription?.plan || await SubscriptionPlan.findOne({ slug: company.subscription?.planSlug || 'starter' });
+                const maxLeads = plan?.limits?.maxLeads ?? (company.subscription?.planSlug === 'starter' ? 1000 : 10000);
+                const currentCount = await Lead.countDocuments({ tenantCompany: leadCompanyId, isDeleted: { $ne: true } });
+
+                if (currentCount >= maxLeads) {
+                    throw new AppError(`Subscription Lead Limit Reached: Your current plan (${plan?.name || 'Starter'}) allows up to ${maxLeads.toLocaleString()} active leads. Please upgrade to import more leads.`, 403);
+                }
+            }
+        }
+
+        // Resolving sales rep / uploader employee
+        let assignedTo = undefined;
+        const uploaderEmployee = await Employee.findOne({ user: req.user._id, deletedAt: null });
+        if (uploaderEmployee) {
+            assignedTo = uploaderEmployee._id;
+        }
+
+        const results = { success: [], failed: [], total: rows.length };
+
+        for (const { rowNumber, data: leadData } of rows) {
+            const validation = validateRow(leadData);
 
             if (!validation.isValid) {
                 results.failed.push({
                     row: rowNumber,
-                    data: rowData,
+                    name: leadData.name || 'Unnamed',
                     errors: validation.errors,
-                    reason: 'Validation Error'
+                    reason: validation.errors.join(', ')
                 });
-                continue; // Do NOT stop, processing next row
+                continue;
             }
 
             try {
-                // Prepare Lead Data
-                const leadData = {
-                    name: rowData.name,
-                    email: rowData.email,
-                    phone: rowData.phone,
-                    company: rowData.company,
-                    source: normalizeSource(rowData.source),
-                    status: normalizeStatus(rowData.status),
-                    value: rowData.value ? parseFloat(rowData.value) : 0,
-                    ...(uploaderEmployee ? { assignedTo: uploaderEmployee._id } : {}),
-                };
-
-                // Helper to check duplicates
-                if (leadData.email) {
-                    const existing = await Lead.findOne({ email: leadData.email });
-                    if (existing) {
-                        throw new Error('Duplicate Email');
-                    }
+                // Tenant-scoped duplicate checking
+                let isDuplicate = false;
+                if (leadData.email && leadData.email.trim()) {
+                    isDuplicate = await Lead.exists({
+                        tenantCompany: leadCompanyId || null,
+                        email: leadData.email.toLowerCase().trim(),
+                        isDeleted: { $ne: true }
+                    });
+                }
+                if (!isDuplicate && leadData.phone && leadData.phone.trim()) {
+                    isDuplicate = await Lead.exists({
+                        tenantCompany: leadCompanyId || null,
+                        phone: leadData.phone.trim(),
+                        isDeleted: { $ne: true }
+                    });
                 }
 
-                const lead = await Lead.create(leadData);
+                if (isDuplicate) {
+                    results.failed.push({
+                        row: rowNumber,
+                        name: leadData.name,
+                        errors: ['Duplicate lead (Email or Phone already exists in CRM)'],
+                        reason: 'Duplicate Lead'
+                    });
+                    continue;
+                }
+
+                // Construct full lead document
+                const payload = {
+                    name: leadData.name,
+                    email: leadData.email || '',
+                    phone: leadData.phone || '',
+                    company: leadData.company || '',
+                    source: leadData.source || 'website',
+                    status: leadData.status || 'new',
+                    value: leadData.value || 0,
+                    industry: leadData.industry || '',
+                    tenantCompany: leadCompanyId || null,
+                    createdBy: req.user._id,
+                    ...(assignedTo ? { assignedTo } : {}),
+                    ...(leadData.metaLeadId ? { metaLeadId: leadData.metaLeadId } : {}),
+                    ...(leadData.metaAttribution ? { metaAttribution: leadData.metaAttribution } : {}),
+                };
+
+                if (leadData.notes) {
+                    payload.notes = [{
+                        content: leadData.notes,
+                        addedBy: req.user._id,
+                        addedAt: new Date(),
+                    }];
+                }
+
+                const created = await Lead.create(payload);
 
                 results.success.push({
                     row: rowNumber,
-                    id: lead._id,
-                    name: lead.name,
+                    id: created._id,
+                    name: created.name,
                 });
 
-            } catch (error) {
-                // Log the specific failure for this row, but do NOT stop the loop
-                const isDuplicate = error.message.includes('Duplicate') || error.message.includes('exists');
+            } catch (createErr) {
                 results.failed.push({
                     row: rowNumber,
-                    data: rowData,
-                    errors: [error.message],
-                    reason: isDuplicate ? 'Duplicate Email' : 'Error'
+                    name: leadData.name,
+                    errors: [createErr.message],
+                    reason: 'Database Insert Error'
                 });
             }
         }
 
-        // Cleanup
+        // Cleanup temp file safely
         if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
+            try { fs.unlinkSync(filePath); } catch (_) {}
         }
 
-        const msg = `${results.total} rows found → ${results.success.length} imported → ${results.failed.length} skipped${results.failed.length > 0 ? ' (duplicate email/invalid)' : ''}`;
+        const msg = `${results.total} rows parsed → ${results.success.length} successfully imported → ${results.failed.length} skipped${results.failed.length > 0 ? ' (duplicate or invalid)' : ''}`;
 
         res.status(200).json({
             success: true,
@@ -391,11 +506,64 @@ exports.importLeads = asyncHandler(async (req, res) => {
         });
 
     } catch (error) {
-        // Only main execution errors catch here (e.g. file read failure)
         if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
+            try { fs.unlinkSync(filePath); } catch (_) {}
         }
         if (error instanceof AppError) throw error;
         throw new AppError(`Import process failed: ${error.message}`, 500);
     }
+});
+
+/**
+ * Export Leads to CSV
+ */
+exports.exportLeads = asyncHandler(async (req, res) => {
+    const leadCompanyId = await getTenantCompanyId(req.user);
+    const filter = { isDeleted: { $ne: true } };
+    if (leadCompanyId) filter.tenantCompany = leadCompanyId;
+
+    const leads = await Lead.find(filter)
+        .populate('assignedTo', 'name email employeeId')
+        .sort({ createdAt: -1 });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Leads Export');
+
+    worksheet.columns = [
+        { header: 'Lead ID', key: 'id', width: 24 },
+        { header: 'Full Name', key: 'name', width: 25 },
+        { header: 'Email', key: 'email', width: 28 },
+        { header: 'Phone', key: 'phone', width: 18 },
+        { header: 'Company / Organization', key: 'company', width: 25 },
+        { header: 'Status', key: 'status', width: 15 },
+        { header: 'Lead Temperature', key: 'temperature', width: 15 },
+        { header: 'Lead Score', key: 'score', width: 12 },
+        { header: 'Lead Value (INR)', key: 'value', width: 18 },
+        { header: 'Lead Source', key: 'source', width: 18 },
+        { header: 'Assigned To', key: 'assignedTo', width: 22 },
+        { header: 'Created Date', key: 'createdAt', width: 20 },
+    ];
+
+    leads.forEach((l) => {
+        worksheet.addRow({
+            id: l._id.toString(),
+            name: l.name || '',
+            email: l.email || '',
+            phone: l.phone || '',
+            company: l.company || '',
+            status: l.status || 'new',
+            temperature: l.leadTemperature || 'cold',
+            score: l.qualificationScore || 0,
+            value: l.value || 0,
+            source: l.source || 'website',
+            assignedTo: l.assignedTo?.name || l.assignedTo?.employeeId || 'Unassigned',
+            createdAt: l.createdAt ? new Date(l.createdAt).toLocaleDateString('en-IN') : '',
+        });
+    });
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=Leads_Export_${Date.now()}.csv`);
+
+    await workbook.csv.write(res);
+    res.end();
 });

@@ -1,4 +1,5 @@
 const Deal = require('../../models/Deal');
+const { applyTenantScope, getTenantCompanyId } = require('../../utils/tenantHelper');
 
 const sendError = (res, error) => res.status(error.statusCode || 500).json({ success: false, message: error.message });
 const roleSlug = (user) => typeof user?.role === 'object' ? user.role?.slug : user?.role;
@@ -15,7 +16,7 @@ const dealAccessQuery = (req, id) => {
   return query;
 };
 
-const buildQuery = (req) => {
+const buildQuery = async (req) => {
   const { page = 1, limit = 50, search, stage, owner } = req.query;
   const query = { isDeleted: { $ne: true } };
   if (search) query.$or = [
@@ -46,7 +47,7 @@ const buildQuery = (req) => {
 
 exports.getDeals = async (req, res) => {
   try {
-    const { query, page, limit } = buildQuery(req);
+    const { query, page, limit } = await buildQuery(req);
     const [data, total] = await Promise.all([
       Deal.find(query).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit)
         .populate('client', 'name company').populate('contact', 'firstName lastName email')
@@ -72,7 +73,8 @@ exports.getDeal = async (req, res) => {
 
 exports.createDeal = async (req, res) => {
   try {
-    const dealData = { ...req.body, createdBy: req.user._id };
+    const dealCompanyId = await getTenantCompanyId(req.user);
+    const dealData = { ...req.body, createdBy: req.user._id, tenantCompany: dealCompanyId || null };
     if (!canManageSalesTeam(req.user)) dealData.assignedTo = req.user._id;
     const data = await Deal.create(dealData);
     res.status(201).json({ success: true, data });

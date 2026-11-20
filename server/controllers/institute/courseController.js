@@ -1,5 +1,6 @@
 const Course = require('../../models/Course');
 const Batch = require('../../models/Batch');
+const { applyTenantScope, getTenantCompanyId } = require('../../utils/tenantHelper');
 
 const sendError = (res, error) => res.status(error.statusCode || 500).json({ success: false, message: error.message });
 
@@ -7,7 +8,7 @@ const sendError = (res, error) => res.status(error.statusCode || 500).json({ suc
 exports.getCourses = async (req, res) => {
   try {
     const { search, isActive } = req.query;
-    const query = {};
+    let query = {};
 
     if (isActive !== undefined && isActive !== '') {
       query.isActive = isActive === 'true';
@@ -20,6 +21,7 @@ exports.getCourses = async (req, res) => {
       ];
     }
 
+    query = await applyTenantScope(query, req.user);
     const courses = await Course.find(query).sort({ name: 1 }).lean();
 
     // Optionally count batches for each course
@@ -78,7 +80,9 @@ exports.createCourse = async (req, res) => {
       return res.status(400).json({ success: false, message: `Course with code "${code.trim().toUpperCase()}" already exists` });
     }
 
+    const instCompanyId = await getTenantCompanyId(req.user);
     const course = await Course.create({
+      company: instCompanyId || null,
       name: name.trim(),
       code: code.trim().toUpperCase(),
       description: description ? description.trim() : '',

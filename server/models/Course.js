@@ -9,7 +9,6 @@ const courseSchema = new mongoose.Schema({
   code: {
     type: String,
     required: [true, 'Course code is required'],
-    unique: true,
     uppercase: true,
     trim: true,
   },
@@ -32,6 +31,7 @@ const courseSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -39,5 +39,7 @@ const courseSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 courseSchema.index({ isActive: 1 });
+
+courseSchema.index({ company: 1, code: 1 }, { unique: true });
 
 module.exports = mongoose.model('Course', courseSchema);

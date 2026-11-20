@@ -199,6 +199,16 @@ const leadSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  tenantCompany: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    index: true,
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    index: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -212,12 +222,15 @@ const leadSchema = new mongoose.Schema({
 
 // Indexes for performance
 leadSchema.index({ email: 1 });
+leadSchema.index({ status: 1 });
+leadSchema.index({ isDeleted: 1 });
 leadSchema.index({ assignedTo: 1, status: 1 });
 leadSchema.index({ campaign: 1 });
 leadSchema.index({ createdAt: -1 });
 leadSchema.index({ leadTemperature: 1 });
 leadSchema.index({ isInstituteInquiry: 1, createdAt: -1 });
-// leadSchema.index({ status: 1 }); // Removed duplicate index
+leadSchema.index({ tenantCompany: 1, isDeleted: 1, createdAt: -1 });
+leadSchema.index({ tenantCompany: 1, status: 1 });
 
 
 // Pre-save middleware

@@ -13,8 +13,24 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    try {
+      const token = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      if (token && storedUser) {
+        return JSON.parse(storedUser);
+      }
+    } catch {
+      // fallback
+    }
+    return null;
+  });
+  const [loading, setLoading] = useState(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    // If user is already cached in localStorage, start immediately without blocking screen
+    return !(token && storedUser);
+  });
 
   useEffect(() => {
     const initAuth = async () => {
@@ -23,7 +39,7 @@ export const AuthProvider = ({ children }) => {
 
       if (token && storedUser) {
         try {
-          // Fetch logged-in user info from backend
+          // Fetch logged-in user info from backend in background to keep data fresh
           const response = await authService.getMe();
 
           if (response.success) {
@@ -34,6 +50,7 @@ export const AuthProvider = ({ children }) => {
           // Token invalid → clear storage
           localStorage.removeItem('token');
           localStorage.removeItem('user');
+          setUser(null);
         }
       }
 

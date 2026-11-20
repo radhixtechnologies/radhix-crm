@@ -53,6 +53,7 @@ const LeadTable = ({ leads, onDelete, canDelete = true, pagination, onPageChange
       case 'referral': return '#10b981';
       case 'social-media': return '#8b5cf6';
       case 'campaign': return '#f59e0b';
+      case 'meta': return '#0866ff';
       default: return '#6b7280';
     }
   };
@@ -120,12 +121,17 @@ const LeadTable = ({ leads, onDelete, canDelete = true, pagination, onPageChange
                       padding: '4px 12px',
                       borderRadius: '6px',
                       fontSize: '12px',
-                      fontWeight: '500',
+                      fontWeight: '600',
                       textTransform: 'capitalize'
                     }}
                   >
-                    {lead.source || 'N/A'}
+                    {lead.source === 'meta' ? 'Meta Ads' : (lead.source || 'N/A')}
                   </span>
+                  {lead.source === 'meta' && (lead.metaAttribution?.adName || lead.metaAttribution?.platform) && (
+                    <div style={{ fontSize: '10.5px', marginTop: '4px', color: '#0866ff', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '130px' }} title={lead.metaAttribution.adName || lead.metaAttribution.platform}>
+                      {lead.metaAttribution.adName || lead.metaAttribution.platform}
+                    </div>
+                  )}
                   {lead.source === 'campaign' && lead.campaign && (
                     <div style={{ fontSize: '10px', marginTop: '4px', color: 'var(--text-muted)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }} title={lead.campaign.name || ''}>
                       {lead.campaign.name}

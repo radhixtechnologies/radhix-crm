@@ -5,6 +5,7 @@ import { financeService } from '../../services/financeService';
 import InvoiceStatusBadge from '../../components/Finance/InvoiceStatusBadge';
 import Loader from '../../components/common/Loader';
 import { formatCurrency, formatDate } from '../../utils/format';
+import UpiPaymentQR from '../../components/common/UpiPaymentQR';
 import '../../styles/finance/invoice-details.css';
 
 const InvoiceDetails = () => {
@@ -288,6 +289,13 @@ const InvoiceDetails = () => {
               <option value="overdue">Overdue</option>
               <option value="cancelled">Cancelled</option>
             </select>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <UpiPaymentQR
+              amount={invoice.total}
+              invoiceNumber={invoice.invoiceNumber}
+            />
           </div>
 
           <div className="details-card">

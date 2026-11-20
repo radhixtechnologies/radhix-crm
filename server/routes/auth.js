@@ -17,11 +17,12 @@ const {
 } = require('../controllers/authController');
 const { protect, authorize } = require('../middlewares/auth');
 const checkDatabaseConnection = require('../middlewares/dbCheck');
+const { loginRateLimit, passwordRecoveryRateLimit } = require('../middlewares/rateLimits');
 
 // Public routes
-router.post('/login', checkDatabaseConnection, login);
-router.post('/forgotpassword', forgotPassword);
-router.put('/resetpassword/:resettoken', resetPassword);
+router.post('/login', loginRateLimit, checkDatabaseConnection, login);
+router.post('/forgotpassword', passwordRecoveryRateLimit, forgotPassword);
+router.put('/resetpassword/:resettoken', passwordRecoveryRateLimit, resetPassword);
 
 // Protected routes
 router.post('/register', protect, register);

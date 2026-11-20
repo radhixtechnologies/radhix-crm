@@ -3,12 +3,13 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSidebar } from '../../context/SidebarContext';
-import { FiSearch, FiBell, FiUser, FiLogOut, FiMenu, FiX, FiLock, FiMessageCircle, FiGlobe } from 'react-icons/fi';
+import { FiSearch, FiBell, FiUser, FiLogOut, FiMenu, FiX, FiLock, FiMessageCircle, FiGlobe, FiCreditCard, FiLayers } from 'react-icons/fi';
 import { getInitials } from '../../utils/format';
 import ThemeToggle from './ThemeToggle';
 import NotificationDropdown from './NotificationDropdown';
 import { notificationService } from '../../services/notificationService';
 import GlobalSearch from './GlobalSearch';
+import IndustrySuiteSwitcher from './IndustrySuiteSwitcher';
 import '../../styles/dashboard.css';
 import './Header.css';
 
@@ -24,6 +25,34 @@ const Navbar = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1024);
   const userMenuRef = useRef(null);
+
+  const impersonationData = (() => {
+    try {
+      const saved = localStorage.getItem('radhix_impersonation_backup');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const handleExitImpersonate = () => {
+    try {
+      const backup = localStorage.getItem('radhix_impersonation_backup');
+      if (backup) {
+        const parsed = JSON.parse(backup);
+        localStorage.setItem('token', parsed.token);
+        if (parsed.sessionId) localStorage.setItem('sessionId', parsed.sessionId);
+        localStorage.setItem('user', JSON.stringify(parsed.user));
+        localStorage.removeItem('radhix_impersonation_backup');
+        localStorage.setItem('radhix_active_industry_suite', 'all');
+        window.location.href = '/subscription';
+      }
+    } catch (e) {
+      console.error('Error exiting impersonation:', e);
+      localStorage.clear();
+      window.location.href = '/login';
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -67,18 +96,12 @@ const Navbar = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Keyboard shortcut for search (Ctrl+K)
+  // Keyboard shortcut for spotlight command palette (Ctrl+K)
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        if (isMobile) {
-          setMobileSearchOpen(true);
-        } else {
-          // Focus the search input on desktop
-          const searchInput = document.querySelector('.navbar-search input');
-          if (searchInput) searchInput.focus();
-        }
+        window.dispatchEvent(new CustomEvent('open-command-palette'));
       }
       // Close mobile search on Escape
       if (e.key === 'Escape' && mobileSearchOpen) {
@@ -88,7 +111,7 @@ const Navbar = () => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isMobile, mobileSearchOpen]);
+  }, [mobileSearchOpen]);
 
   return (
     <nav className="navbar">
@@ -110,6 +133,23 @@ const Navbar = () => {
           />
         </div>
         <div className="navbar-divider"></div>
+        <IndustrySuiteSwitcher />
+        {impersonationData && (
+          <div className="impersonation-badge-pill" title="You are currently viewing this CRM as this tenant">
+            <span className="live-impersonate-dot" />
+            <span className="imp-text">
+              Viewing as <strong>{user?.name}</strong> ({user?.company?.name || 'Client'})
+            </span>
+            <button
+              type="button"
+              className="btn-exit-impersonate"
+              onClick={handleExitImpersonate}
+              title="Return to Super Admin Account"
+            >
+              Exit to Super Admin ✕
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="navbar-center">
@@ -181,6 +221,14 @@ const Navbar = () => {
                     {user?.email}
                   </div>
                 </div>
+              </div>
+              <div className="user-dropdown-item" onClick={() => { navigate('/subscription'); setUserMenuOpen(false); }}>
+                <FiCreditCard />
+                Subscription &amp; Plans
+              </div>
+              <div className="user-dropdown-item" onClick={() => { navigate('/settings/branding'); setUserMenuOpen(false); }}>
+                <FiLayers />
+                White-Label &amp; Brand
               </div>
               <div className="user-dropdown-item" onClick={() => navigate('/change-password')}>
                 <FiLock />

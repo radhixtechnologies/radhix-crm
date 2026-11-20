@@ -1,99 +1,210 @@
 /* ===================================
    INFINITY EDITION DESIGN SYSTEM
-   Radhix CRM - Cutting-edge Aesthetic
-   Advanced Visual Effects & Motion
+   Radhix CRM - Cutting-edge SaaS Aesthetic
+   Advanced Visual Effects, Motion & High-Polish UI
    =================================== */
 
 :root {
-    --neon-primary: #6366f1;
-    --neon-secondary: #a855f7;
-    --neon-accent: #22d3ee;
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-bg-dark: rgba(15, 15, 15, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.3);
-    --glass-border-dark: rgba(255, 255, 255, 0.1);
+  --neon-primary: #4f46e5;
+  --neon-secondary: #8b5cf6;
+  --neon-accent: #06b6d4;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-bg-dark: rgba(17, 22, 34, 0.85);
+  --glass-border: rgba(226, 232, 240, 0.8);
+  --glass-border-dark: rgba(255, 255, 255, 0.1);
 }
 
 /* ========== MESH GRADIENT BACKGROUND ========== */
 .infinity-mesh-bg {
-    background: var(--surface);
-    background-attachment: fixed;
+  background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+              radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.04) 0px, transparent 50%),
+              var(--background);
+  background-attachment: fixed;
 }
 
 [data-theme='dark'] .infinity-mesh-bg {
-    background: var(--bg-main);
+  background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+              radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 50%),
+              var(--bg-main, #0a0d14);
+}
+
+/* ========== PAGE ENTRY ANIMATION ========== */
+.page-content > *,
+.main-content > *,
+.timesheets-list-page,
+.lead-details-page,
+.sales-pipeline-page {
+  animation: infinityPageEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes infinityPageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ========== GLASSMORPHISM CARDS ========== */
-.ep-card.infinity-glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
-    border: 1px solid var(--glass-border);
-    box-shadow: none;
+.ep-card.infinity-glass,
+.card-infinity {
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -2px rgba(15, 23, 42, 0.03);
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease, border-color 0.2s ease;
 }
 
-[data-theme='dark'] .ep-card.infinity-glass {
-    background: var(--glass-bg-dark);
-    border: 1px solid var(--glass-border-dark);
-    box-shadow: none;
+.ep-card.infinity-glass:hover,
+.card-infinity:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px -4px rgba(15, 23, 42, 0.09), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+[data-theme='dark'] .ep-card.infinity-glass,
+[data-theme='dark'] .card-infinity {
+  background: var(--glass-bg-dark);
+  border: 1px solid var(--glass-border-dark);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme='dark'] .ep-card.infinity-glass:hover,
+[data-theme='dark'] .card-infinity:hover {
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.7);
+  border-color: rgba(99, 102, 241, 0.45);
+}
+
+/* ========== STATS KPI TILES (SUPERCHARGED) ========== */
+.infinity-stat-card {
+  padding: 22px 24px;
+  border-radius: 16px;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.infinity-stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #4f46e5, #06b6d4);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.infinity-stat-card:hover {
+  transform: translateY(-2.5px);
+  box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.08);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.infinity-stat-card:hover::after {
+  opacity: 1;
+}
+
+/* ========== TABLE ENHANCEMENTS ========== */
+table tbody tr {
+  transition: background-color 0.16s ease, transform 0.16s ease;
+}
+
+table tbody tr:hover {
+  background-color: rgba(241, 245, 249, 0.85);
+}
+
+[data-theme='dark'] table tbody tr:hover {
+  background-color: rgba(99, 102, 241, 0.12);
+}
+
+/* ========== PREMIUM FORM CONTROLS ========== */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="date"],
+select,
+textarea {
+  font-family: inherit;
+  border-radius: 10px;
+  border: 1px solid var(--border, #d1d5db);
+  padding: 10px 14px;
+  font-size: 13.5px;
+  background-color: var(--surface, #ffffff);
+  color: var(--text-primary, #0f172a);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3.5px rgba(99, 102, 241, 0.16);
+  outline: none;
 }
 
 /* ========== NEON ACCENTS ========== */
 .ep-status-badge.neon {
-    box-shadow: none;
-    border: 1px solid currentColor;
-    background: transparent !important;
-    font-weight: 700;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+  border: 1px solid currentColor;
+  background: transparent !important;
+  font-weight: 700;
 }
 
 .status-active.neon {
-    color: #10b981;
-    box-shadow: none;
+  color: #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
 }
 
 .status-inactive.neon {
-    color: #6b7280;
-    box-shadow: none;
+  color: #6b7280;
+  box-shadow: none;
 }
 
-/* ========== INFINITY TEXT GLOW ========== */
+/* ========== TEXT GLOW & GRADIENTS ========== */
 .infinity-text-glow {
-    text-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+  text-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
 }
 
-/* ========== PREMIUM SCROLLBAR ========== */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.3);
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(99, 102, 241, 0.5);
+.infinity-gradient-text {
+  background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* ========== MICRO-INTERACTIONS ========== */
 .infinity-hover-glow:hover {
-    box-shadow: none;
-    transform: translateY(-2px);
-    transition: all 0.3s ease;
+  box-shadow: 0 8px 24px -2px rgba(99, 102, 241, 0.35);
+  transform: translateY(-2px);
+  transition: all 0.25s ease;
 }
 
 /* ========== DASHBOARD HEADER ENHANCEMENT ========== */
 .ep-header.infinity-header {
-    background: var(--background);
-    border-bottom: 2px solid var(--primary-color);
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 [data-theme='dark'] .ep-header.infinity-header {
-    background: var(--bg-main);
+  background: var(--bg-surface, #111622);
+  border-color: rgba(255, 255, 255, 0.08);
 }

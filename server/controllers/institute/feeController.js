@@ -2,6 +2,7 @@ const InstituteFee = require('../../models/InstituteFee');
 const Student = require('../../models/Student');
 const Course = require('../../models/Course');
 const Batch = require('../../models/Batch');
+const { applyTenantScope, getTenantCompanyId } = require('../../utils/tenantHelper');
 
 const sendError = (res, error) => res.status(error.statusCode || 500).json({ success: false, message: error.message });
 
@@ -9,7 +10,7 @@ const sendError = (res, error) => res.status(error.statusCode || 500).json({ suc
 exports.getFees = async (req, res) => {
   try {
     const { status, course, batch, search, page = 1, limit = 20 } = req.query;
-    const query = {};
+    let query = {};
 
     if (status) query.status = status;
     if (course) query.course = course;
@@ -31,6 +32,7 @@ exports.getFees = async (req, res) => {
     const currentPage = Math.max(1, Number(page));
     const pageLimit = Math.min(100, Math.max(1, Number(limit)));
 
+    query = await applyTenantScope(query, req.user);
     const [fees, total] = await Promise.all([
       InstituteFee.find(query)
         .populate('student', 'studentId name phone email status')

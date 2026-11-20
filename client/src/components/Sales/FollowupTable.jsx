@@ -1,19 +1,20 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { FiEdit, FiTrash2, FiCheck } from 'react-icons/fi';
+import { FaWhatsapp } from 'react-icons/fa';
 import { salesService } from '../../services/salesService';
 import { formatDate } from '../../utils/format';
 import ReminderBadge from './ReminderBadge';
 import EditFollowUpModal from './EditFollowUpModal';
 import CompleteFollowUpModal from './CompleteFollowUpModal';
+import WhatsAppModal from '../common/WhatsAppModal';
 import Modal from '../common/Modal';
 import '../../styles/sales/followups.css';
 
 const FollowupTable = ({ followups, pagination, onPageChange }) => {
-  const navigate = useNavigate();
   const [deleteModal, setDeleteModal] = useState({ open: false, followup: null });
   const [editModal, setEditModal] = useState({ open: false, followup: null });
   const [completeModal, setCompleteModal] = useState({ open: false, followup: null });
+  const [waModal, setWaModal] = useState({ open: false, name: '', phone: '' });
 
   const getOwnerName = (followup) => {
     const assignedTo = followup?.assignedTo;
@@ -80,7 +81,19 @@ const FollowupTable = ({ followups, pagination, onPageChange }) => {
                   <ReminderBadge status={followup.status} />
                 </td>
                 <td className="actions">
-                  {followup.status === 'pending' && (
+                  <button
+                    className="btn-icon"
+                    onClick={() => setWaModal({
+                      open: true,
+                      name: followup.relatedId?.name || '',
+                      phone: followup.relatedId?.phone || '',
+                    })}
+                    title="Send WhatsApp Follow-up"
+                    style={{ color: '#25d366' }}
+                  >
+                    <FaWhatsapp />
+                  </button>
+                  {['pending', 'overdue'].includes(followup.status) && (
                     <button className="btn-icon" onClick={() => handleComplete(followup)} title="Mark Complete">
                       <FiCheck />
                     </button>
@@ -149,10 +162,19 @@ const FollowupTable = ({ followups, pagination, onPageChange }) => {
           window.location.reload();
         }}
       />
+
+      {/* WhatsApp Modal */}
+      {waModal.open && (
+        <WhatsAppModal
+          isOpen={waModal.open}
+          onClose={() => setWaModal({ open: false, name: '', phone: '' })}
+          recipientName={waModal.name}
+          recipientPhone={waModal.phone}
+          defaultTemplateId="general_followup"
+        />
+      )}
     </div>
   );
 };
 
 export default FollowupTable;
-
-

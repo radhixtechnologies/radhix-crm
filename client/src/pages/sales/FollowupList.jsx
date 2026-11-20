@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { FiPlus, FiSearch, FiCalendar, FiClock, FiCheckCircle, FiAlertCircle, FiUsers, FiTrendingUp } from 'react-icons/fi';
 import { salesService, normalizeSalesListResponse } from '../../services/salesService';
 import FollowupTable from '../../components/Sales/FollowupTable';
@@ -10,37 +10,32 @@ const FollowupList = () => {
   const [followups, setFollowups] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({ status: '', type: '', search: '' });
+  const [filters, setFilters] = useState({ status: '', type: '', search: '', bucket: '' });
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-
-  const summaryStats = useMemo(() => {
-    const today = new Date();
-    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const weekStart = new Date(startOfToday);
-    weekStart.setDate(startOfToday.getDate() - 6);
-
-    const upcomingThisWeek = followups.filter((item) => {
-      if (!item.scheduledDate) return false;
-      const scheduledDate = new Date(item.scheduledDate);
-      return scheduledDate >= weekStart && scheduledDate <= new Date(startOfToday.getTime() + 86400000 * 7);
-    });
-
-    return {
-      total: followups.length,
-      pending: followups.filter(f => f.status === 'pending').length,
-      completed: followups.filter(f => f.status === 'completed').length,
-      overdue: followups.filter(f => f.status === 'overdue').length,
-      thisWeek: upcomingThisWeek.length,
-      owners: new Set(followups.filter(f => f.assignedTo?._id || f.assignedTo).map(f => f.assignedTo?._id || f.assignedTo)).size,
-    };
-  }, [followups]);
+  const [summaryStats, setSummaryStats] = useState({
+    total: 0, pending: 0, completed: 0, overdue: 0, dueToday: 0, upcoming: 0, owners: 0,
+  });
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Initial load
   useEffect(() => {
     fetchFollowUps(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        const response = await salesService.getFollowUpsSummary(filters.type ? { type: filters.type } : {});
+        if (response.data.success) setSummaryStats(response.data.data);
+      } catch (error) {
+        console.error('Error fetching follow-up summary:', error);
+        setErrorMessage(error.response?.data?.message || 'Unable to load follow-up summary.');
+      }
+    };
+    fetchSummary();
+  }, [filters.type]);
 
   // Debounce search and filter changes
   useEffect(() => {
@@ -64,6 +59,7 @@ const FollowupList = () => {
       const res = await salesService.getFollowUps(params);
       const normalized = normalizeSalesListResponse(res);
       if (normalized.success) {
+        setErrorMessage('');
         setFollowups(normalized.data || []);
         setPagination(prev => ({
           ...prev,
@@ -75,6 +71,7 @@ const FollowupList = () => {
       }
     } catch (error) {
       console.error('Error fetching follow-ups:', error);
+      setErrorMessage(error.response?.data?.message || 'Unable to load follow-ups. Please try again.');
     } finally {
       if (isInitialLoad) {
         setInitialLoading(false);
@@ -100,12 +97,12 @@ const FollowupList = () => {
       <div className="followup-pulse-panel">
         <div className="pulse-copy">
           <span className="pulse-kicker">Sales Pulse</span>
-          <h2>Follow-up momentum is {summaryStats.pending === 0 ? 'fully clear' : `${summaryStats.pending} item(s) still active`}</h2>
+          <h2>{summaryStats.overdue ? `${summaryStats.overdue} follow-up(s) need attention` : summaryStats.dueToday ? `${summaryStats.dueToday} follow-up(s) due today` : 'Follow-up momentum is on track'}</h2>
         </div>
         <div className="pulse-meta">
           <div className="pulse-meta-item">
             <FiTrendingUp />
-            <span>{summaryStats.thisWeek} due this week</span>
+            <span>{summaryStats.dueToday + summaryStats.upcoming} due this week</span>
           </div>
           <div className="pulse-meta-item">
             <FiUsers />
@@ -178,7 +175,7 @@ const FollowupList = () => {
           </div>
           <div>
             <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-              {followups.filter(f => f.status === 'pending').length}
+              {summaryStats.pending}
             </div>
             <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
               Pending
@@ -211,7 +208,7 @@ const FollowupList = () => {
           </div>
           <div>
             <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-              {followups.filter(f => f.status === 'completed').length}
+              {summaryStats.completed}
             </div>
             <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
               Completed
@@ -244,7 +241,7 @@ const FollowupList = () => {
           </div>
           <div>
             <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-              {followups.filter(f => f.status === 'overdue').length}
+              {summaryStats.overdue}
             </div>
             <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
               Overdue
@@ -260,7 +257,10 @@ const FollowupList = () => {
             type="text"
             placeholder="Search follow-ups..."
             value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            onChange={(e) => {
+              setFilters({ ...filters, search: e.target.value });
+              setPagination((current) => ({ ...current, page: 1 }));
+            }}
             onKeyDown={(e) => {
               // Prevent form submission on Enter key
               if (e.key === 'Enter') {
@@ -273,7 +273,10 @@ const FollowupList = () => {
         <select
           className="form-select"
           value={filters.status}
-          onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+          onChange={(e) => {
+            setFilters({ ...filters, status: e.target.value });
+            setPagination((current) => ({ ...current, page: 1 }));
+          }}
           disabled={loading}
         >
           <option value="">All Statuses</option>
@@ -285,7 +288,10 @@ const FollowupList = () => {
         <select
           className="form-select"
           value={filters.type}
-          onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+          onChange={(e) => {
+            setFilters({ ...filters, type: e.target.value });
+            setPagination((current) => ({ ...current, page: 1 }));
+          }}
           disabled={loading}
         >
           <option value="">All Types</option>
@@ -293,7 +299,24 @@ const FollowupList = () => {
           <option value="client">Client</option>
           <option value="deal">Deal</option>
         </select>
+        <select
+          className="form-select"
+          value={filters.bucket}
+          onChange={(e) => {
+            setFilters({ ...filters, bucket: e.target.value });
+            setPagination((current) => ({ ...current, page: 1 }));
+          }}
+          disabled={loading}
+          aria-label="Filter by due date"
+        >
+          <option value="">All Dates</option>
+          <option value="today">Due Today</option>
+          <option value="overdue">Overdue</option>
+          <option value="upcoming">Upcoming</option>
+        </select>
       </div>
+
+      {errorMessage && <div className="alert alert-error" role="alert">{errorMessage}</div>}
 
       {initialLoading ? (
         <Loader />
@@ -330,6 +353,14 @@ const FollowupList = () => {
         onSuccess={() => {
           setShowScheduleModal(false);
           fetchFollowUps(false);
+          salesService.getFollowUpsSummary(filters.type ? { type: filters.type } : {})
+            .then((response) => {
+              if (response.data.success) setSummaryStats(response.data.data);
+            })
+            .catch((error) => {
+              console.error('Error refreshing follow-up summary:', error);
+              setErrorMessage(error.response?.data?.message || 'Unable to refresh follow-up summary.');
+            });
         }}
       />
     </div>
@@ -337,8 +368,6 @@ const FollowupList = () => {
 };
 
 export default FollowupList;
-
-
 
 
 

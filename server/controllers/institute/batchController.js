@@ -1,6 +1,7 @@
 const Batch = require('../../models/Batch');
 const Course = require('../../models/Course');
 const Student = require('../../models/Student');
+const { applyTenantScope, getTenantCompanyId } = require('../../utils/tenantHelper');
 
 const sendError = (res, error) => res.status(error.statusCode || 500).json({ success: false, message: error.message });
 
@@ -8,7 +9,7 @@ const sendError = (res, error) => res.status(error.statusCode || 500).json({ suc
 exports.getBatches = async (req, res) => {
   try {
     const { course, status, search } = req.query;
-    const query = {};
+    let query = {};
 
     if (course) {
       query.course = course;
@@ -22,6 +23,7 @@ exports.getBatches = async (req, res) => {
       query.name = { $regex: search, $options: 'i' };
     }
 
+    query = await applyTenantScope(query, req.user);
     const batches = await Batch.find(query)
       .populate('course', 'name code baseFee duration isActive')
       .sort({ startDate: -1 })
@@ -120,7 +122,9 @@ exports.createBatch = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Referenced course does not exist' });
     }
 
+    const btcCompanyId = await getTenantCompanyId(req.user);
     const batch = await Batch.create({
+      company: btcCompanyId || null,
       name: name.trim(),
       course: course._id,
       startDate: start,

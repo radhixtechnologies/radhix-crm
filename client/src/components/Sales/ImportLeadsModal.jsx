@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FiX, FiDownload, FiUpload, FiCheck, FiFileText, FiAlertCircle } from 'react-icons/fi';
+import { FiX, FiDownload, FiUpload, FiCheck, FiFileText, FiAlertCircle, FiLoader } from 'react-icons/fi';
 import { salesService } from '../../services/salesService';
 import './ImportLeadsModal.css';
 
@@ -10,6 +10,7 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
     const [progress, setProgress] = useState(0);
     const [importResults, setImportResults] = useState(null);
     const [error, setError] = useState(null);
+    const [previewLoading, setPreviewLoading] = useState(false);
 
     if (!isOpen) return null;
 
@@ -18,6 +19,7 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
 
         setFile(selectedFile);
         setError(null);
+        setPreviewLoading(true);
 
         try {
             // Call preview API to validate file
@@ -29,8 +31,10 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
             }
         } catch (err) {
             console.error('Preview error:', err);
-            setError(err.response?.data?.message || 'Failed to preview file. Please check the format.');
+            setError(err.response?.data?.message || 'Failed to preview file. Please check that the file is a valid CSV or Excel spreadsheet.');
             setFile(null);
+        } finally {
+            setPreviewLoading(false);
         }
     };
 
@@ -49,7 +53,7 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
                     }
                     return prev + 10;
                 });
-            }, 200);
+            }, 180);
 
             // Call actual import API
             const response = await salesService.importLeads(file);
@@ -65,7 +69,7 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
                 if (onImportSuccess) {
                     setTimeout(() => {
                         onImportSuccess();
-                    }, 2000);
+                    }, 1800);
                 }
             }
         } catch (err) {
@@ -82,6 +86,7 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
         setProgress(0);
         setImportResults(null);
         setError(null);
+        setPreviewLoading(false);
         onClose();
     };
 
@@ -106,7 +111,7 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
                 <div className="modal-header">
                     <div className="header-text">
                         <h2>Import Leads</h2>
-                        <p className="modal-subtitle">Follow the steps to bulk import leads</p>
+                        <p className="modal-subtitle">Bulk import leads from Meta Ads, Excel, or CSV</p>
                     </div>
                     <button className="modal-close" onClick={cleanClose}>
                         <FiX />
@@ -123,9 +128,9 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
                                     <FiDownload className="step-icon" />
                                 </div>
                                 <div className="step-details">
-                                    <h4>Step 1: Download Template</h4>
-                                    <p>Start with our standardized Excel template.</p>
-                                    <button className="btn-link" onClick={handleDownloadTemplate}>Download Template</button>
+                                    <h4>Download Sample Template</h4>
+                                    <p>Or upload any Meta Ads CSV, Google Sheets, or Excel export directly.</p>
+                                    <button className="btn-link" onClick={handleDownloadTemplate}>Download Sample Excel</button>
                                 </div>
                             </div>
 
@@ -135,7 +140,7 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
                                     <FiUpload className="step-icon" />
                                 </div>
                                 <div className="step-details full-width">
-                                    <h4>Step 2: Upload File</h4>
+                                    <h4>Upload Spreadsheet / CSV</h4>
                                     <div
                                         className="file-upload-area compact"
                                         onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
@@ -150,14 +155,23 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
                                     >
                                         <input
                                             type="file"
-                                            accept=".csv,.xlsx,.xls"
+                                            accept=".csv,.xlsx,.xls,.tsv"
                                             id="leadFileInput"
+                                            disabled={previewLoading}
                                             onChange={(e) => handleFileChange(e.target.files[0])}
                                             style={{ display: 'none' }}
                                         />
-                                        <label htmlFor="leadFileInput" className="file-upload-label">
-                                            <span className="upload-link">Click to upload</span>
-                                            <span className="upload-hint"> or drag and drop CSV, XLSX (Max 5MB)</span>
+                                        <label htmlFor="leadFileInput" className="file-upload-label" style={{ cursor: previewLoading ? 'wait' : 'pointer' }}>
+                                            {previewLoading ? (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#2563eb' }}>
+                                                    <FiLoader className="spin" /> Reading and validating file...
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <span className="upload-link">Click to upload</span>
+                                                    <span className="upload-hint"> or drag and drop CSV, XLSX, XLS (Up to 50MB)</span>
+                                                </>
+                                            )}
                                         </label>
                                     </div>
                                 </div>
@@ -172,34 +186,34 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
 
                             <div className="info-alert">
                                 <div className="alert-icon"><FiAlertCircle /></div>
-                                <span><strong>Note:</strong> Duplicate emails will be skipped automatically.</span>
+                                <span><strong>Smart Column Detection:</strong> Works with Meta Lead Ads exports, phone numbers with country codes (e.g. <code>p:+91...</code>), and custom column formats. Duplicate emails/numbers are skipped safely.</span>
                             </div>
                         </div>
                     )}
 
                     {step === 2 && summary && (
                         <div className="step-content review-step fade-in">
-                            <h3>Step 3: Review & Confirm</h3>
+                            <h3>Review & Confirm Import</h3>
                             <div className="review-card">
                                 <div className="review-item">
                                     <span className="review-label">File Name</span>
                                     <div className="review-value">
-                                        <FiFileText /> {file.name}
+                                        <FiFileText /> {file?.name}
                                     </div>
                                 </div>
                                 <div className="review-row">
                                     <div className="review-stat">
                                         <span className="stat-value">{summary.totalRows}</span>
-                                        <span className="stat-label">Total Rows</span>
+                                        <span className="stat-label">Total Leads</span>
                                     </div>
                                     <div className="review-stat">
                                         <span className="stat-value" style={{ color: '#10b981' }}>{summary.validRows}</span>
-                                        <span className="stat-label">Valid Rows</span>
+                                        <span className="stat-label">Ready to Import</span>
                                     </div>
                                     {summary.invalidRows > 0 && (
                                         <div className="review-stat">
                                             <span className="stat-value" style={{ color: '#ef4444' }}>{summary.invalidRows}</span>
-                                            <span className="stat-label">Invalid Rows</span>
+                                            <span className="stat-label">Invalid Format</span>
                                         </div>
                                     )}
                                 </div>
@@ -212,20 +226,20 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
                                 </div>
                             )}
 
-                            <p className="review-note">Ready to import? This action cannot be undone.</p>
+                            <p className="review-note">Click "Import Leads" to securely store and assign these prospects in your CRM.</p>
                         </div>
                     )}
 
                     {step === 3 && (
                         <div className="step-content progress-step fade-in">
-                            <h3>Step 4: Importing...</h3>
+                            <h3>Importing Leads...</h3>
                             <div className="progress-container">
                                 <div className="progress-bar-track">
                                     <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
                                 </div>
                                 <span className="progress-label">{progress}% Complete</span>
                             </div>
-                            <p className="progress-subtext">Please do not close this window.</p>
+                            <p className="progress-subtext">Routing leads to your pipeline and checking duplicates...</p>
                         </div>
                     )}
 
@@ -237,21 +251,21 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
                             <h3>Import Complete!</h3>
                             <div className="results-card">
                                 <div className="result-row">
-                                    <span className="result-label">Total Rows:</span>
+                                    <span className="result-label">Total Records:</span>
                                     <span className="result-value">{importResults.total}</span>
                                 </div>
                                 <div className="result-row success">
                                     <span className="result-label">Successfully Imported:</span>
-                                    <span className="result-value">{importResults.success.length}</span>
+                                    <span className="result-value" style={{ color: '#10b981', fontWeight: 700 }}>{importResults.success.length}</span>
                                 </div>
                                 {importResults.failed.length > 0 && (
                                     <div className="result-row warning">
-                                        <span className="result-label">Skipped (Duplicate/Invalid):</span>
-                                        <span className="result-value">{importResults.failed.length}</span>
+                                        <span className="result-label">Skipped (Duplicate / Missing info):</span>
+                                        <span className="result-value" style={{ color: '#f59e0b', fontWeight: 600 }}>{importResults.failed.length}</span>
                                     </div>
                                 )}
                             </div>
-                            <p className="complete-note">The lead list will refresh automatically.</p>
+                            <p className="complete-note">Your leads table is updating in real time.</p>
                         </div>
                     )}
 

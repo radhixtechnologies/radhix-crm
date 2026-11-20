@@ -3,6 +3,8 @@ import { lazy, Suspense } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SidebarProvider, useSidebar } from './context/SidebarContext';
 import { QuickActionsProvider } from './context/QuickActionsContext';
+import { IndustrySuiteProvider } from './context/IndustrySuiteContext';
+import { BrandingProvider } from './context/BrandingContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Sidebar from './components/common/Sidebar';
 import Navbar from './components/common/Navbar';
@@ -84,6 +86,24 @@ const InstituteStudentDetails = lazy(() => import('./pages/institute/InstituteSt
 const InstituteFees = lazy(() => import('./pages/institute/InstituteFees'));
 const InstituteAttendance = lazy(() => import('./pages/institute/InstituteAttendance'));
 const InstituteReports = lazy(() => import('./pages/institute/InstituteReports'));
+const RealEstateDashboard = lazy(() => import('./pages/realEstate/RealEstateDashboard'));
+const RealEstatePropertyDetail = lazy(() => import('./pages/realEstate/RealEstatePropertyDetail'));
+const ConstructionDashboard = lazy(() => import('./pages/construction/ConstructionDashboard'));
+const HealthcareDashboard = lazy(() => import('./pages/healthcare/HealthcareDashboard'));
+const AutomotiveDashboard = lazy(() => import('./pages/automotive/AutomotiveDashboard'));
+const TravelDashboard = lazy(() => import('./pages/travel/TravelDashboard'));
+const ManufacturingDashboard = lazy(() => import('./pages/manufacturing/ManufacturingDashboard'));
+const RestaurantDashboard = lazy(() => import('./pages/restaurant/RestaurantDashboard'));
+const SalonDashboard = lazy(() => import('./pages/salon/SalonDashboard'));
+const RetailDashboard = lazy(() => import('./pages/retail/RetailDashboard'));
+const GymDashboard = lazy(() => import('./pages/gym/GymDashboard'));
+const IndustryHub = lazy(() => import('./pages/industry/IndustryHub'));
+const MySubscription = lazy(() => import('./pages/subscription/MySubscription'));
+const BranchHub = lazy(() => import('./pages/branches/BranchHub'));
+const BrandingSettings = lazy(() => import('./pages/settings/BrandingSettings'));
+const WorkflowAutomation = lazy(() => import('./pages/automation/WorkflowAutomation'));
+const PublicLeadForm = lazy(() => import('./pages/sales/PublicLeadForm'));
+const LeadFormBuilder = lazy(() => import('./pages/sales/LeadFormBuilder'));
 const LeadList = lazy(() => import('./pages/sales/LeadList'));
 const AddLead = lazy(() => import('./pages/sales/AddLead'));
 const LeadDetails = lazy(() => import('./pages/sales/LeadDetails'));
@@ -213,10 +233,20 @@ const SalesRedirect = () => {
 };
 
 const AppRoutes = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f8fafc', color: '#64748b', gap: '14px', fontFamily: 'sans-serif' }}>
+        <div style={{ width: '36px', height: '36px', border: '3px solid #e2e8f0', borderTopColor: '#4f46e5', borderRadius: '50%', animation: 'spin 0.75s linear infinite' }} />
+        <span style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '-0.01em', color: '#334155' }}>Initializing CRM Workspace...</span>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
 
   return (
-    <Suspense fallback={<div style={{ padding: 24, textAlign: 'center', color: '#64748b' }}>Loading CRM...</div>}>
+    <Suspense fallback={<div style={{ padding: 24, textAlign: 'center', color: '#64748b' }}>Loading Page...</div>}>
       <Routes>
         <Route
           path="/login"
@@ -229,6 +259,11 @@ const AppRoutes = () => {
       <Route
         path="/reset-password/:resettoken"
         element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <ResetPassword />}
+      />
+      {/* Public Embeddable Web Form Route (No Header / Sidebar) */}
+      <Route
+        path="/forms/:id"
+        element={<PublicLeadForm />}
       />
       <Route
         path="/change-password"
@@ -943,6 +978,276 @@ const AppRoutes = () => {
           <ProtectedRoute requiredModule="sales">
             <Layout>
               <InstituteReports />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/real-estate"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <RealEstateDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/real-estate/properties/:id"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <RealEstatePropertyDetail />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/real-estate/:section"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <RealEstateDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/construction"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <ConstructionDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/construction/:section"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <ConstructionDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/healthcare"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <HealthcareDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/healthcare/:section"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <HealthcareDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/automotive"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <AutomotiveDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/automotive/:section"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <AutomotiveDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/travel"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <TravelDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/travel/:section"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <TravelDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/manufacturing"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <ManufacturingDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/manufacturing/:section"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <ManufacturingDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/restaurant"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <RestaurantDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/restaurant/:section"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <RestaurantDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/salon"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <SalonDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/salon/:section"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <SalonDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/retail"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <RetailDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/retail/:section"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <RetailDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/gym"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <GymDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/gym/:section"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <GymDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/industry-hub"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <IndustryHub />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/subscription"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <MySubscription />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings/branding"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+            <Layout>
+              <BrandingSettings />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/automation/workflows"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+            <Layout>
+              <WorkflowAutomation />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/branches"
+        element={
+          <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+            <Layout>
+              <BranchHub />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales/form-builder"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <LeadFormBuilder />
             </Layout>
           </ProtectedRoute>
         }
@@ -1883,8 +2188,12 @@ function App() {
       <SidebarProvider>
         <QuickActionsProvider>
           <Router>
-            <AppRoutes />
-            <TestingNotice />
+            <IndustrySuiteProvider>
+              <BrandingProvider>
+                <AppRoutes />
+                <TestingNotice />
+              </BrandingProvider>
+            </IndustrySuiteProvider>
           </Router>
         </QuickActionsProvider>
       </SidebarProvider>

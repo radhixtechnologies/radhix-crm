@@ -17,6 +17,8 @@ import {
 } from 'recharts';
 import VisitorInsightsLineChart from '../../components/dashboard/Charts/VisitorInsightsLineChart';
 import KPIBadge from '../../components/dashboard/KPIBadge';
+import SalesLeaderboardPodium from '../../components/dashboard/SalesLeaderboardPodium';
+import VisualSalesFunnel from '../../components/dashboard/VisualSalesFunnel';
 import '../../styles/dashboard/superadmin-dashboard-new.css';
 import '../../styles/infinity-edition.css';
 
@@ -231,53 +233,58 @@ const SalesDashboard = () => {
         {/* Content Area */}
         <main className="ep-content-area">
           {activeTab === 'summary' && (
-            <div className="ep-grid-2">
-              <div className="ep-card">
-                <div className="ep-card-header"><div className="ep-card-title">Monthly Revenue Trend</div></div>
-                <div className="ep-card-body" style={{ height: '350px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={revenueChartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} />
-                      <YAxis axisLine={false} tickLine={false} />
-                      <Tooltip
-                        cursor={{ fill: '#f9fafb' }}
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                        formatter={(value, name) => [
-                          name === 'revenue' ? formatCurrency(value) : value,
-                          name === 'revenue' ? 'Revenue' : 'Deals'
-                        ]}
-                      />
-                      <Legend iconType="circle" />
-                      <Bar dataKey="revenue" fill={COLORS.success} radius={[4, 4, 0, 0]} barSize={30} />
-                      <Bar dataKey="deals" fill={COLORS.primary} radius={[4, 4, 0, 0]} barSize={30} />
-                    </BarChart>
-                  </ResponsiveContainer>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Option 1: Sales Gamification & Leaderboard Podium */}
+              <SalesLeaderboardPodium />
+
+              <div className="ep-grid-2">
+                <div className="ep-card">
+                  <div className="ep-card-header"><div className="ep-card-title">Monthly Revenue Trend</div></div>
+                  <div className="ep-card-body" style={{ height: '350px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={revenueChartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                        <XAxis dataKey="month" axisLine={false} tickLine={false} />
+                        <YAxis axisLine={false} tickLine={false} />
+                        <Tooltip
+                          cursor={{ fill: '#f9fafb' }}
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                          formatter={(value, name) => [
+                            name === 'revenue' ? formatCurrency(value) : value,
+                            name === 'revenue' ? 'Revenue' : 'Deals'
+                          ]}
+                        />
+                        <Legend iconType="circle" />
+                        <Bar dataKey="revenue" fill={COLORS.success} radius={[4, 4, 0, 0]} barSize={30} />
+                        <Bar dataKey="deals" fill={COLORS.primary} radius={[4, 4, 0, 0]} barSize={30} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-              </div>
-              <div className="ep-card">
-                <div className="ep-card-header"><div className="ep-card-title">Pipeline Health</div></div>
-                <div className="ep-card-body" style={{ height: '350px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pipelineChartData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                      >
-                        {pipelineChartData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={Object.values(STAGE_COLORS)[index % 6]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => formatCurrency(value)} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
+                <div className="ep-card">
+                  <div className="ep-card-header"><div className="ep-card-title">Pipeline Health</div></div>
+                  <div className="ep-card-body" style={{ height: '350px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={pipelineChartData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          paddingAngle={5}
+                        >
+                          {pipelineChartData.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={Object.values(STAGE_COLORS)[index % 6]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value) => formatCurrency(value)} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </div>
             </div>
@@ -324,52 +331,57 @@ const SalesDashboard = () => {
           )}
 
           {activeTab === 'pipeline' && (
-            <div className="ep-grid-2">
-              <div className="ep-card">
-                <div className="ep-card-header"><div className="ep-card-title">Pipeline Analysis</div></div>
-                <div className="ep-card-body">
-                  <div className="pipeline-bars" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    {pipelineChartData.map((stage, index) => {
-                      const maxValue = Math.max(...pipelineChartData.map(s => s.value));
-                      const percentage = maxValue > 0 ? (stage.value / maxValue) * 100 : 0;
-                      return (
-                        <div key={index}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                            <span style={{ fontWeight: 600, fontSize: '13px' }}>{stage.name}</span>
-                            <span style={{ fontWeight: 700, color: COLORS.primary }}>{formatCurrency(stage.value)}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Option 2: 3D Visual Funnel & Conversion Velocity */}
+              <VisualSalesFunnel />
+
+              <div className="ep-grid-2">
+                <div className="ep-card">
+                  <div className="ep-card-header"><div className="ep-card-title">Pipeline Analysis</div></div>
+                  <div className="ep-card-body">
+                    <div className="pipeline-bars" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                      {pipelineChartData.map((stage, index) => {
+                        const maxValue = Math.max(...pipelineChartData.map(s => s.value));
+                        const percentage = maxValue > 0 ? (stage.value / maxValue) * 100 : 0;
+                        return (
+                          <div key={index}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                              <span style={{ fontWeight: 600, fontSize: '13px' }}>{stage.name}</span>
+                              <span style={{ fontWeight: 700, color: COLORS.primary }}>{formatCurrency(stage.value)}</span>
+                            </div>
+                            <div style={{ width: '100%', height: '8px', background: '#f3f4f6', borderRadius: '4px', overflow: 'hidden' }}>
+                              <div style={{
+                                width: `${percentage}%`,
+                                height: '100%',
+                                background: Object.values(STAGE_COLORS)[index % 6]
+                              }} />
+                            </div>
                           </div>
-                          <div style={{ width: '100%', height: '8px', background: '#f3f4f6', borderRadius: '4px', overflow: 'hidden' }}>
-                            <div style={{
-                              width: `${percentage}%`,
-                              height: '100%',
-                              background: Object.values(STAGE_COLORS)[index % 6]
-                            }} />
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="ep-card">
-                <div className="ep-card-header"><div className="ep-card-title">Recent Deals</div></div>
-                <div className="ep-card-body" style={{ padding: 0 }}>
-                  <table className="ep-table">
-                    <thead><tr><th>Deal Title</th><th>Value</th><th>Stage</th></tr></thead>
-                    <tbody>
-                      {recentActivity?.deals?.slice(0, 8).map(deal => (
-                        <tr key={deal._id} onClick={() => navigate(`/sales/deals/${deal._id}`)} style={{ cursor: 'pointer' }}>
-                          <td style={{ fontWeight: 600 }}>{deal.title}</td>
-                          <td style={{ color: COLORS.success, fontWeight: 700 }}>{formatCurrency(deal.value)}</td>
-                          <td>
-                            <span className="ep-status-badge status-active">
-                              {deal.stage?.replace(/-/g, ' ')}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="ep-card">
+                  <div className="ep-card-header"><div className="ep-card-title">Recent Deals</div></div>
+                  <div className="ep-card-body" style={{ padding: 0 }}>
+                    <table className="ep-table">
+                      <thead><tr><th>Deal Title</th><th>Value</th><th>Stage</th></tr></thead>
+                      <tbody>
+                        {recentActivity?.deals?.slice(0, 8).map(deal => (
+                          <tr key={deal._id} onClick={() => navigate(`/sales/deals/${deal._id}`)} style={{ cursor: 'pointer' }}>
+                            <td style={{ fontWeight: 600 }}>{deal.title}</td>
+                            <td style={{ color: COLORS.success, fontWeight: 700 }}>{formatCurrency(deal.value)}</td>
+                            <td>
+                              <span className="ep-status-badge status-active">
+                                {deal.stage?.replace(/-/g, ' ')}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>

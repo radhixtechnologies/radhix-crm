@@ -26,7 +26,7 @@ class AuthService {
       throw new AppError('Please provide email and password', 400);
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password').populate('company');
 
     if (!user) {
       throw new AppError('Invalid credentials', 401);
@@ -78,6 +78,7 @@ class AuthService {
       isActive: user.isActive,
       modulesAccess: user.modulesAccess || {},
       employeeId: employee?._id || null,
+      company: user.company,
     };
 
     return {
@@ -152,10 +153,18 @@ class AuthService {
    * @returns {Promise<Object>}
    */
   async getCurrentUser(userId) {
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).populate('company');
 
     if (!user) {
       throw new AppError('User not found', 404);
+    }
+    if (!user.company) {
+      const Company = require('../models/Company');
+      const owned = await Company.findOne({ owner: userId });
+      if (owned) {
+        user.company = owned;
+        await User.findByIdAndUpdate(userId, { company: owned._id });
+      }
     }
 
 
@@ -240,6 +249,15 @@ class AuthService {
 
     if (!user) {
       throw new AppError('User not found', 404);
+    }
+    
+    if (!user.company) {
+      const Company = require('../models/Company');
+      const owned = await Company.findOne({ owner: userId });
+      if (owned) {
+        user.company = owned;
+        await User.findByIdAndUpdate(userId, { company: owned._id });
+      }
     }
 
     // Check if current password matches
@@ -601,6 +619,15 @@ class AuthService {
       const targetUser = await User.findById(userId);
       if (!targetUser) {
         throw new AppError('User not found', 404);
+    }
+    if (!user.company) {
+      const Company = require('../models/Company');
+      const owned = await Company.findOne({ owner: userId });
+      if (owned) {
+        user.company = owned;
+        await User.findByIdAndUpdate(userId, { company: owned._id });
+    }
+    
       }
       if (targetUser.role === 'super_admin') {
         throw new AppError('Admins cannot reset super admin passwords', 403);
@@ -610,6 +637,15 @@ class AuthService {
     const user = await User.findById(userId);
     if (!user) {
       throw new AppError('User not found', 404);
+    }
+    
+    if (!user.company) {
+      const Company = require('../models/Company');
+      const owned = await Company.findOne({ owner: userId });
+      if (owned) {
+        user.company = owned;
+        await User.findByIdAndUpdate(userId, { company: owned._id });
+      }
     }
 
     // Generate temporary password if not provided
@@ -658,6 +694,15 @@ class AuthService {
     const user = await User.findById(userId);
     if (!user) {
       throw new AppError('User not found', 404);
+    }
+    
+    if (!user.company) {
+      const Company = require('../models/Company');
+      const owned = await Company.findOne({ owner: userId });
+      if (owned) {
+        user.company = owned;
+        await User.findByIdAndUpdate(userId, { company: owned._id });
+      }
     }
 
     // Admin can only reset employees, super admin can reset anyone

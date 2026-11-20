@@ -549,7 +549,9 @@ class AttendanceService {
     });
 
     // Use query builder to build advanced filters
-    const { query, options: queryOptions } = buildQuery.buildAttendanceQuery({ ...filterFields, ...optionFields });
+    let { query, options: queryOptions } = buildQuery.buildAttendanceQuery({ ...filterFields, ...optionFields });
+    const { applyTenantScope } = require('../utils/tenantHelper');
+    query = await applyTenantScope(query, user, 'attendance');
 
     // Handle month filter
     if (filters.month) {

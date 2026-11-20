@@ -110,6 +110,7 @@ const instituteFeeSchema = new mongoose.Schema({
   },
   installments: [installmentSchema],
   receipts: [receiptSchema],
+  company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

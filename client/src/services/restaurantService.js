@@ -1,0 +1,25 @@
+import api from './api';
+
+export const restaurantService = {
+  getSummary: () => api.get('/restaurant/summary'),
+  getMenu: (params) => api.get('/restaurant/menu', { params }),
+  createMenuItem: (data) => api.post('/restaurant/menu', data),
+  updateMenuItem: (id, data) => api.put(`/restaurant/menu/${id}`, data),
+  deleteMenuItem: (id) => api.delete(`/restaurant/menu/${id}`),
+  getTables: (params) => api.get('/restaurant/tables', { params }),
+  createTable: (data) => api.post('/restaurant/tables', data),
+  updateTable: (id, data) => api.put(`/restaurant/tables/${id}`, data),
+  getCustomers: (params) => api.get('/restaurant/customers', { params }),
+  createCustomer: (data) => api.post('/restaurant/customers', data),
+  updateCustomer: (id, data) => api.put(`/restaurant/customers/${id}`, data),
+  getReservations: (params) => api.get('/restaurant/reservations', { params }),
+  createReservation: (data) => api.post('/restaurant/reservations', data),
+  updateReservation: (id, data) => api.put(`/restaurant/reservations/${id}`, data),
+  getOrders: (params) => api.get('/restaurant/orders', { params }),
+  createOrder: (data) => api.post('/restaurant/orders', data),
+  updateOrder: (id, data) => api.put(`/restaurant/orders/${id}`, data),
+  getIngredients: (params) => api.get('/restaurant/ingredients', { params }),
+  createIngredient: (data) => api.post('/restaurant/ingredients', data),
+  updateIngredient: (id, data) => api.put(`/restaurant/ingredients/${id}`, data),
+  deleteIngredient: (id) => api.delete(`/restaurant/ingredients/${id}`),
+};

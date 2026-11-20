@@ -12,6 +12,7 @@ import ScheduleFollowUpModal from '../../components/Sales/ScheduleFollowUpModal'
 import ActivitySection from '../../components/activities/ActivitySection';
 import Loader from '../../components/common/Loader';
 import { formatDate } from '../../utils/format';
+import { triggerConfetti } from '../../utils/confetti';
 import '../../styles/sales/lead-details.css';
 
 const DealDetails = () => {
@@ -46,6 +47,9 @@ const DealDetails = () => {
             await salesService.changeDealStage(id, newStage);
             setDeal({ ...deal, stage: newStage });
             setRefreshActivityTrigger(prev => prev + 1); // Trigger activity refresh
+            if (newStage === 'closed-won' || newStage === 'won') {
+                triggerConfetti();
+            }
         } catch (error) {
             alert(error.response?.data?.message || 'Failed to update stage');
         }

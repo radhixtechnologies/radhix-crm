@@ -6,17 +6,22 @@ import {
   FiUser, FiMoreHorizontal, FiArrowLeft, FiCheckCircle, FiThermometer, FiActivity,
   FiUserCheck, FiBookOpen
 } from 'react-icons/fi';
+import { FaWhatsapp, FaFacebook, FaInstagram } from 'react-icons/fa';
 import { salesService } from '../../services/salesService';
 import StatusBadge from '../../components/Sales/StatusBadge';
 import ConvertLeadModal from '../../components/Sales/ConvertLeadModal';
 import ScheduleFollowUpModal from '../../components/Sales/ScheduleFollowUpModal';
 import EmailComposeModal from '../../components/Sales/EmailComposeModal';
 import ChatModal from '../../components/Sales/ChatModal';
+import WhatsAppModal from '../../components/common/WhatsAppModal';
+import LogCallModal from '../../components/Sales/LogCallModal';
+import AiLeadCopilot from '../../components/Sales/AiLeadCopilot';
 import ActivitySection from '../../components/activities/ActivitySection';
 import EnrollStudentModal from '../../components/institute/EnrollStudentModal';
 import Loader from '../../components/common/Loader';
 import { formatCurrency, formatDate } from '../../utils/format';
 import '../../styles/sales/lead-details.css';
+import '../../styles/sales/followups.css';
 
 
 const LeadDetails = () => {
@@ -30,9 +35,14 @@ const LeadDetails = () => {
   const [showFollowUpModal, setShowFollowUpModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [showLogCallModal, setShowLogCallModal] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [isInitiatingCall, setIsInitiatingCall] = useState(false);
   const [activeActivityTab, setActiveActivityTab] = useState('activities');
+  const [followUpHistory, setFollowUpHistory] = useState([]);
+  const [followUpHistoryLoading, setFollowUpHistoryLoading] = useState(false);
+  const [followUpHistoryError, setFollowUpHistoryError] = useState('');
 
   useEffect(() => {
     fetchLead();
@@ -50,6 +60,26 @@ const LeadDetails = () => {
       console.error('Error fetching lead:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchFollowUpHistory = async () => {
+    try {
+      setFollowUpHistoryLoading(true);
+      setFollowUpHistoryError('');
+      const response = await salesService.getFollowUps({ type: 'lead', relatedId: id, limit: 100 });
+      const normalized = response.data;
+      const history = Array.isArray(normalized.data) ? normalized.data : [];
+      setFollowUpHistory(history.sort((left, right) => {
+        const leftDate = new Date(left.completedAt || left.scheduledDate).getTime();
+        const rightDate = new Date(right.completedAt || right.scheduledDate).getTime();
+        return rightDate - leftDate;
+      }));
+    } catch (error) {
+      console.error('Error fetching lead follow-up history:', error);
+      setFollowUpHistoryError(error.response?.data?.message || 'Unable to load follow-up history.');
+    } finally {
+      setFollowUpHistoryLoading(false);
     }
   };
 
@@ -162,6 +192,21 @@ const LeadDetails = () => {
         />
       )}
 
+      {/* WhatsApp Quick Chat Modal */}
+      {showWhatsAppModal && (
+        <WhatsAppModal
+          isOpen={showWhatsAppModal}
+          onClose={() => setShowWhatsAppModal(false)}
+          recipientName={lead.name}
+          recipientPhone={lead.phone}
+          defaultTemplateId="general_followup"
+          contextVariables={{
+            property: lead.requirements || 'Property',
+            amount: lead.value ? String(lead.value) : '10,000',
+          }}
+        />
+      )}
+
       {/* Enroll Student Modal for Institute inquiries */}
       {showEnrollModal && (
         <EnrollStudentModal
@@ -239,6 +284,20 @@ const LeadDetails = () => {
             </button>
             <button
               className="btn-icon-action"
+              title={lead.phone ? `Chat on WhatsApp (${lead.phone})` : "No phone number available"}
+              aria-label="WhatsApp lead"
+              onClick={() => setShowWhatsAppModal(true)}
+              disabled={!lead.phone}
+              style={{
+                opacity: lead.phone ? 1 : 0.5,
+                cursor: lead.phone ? 'pointer' : 'not-allowed',
+                color: '#25d366',
+              }}
+            >
+              <FaWhatsapp size={17} />
+            </button>
+            <button
+              className="btn-icon-action"
               title={lead.email ? "Email lead" : "No email address available"}
               aria-label="Email lead"
               onClick={() => setShowEmailModal(true)}
@@ -299,6 +358,9 @@ const LeadDetails = () => {
             )}
             <button className="btn btn-secondary btn-sm" onClick={() => setShowFollowUpModal(true)} aria-label="Schedule follow-up">
               <FiCalendar size={14} className="mr-1" /> Follow-up
+            </button>
+            <button className="btn btn-secondary btn-sm" onClick={() => setShowLogCallModal(true)} aria-label="Log call interaction">
+              <FiPhone size={14} className="mr-1" /> Log Call
             </button>
             <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/sales/leads/${id}/edit`)} aria-label="Edit lead">
               <FiEdit size={14} className="mr-1" /> Edit
@@ -385,6 +447,8 @@ const LeadDetails = () => {
 
         {/* LEFT COLUMN */}
         <div className="left-column">
+          {/* AI Intelligence & Smart Follow-up Copilot */}
+          <AiLeadCopilot lead={lead} />
 
           {/* Institute Inquiry Details Card */}
           {lead.isInstituteInquiry && (
@@ -504,14 +568,46 @@ const LeadDetails = () => {
                 >
                   Notes
                 </button>
+                <button
+                  className={`header-tab-btn ${activeActivityTab === 'followups' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveActivityTab('followups');
+                    fetchFollowUpHistory();
+                  }}
+                >
+                  Follow-up History
+                </button>
               </div>
             </div>
             <div className="card-body">
-              <ActivitySection
-                relatedTo={{ entityType: 'Lead', entityId: id }}
-                activeTab={activeActivityTab}
-                leadNotes={lead?.notes || []}
-              />
+              {activeActivityTab === 'followups' ? (
+                followUpHistoryLoading ? (
+                  <p>Loading follow-up history...</p>
+                ) : followUpHistoryError ? (
+                  <p role="alert">{followUpHistoryError}</p>
+                ) : followUpHistory.length === 0 ? (
+                  <p>No follow-ups have been recorded for this lead yet.</p>
+                ) : (
+                  <div className="follow-up-history">
+                    {followUpHistory.map((item) => (
+                      <article key={item._id} className="follow-up-history-item">
+                        <div>
+                          <strong>{item.title}</strong>
+                          <p>{formatDate(item.scheduledDate)}{item.scheduledTime ? ` at ${item.scheduledTime}` : ''} · {item.typeOfFollowUp || 'call'}</p>
+                          {item.outcome && <p>{item.outcome}</p>}
+                        </div>
+                        <span className={`status-badge status-${item.status}`}>{item.status}</span>
+                      </article>
+                    ))}
+                  </div>
+                )
+              ) : (
+                <ActivitySection
+                  relatedTo={{ entityType: 'Lead', entityId: id }}
+                  activeTab={activeActivityTab}
+                  leadNotes={lead?.notes || []}
+                />
+              )}
             </div>
           </div>
 
@@ -573,6 +669,60 @@ const LeadDetails = () => {
             </div>
           </div>
 
+          {/* Meta Instant Forms / Ads Attribution Card */}
+          {(lead.source === 'meta' || lead.metaAttribution || lead.metaLeadId) && (
+            <div className="card details-card meta-attribution-card" style={{
+              background: 'linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%)',
+              border: '1px solid #bfdbfe',
+              borderRadius: '12px',
+              padding: '16px',
+              marginBottom: '16px',
+              boxShadow: '0 2px 8px rgba(8, 102, 255, 0.08)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', borderBottom: '1px solid #e0f2fe', paddingBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FaFacebook size={18} color="#0866ff" />
+                  <h3 style={{ margin: 0, fontSize: '13.5px', fontWeight: 700, color: '#1e3a8a' }}>Meta Ads Attribution</h3>
+                </div>
+                <span style={{ fontSize: '11px', background: '#dbeafe', color: '#1d4ed8', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>
+                  {lead.metaAttribution?.platform || 'Facebook / IG'}
+                </span>
+              </div>
+              <div className="info-list-compact" style={{ gap: '8px' }}>
+                {lead.metaAttribution?.adName && (
+                  <div className="info-item-compact">
+                    <span className="info-label">Ad Name</span>
+                    <span className="info-value" style={{ fontWeight: 600, color: '#0f172a' }}>{lead.metaAttribution.adName}</span>
+                  </div>
+                )}
+                {lead.metaAttribution?.adsetName && (
+                  <div className="info-item-compact">
+                    <span className="info-label">AdSet</span>
+                    <span className="info-value">{lead.metaAttribution.adsetName}</span>
+                  </div>
+                )}
+                {lead.metaAttribution?.campaignId && (
+                  <div className="info-item-compact">
+                    <span className="info-label">Campaign ID</span>
+                    <span className="info-value" style={{ fontFamily: 'monospace', fontSize: '11.5px' }}>{lead.metaAttribution.campaignId}</span>
+                  </div>
+                )}
+                {lead.metaAttribution?.formId && (
+                  <div className="info-item-compact">
+                    <span className="info-label">Lead Form ID</span>
+                    <span className="info-value" style={{ fontFamily: 'monospace', fontSize: '11.5px' }}>{lead.metaAttribution.formId}</span>
+                  </div>
+                )}
+                {lead.metaLeadId && (
+                  <div className="info-item-compact">
+                    <span className="info-label">Meta Lead ID</span>
+                    <span className="info-value" style={{ fontFamily: 'monospace', fontSize: '11.5px', color: '#64748b' }}>{lead.metaLeadId}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* System Info - Compact */}
           <div className="card details-card">
             <div className="card-header-compact">
@@ -603,6 +753,7 @@ const LeadDetails = () => {
         prefilledData={{ type: 'lead', relatedId: id }}
         onSuccess={() => {
           setShowFollowUpModal(false);
+          fetchFollowUpHistory();
           setToastMessage('Follow-up scheduled successfully!');
           setShowToast(true);
           setTimeout(() => setShowToast(false), 3000);
@@ -621,6 +772,19 @@ const LeadDetails = () => {
         isOpen={showChatModal}
         onClose={() => setShowChatModal(false)}
         lead={lead}
+      />
+
+      {/* Quick Log Call Interaction Modal */}
+      <LogCallModal
+        isOpen={showLogCallModal}
+        onClose={() => setShowLogCallModal(false)}
+        lead={lead}
+        onCallLogged={() => {
+          fetchLead();
+          setToastMessage('Phone call logged successfully!');
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 3000);
+        }}
       />
     </div>
   );

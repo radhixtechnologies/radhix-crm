@@ -1,0 +1,437 @@
+/* =========================================================
+   INDUSTRY SUITE SWITCHER - SAAS MULTI-TENANT VERTICAL SELECTOR
+   ========================================================= */
+
+.industry-switcher-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  z-index: 120;
+}
+
+.industry-switcher-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  outline: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  height: 40px;
+}
+
+[data-theme='dark'] .industry-switcher-btn {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.industry-switcher-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+[data-theme='dark'] .industry-switcher-btn:hover {
+  background: #243247;
+  border-color: #475569;
+}
+
+.industry-switcher-btn.open {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  background: #ffffff;
+}
+
+[data-theme='dark'] .industry-switcher-btn.open {
+  border-color: #818cf8;
+  background: #1e293b;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+}
+
+.switcher-emoji {
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.switcher-text-block {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.switcher-subtitle {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+[data-theme='dark'] .switcher-subtitle {
+  color: #94a3b8;
+}
+
+.switcher-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+[data-theme='dark'] .switcher-title {
+  color: #f1f5f9;
+}
+
+.switcher-arrow {
+  font-size: 14px;
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+  margin-left: 2px;
+}
+
+.switcher-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+/* =========================================================
+   DROPDOWN MENU
+   ========================================================= */
+
+.industry-switcher-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 420px;
+  max-width: 90vw;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  z-index: 1000;
+  animation: dropdownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme='dark'] .industry-switcher-dropdown {
+  background: #0f172a;
+  border-color: #334155;
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.switcher-dropdown-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+[data-theme='dark'] .switcher-dropdown-header {
+  background: #1e293b;
+  border-bottom-color: #334155;
+}
+
+.switcher-header-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.switcher-header-title .header-icon {
+  font-size: 20px;
+  color: #6366f1;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.switcher-header-title h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+[data-theme='dark'] .switcher-header-title h4 {
+  color: #f8fafc;
+}
+
+.switcher-header-title p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+[data-theme='dark'] .switcher-header-title p {
+  color: #94a3b8;
+}
+
+.switcher-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.switcher-search-box .search-icon {
+  position: absolute;
+  left: 10px;
+  font-size: 14px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.switcher-search-box input {
+  width: 100%;
+  height: 34px;
+  padding: 0 28px 0 32px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 12px;
+  background: #ffffff;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+[data-theme='dark'] .switcher-search-box input {
+  background: #0f172a;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+.switcher-search-box input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px;
+}
+
+/* =========================================================
+   SUITES LIST
+   ========================================================= */
+
+.switcher-suites-list {
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.switcher-divider-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: #94a3b8;
+  padding: 10px 10px 6px;
+}
+
+.switcher-suite-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.switcher-suite-item:hover {
+  background: #f1f5f9;
+}
+
+[data-theme='dark'] .switcher-suite-item:hover {
+  background: #1e293b;
+}
+
+.switcher-suite-item.active {
+  background: #eef2ff;
+}
+
+[data-theme='dark'] .switcher-suite-item.active {
+  background: rgba(99, 102, 241, 0.15);
+}
+
+.suite-item-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
+.suite-item-icon-box.enterprise {
+  background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+  color: #ffffff;
+}
+
+.suite-item-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.suite-item-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.suite-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-theme='dark'] .suite-name {
+  color: #f8fafc;
+}
+
+.suite-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.suite-badge.enterprise {
+  background: #6366f1;
+  color: #ffffff;
+  border-color: #4f46e5;
+}
+
+.suite-tagline {
+  margin: 0;
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-theme='dark'] .suite-tagline {
+  color: #94a3b8;
+}
+
+.suite-check-icon {
+  font-size: 16px;
+  color: #4f46e5;
+  flex-shrink: 0;
+}
+
+[data-theme='dark'] .suite-check-icon {
+  color: #818cf8;
+}
+
+.switcher-empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.switcher-dropdown-footer {
+  padding: 10px 14px;
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+[data-theme='dark'] .switcher-dropdown-footer {
+  background: #1e293b;
+  border-top-color: #334155;
+}
+
+.hub-launch-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: none;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4f46e5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+[data-theme='dark'] .hub-launch-link {
+  border-color: #475569;
+  color: #818cf8;
+}
+
+.hub-launch-link:hover {
+  background: #eef2ff;
+  border-style: solid;
+  border-color: #4f46e5;
+}
+
+[data-theme='dark'] .hub-launch-link:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .switcher-subtitle {
+    display: none;
+  }
+  .switcher-title {
+    font-size: 12px;
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .industry-switcher-dropdown {
+    width: 310px;
+    left: -20px;
+  }
+}
+

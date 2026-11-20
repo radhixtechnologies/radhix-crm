@@ -492,4 +492,10 @@ describe('Project Management Module Test Suite', () => {
       assert.strictEqual(project.isArchived, true);
     });
   });
+
+  after(async () => {
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.disconnect();
+    }
+  });
 });

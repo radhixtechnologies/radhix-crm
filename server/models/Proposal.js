@@ -50,6 +50,14 @@ const proposalSchema = new mongoose.Schema({
   emailSent: { type: Boolean, default: false },
   emailSentAt: Date,
   acceptedDate: Date,
+  signature: {
+    signatureImage: { type: String, default: '' },
+    signedByName: { type: String, default: '' },
+    signerDesignation: { type: String, default: '' },
+    signedAt: { type: Date, default: null },
+    ipAddress: { type: String, default: '' },
+    isVerified: { type: Boolean, default: false },
+  },
   convertedToQuotation: { type: mongoose.Schema.Types.ObjectId, ref: 'Quotation', default: null },
   convertedToInvoice: { type: mongoose.Schema.Types.ObjectId, ref: 'Invoice', default: null },
   isDeleted: { type: Boolean, default: false }

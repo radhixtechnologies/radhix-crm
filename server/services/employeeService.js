@@ -8,6 +8,7 @@ const buildQuery = require('../utils/buildQuery');
 const { addSuperAdminFilter, canAccessEmployeeResource, filterSuperAdminEmployees } = require('../utils/roleFilter');
 const permissionService = require('./permissionService');
 const syncEmployeeUserRole = require('../utils/syncEmployeeUserRole');
+const { applyTenantScope, getTenantCompanyId, getTenantUserAndEmployeeIds } = require('../utils/tenantHelper');
 
 /**
  * Employee Service
@@ -54,6 +55,9 @@ class EmployeeService {
     } else if (scope === 'department' && user.department) {
       query.department = user.department;
     }
+
+    // Multi-tenant data isolation
+    query = await applyTenantScope(query, user, 'employee');
 
     // Filter out Super Admin employees for Admin users
     if (isAdmin) {
@@ -160,6 +164,7 @@ class EmployeeService {
       sort: sortQuery,
     };
 
+    query = await applyTenantScope(query, user, 'employee');
     const employees = await employeeRepository.findAll(query, finalOptions);
     const total = await employeeRepository.count(query);
 
@@ -227,6 +232,19 @@ class EmployeeService {
         throw new AppError('Not authorized to access this employee', 403);
       }
     }
+    const roleSlug = typeof user?.role === 'object' ? user.role?.slug : user?.role;
+    if (roleSlug !== 'super_admin') {
+      const companyId = await getTenantCompanyId(user);
+      if (companyId) {
+        const { userIds } = await getTenantUserAndEmployeeIds(companyId);
+        const isOwnEmp = (employee.user?._id || employee.user)?.toString() === user?._id?.toString();
+        const empComp = employee.company?.toString();
+        const empUserInTenant = userIds.some((uid) => uid.toString() === (employee.user?._id || employee.user)?.toString());
+        if (!isOwnEmp && empComp !== companyId && !empUserInTenant) {
+          throw new AppError('Employee not found or access denied', 404);
+        }
+      }
+    }
 
     return {
       success: true,
@@ -241,6 +259,26 @@ class EmployeeService {
    * @returns {Promise<Object>}
    */
   async createEmployee(data, user) {
+    const creatorCompanyId = await getTenantCompanyId(user);
+
+    // Enforce tenant company subscription quota for team members
+    if (creatorCompanyId) {
+      const Company = require('../models/Company');
+      const SubscriptionPlan = require('../models/SubscriptionPlan');
+      const company = await Company.findById(creatorCompanyId).populate('subscription.plan');
+      if (company) {
+        const plan = company.subscription?.plan || await SubscriptionPlan.findOne({ slug: company.subscription?.planSlug || 'starter' });
+        const maxEmployees = plan?.limits?.maxEmployees ?? (company.subscription?.planSlug === 'starter' ? 5 : 25);
+        const currentCount = await employeeRepository.count({ company: creatorCompanyId, status: { $ne: 'terminated' } });
+        if (currentCount >= maxEmployees) {
+          throw new AppError(
+            `Subscription Plan Limit Reached: Your current plan (${plan?.name || 'Starter Plan'}) allows up to ${maxEmployees} active team members. Please upgrade your subscription to add more members.`,
+            403,
+            'QUOTA_EXCEEDED'
+          );
+        }
+      }
+    }
     // Generate employee ID if not provided
     if (!data.employeeId) {
       data.employeeId = await generateEmployeeId(data.idDeptCode);
@@ -330,6 +368,7 @@ class EmployeeService {
           password: userPassword,
           role: roleSlugForUser,
           department: department || null,
+          company: creatorCompanyId || null,
         });
 
         // Store generated password for response (will be removed before returning)
@@ -349,6 +388,7 @@ class EmployeeService {
     const employeeData = {
       ...data,
       user: userToUse._id,
+      company: creatorCompanyId || null,
     };
     delete employeeData.userId;
     delete employeeData.name;

@@ -59,15 +59,16 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  color: #64748b;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
 }
 
 .primary-icon {
   font-size: 22px;
   margin-bottom: 2px;
+  transition: transform 0.2s ease;
 }
 
 .primary-label {
@@ -79,16 +80,34 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  letter-spacing: 0.1px;
 }
 
 .primary-item:hover {
-  background-color: #f3f4f6;
-  color: #111827;
+  background-color: #f1f5f9;
+  color: var(--primary-color, #4f46e5);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.primary-item:hover .primary-icon {
+  transform: scale(1.1);
 }
 
 .primary-item.active {
   background-color: #eef2ff;
-  color: #4f46e5;
+  color: var(--primary-color, #4f46e5);
+  box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.25);
+}
+
+.primary-item.active::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background-color: var(--primary-color, #4f46e5);
 }
 
 [data-theme='dark'] .primary-item {
@@ -195,30 +214,40 @@
 .secondary-item {
   display: flex;
   align-items: center;
-  padding: 10px 12px;
+  padding: 10px 14px;
   border-radius: 8px;
   color: #4b5563;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
 }
 
 .secondary-icon {
   margin-right: 12px;
   font-size: 18px;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .secondary-item:hover {
   background-color: #ffffff;
-  color: #111827;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  color: var(--primary-color, #4f46e5);
+  transform: translateX(4px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.secondary-item:hover .secondary-icon {
+  transform: scale(1.1);
+  color: var(--primary-color, #4f46e5);
 }
 
 .secondary-item.active {
-  background-color: #eef2ff;
-  color: #4f46e5;
-  box-shadow: none;
+  background-color: #ffffff;
+  color: var(--primary-color, #4f46e5);
+  font-weight: 600;
+  box-shadow: 0 2px 8px -1px rgba(99, 102, 241, 0.15);
+  border-left: 3px solid var(--primary-color, #4f46e5);
 }
 
 [data-theme='dark'] .secondary-item {

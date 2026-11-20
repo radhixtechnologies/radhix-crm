@@ -23,6 +23,7 @@ const projectSchema = new mongoose.Schema({
   projectManager: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', default: null },
   team: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Employee' }],
   milestones: [milestoneSchema],
+  company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', index: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   isArchived: { type: Boolean, default: false, index: true },

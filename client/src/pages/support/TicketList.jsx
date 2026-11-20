@@ -1,6 +1,23 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiPlus, FiSearch, FiFilter, FiChevronDown, FiChevronUp, FiX, FiMessageSquare, FiClock, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
+import {
+  FiPlus,
+  FiSearch,
+  FiFilter,
+  FiChevronDown,
+  FiChevronUp,
+  FiX,
+  FiMessageSquare,
+  FiClock,
+  FiCheckCircle,
+  FiAlertCircle,
+  FiPhone,
+  FiMail,
+  FiShield,
+  FiZap,
+  FiAward,
+} from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
 import { supportService } from '../../services/supportService';
 import TicketTable from '../../components/Support/TicketTable';
 import Loader from '../../components/common/Loader';
@@ -8,6 +25,8 @@ import '../../styles/employee/timesheets.css';
 
 const TicketList = () => {
     const navigate = useNavigate();
+    const { user, isSuperAdmin } = useAuth();
+    const planSlug = user?.company?.subscription?.planSlug || 'pro';
     const [tickets, setTickets] = useState([]);
     const [metrics, setMetrics] = useState(null);
     const [initialLoading, setInitialLoading] = useState(true);
@@ -174,6 +193,195 @@ const TicketList = () => {
                     />
                 </div>
             </div>
+
+            {/* SLA & Tier-Aware Support Concierge Card */}
+            {(planSlug === 'enterprise' || isSuperAdmin) ? (
+              <div style={{
+                background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+                borderRadius: '16px',
+                padding: '22px 28px',
+                color: '#ffffff',
+                marginBottom: '24px',
+                boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.25)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '20px',
+                border: '1px solid #312e81',
+              }}>
+                <div style={{ maxWidth: '600px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{
+                      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      color: '#ffffff',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      padding: '3px 10px',
+                      borderRadius: '20px',
+                      letterSpacing: '0.5px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                    }}>
+                      <FiAward /> DEDICATED VIP ACCOUNT MANAGER &amp; 99.9% UPTIME SLA
+                    </span>
+                    <span style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      color: '#a5b4fc',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      padding: '3px 8px',
+                      borderRadius: '12px',
+                    }}>
+                      &lt;15 min SLA Response
+                    </span>
+                  </div>
+                  <h2 style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 6px', color: '#ffffff' }}>
+                    Enterprise Concierge &amp; Priority Technical Desk
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '13.5px', color: '#c7d2fe', lineHeight: 1.45 }}>
+                    Your Enterprise subscription includes an assigned Customer Success Director, 99.9% infrastructure SLA assurance, and real-time emergency resolution.
+                  </p>
+                </div>
+
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  borderRadius: '12px',
+                  padding: '14px 20px',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                }}>
+                  <div style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #6366f1, #4338ca)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '18px',
+                    fontWeight: 700,
+                  }}>
+                    RS
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>Rohan Sharma</div>
+                    <div style={{ fontSize: '11.5px', color: '#a5b4fc' }}>Dedicated Enterprise Account Director</div>
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '6px' }}>
+                      <a
+                        href="https://wa.me/919876543210?text=Hello%20Rohan,%20I%20am%20contacting%20you%20from%20my%20Radhix%20Enterprise%20CRM%20account"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#4ade80', fontSize: '12px', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        💬 WhatsApp VIP
+                      </a>
+                      <a
+                        href="tel:+919876543210"
+                        style={{ color: '#93c5fd', fontSize: '12px', fontWeight: 600, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        <FiPhone /> Call Direct
+                      </a>
+                      <a
+                        href="mailto:vip-desk@radhix.com"
+                        style={{ color: '#fbcfe8', fontSize: '12px', fontWeight: 600, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        <FiMail /> vip-desk@radhix.com
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : planSlug === 'pro' ? (
+              <div style={{
+                background: 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)',
+                border: '1px solid #c7d2fe',
+                borderRadius: '14px',
+                padding: '16px 20px',
+                marginBottom: '24px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '12px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#4f46e5', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                    <FiZap />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '14.5px', fontWeight: 700, color: '#1e1b4b' }}>
+                      ⚡ Priority 2-Hour Response SLA Active
+                    </div>
+                    <div style={{ fontSize: '12.5px', color: '#4338ca' }}>
+                      Your tickets receive priority handling from our dedicated engineering support team.
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/subscription')}
+                  style={{
+                    background: '#4f46e5',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontSize: '12.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Upgrade to Enterprise for Dedicated Account Manager &rarr;
+                </button>
+              </div>
+            ) : (
+              <div style={{
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '14px',
+                padding: '16px 20px',
+                marginBottom: '24px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '12px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#94a3b8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                    <FiShield />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#334155' }}>
+                      Community &amp; Email Support (24h turnaround)
+                    </div>
+                    <div style={{ fontSize: '12.5px', color: '#64748b' }}>
+                      Upgrade your plan to unlock 2-hour priority SLA or a Dedicated VIP Account Manager.
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/subscription')}
+                  style={{
+                    background: '#0f172a',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontSize: '12.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  View Subscription Plans &rarr;
+                </button>
+              </div>
+            )}
 
             {/* Stats Cards */}
             <div style={{

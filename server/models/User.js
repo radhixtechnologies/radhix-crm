@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   role: { type: String, default: 'employee' },
   modulesAccess: { type: mongoose.Schema.Types.Mixed, default: {} },
   department: { type: String, default: '' },
+  company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
   avatar: { type: String, default: '' },
   isActive: { type: Boolean, default: true },
   resetPasswordToken: { type: String, select: false },

@@ -288,7 +288,9 @@ class LeaveService {
     });
     
     // Use query builder to build advanced filters
-    const { query, options: queryOptions } = buildQuery.buildLeaveQuery({ ...filterFields, ...optionFields });
+    let { query, options: queryOptions } = buildQuery.buildLeaveQuery({ ...filterFields, ...optionFields });
+    const { applyTenantScope } = require('../utils/tenantHelper');
+    query = await applyTenantScope(query, user, 'leave');
     
     // Get role slug
     const roleSlug = typeof user.role === 'object' ? user.role?.slug : user.role;

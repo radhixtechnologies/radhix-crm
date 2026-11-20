@@ -33,6 +33,20 @@ const PayrollList = () => {
   // Search query state (visual primarily, or used for employee filtering)
   const [searchQuery, setSearchQuery] = useState('');
 
+  const fetchPayrolls = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await financeService.getPayrolls(activeFilters);
+      if (res.data?.success) {
+        setPayrolls(res.data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching payrolls:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeFilters]);
+
   useEffect(() => {
     fetchPayrolls();
   }, [fetchPayrolls]);
@@ -54,20 +68,6 @@ const PayrollList = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-
-  const fetchPayrolls = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await financeService.getPayrolls(activeFilters);
-      if (res.data.success) {
-        setPayrolls(res.data.data || []);
-      }
-    } catch (error) {
-      console.error('Error fetching payrolls:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeFilters]);
 
   const handleDownload = async (id) => {
     try {
@@ -97,6 +97,14 @@ const PayrollList = () => {
     if (filterInputs.employee) count++;
     return count;
   };
+
+  const filteredPayrolls = payrolls.filter(p => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    const empName = (p.employee?.user?.name || p.employee?.name || p.employee?.fullName || '').toLowerCase();
+    const status = (p.status || '').toLowerCase();
+    return empName.includes(q) || status.includes(q);
+  });
 
   if (loading) return <Loader />;
 
@@ -210,7 +218,7 @@ const PayrollList = () => {
           </div>
           <div>
             <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-              {formatCurrency(payrolls.reduce((sum, p) => sum + (p.salaryStructure?.grossSalary || 0), 0))}
+              {formatCurrency(payrolls.reduce((sum, p) => sum + (p.grossSalary ?? p.salaryStructure?.grossSalary ?? 0), 0))}
             </div>
             <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
               Gross Salary
@@ -243,7 +251,7 @@ const PayrollList = () => {
           </div>
           <div>
             <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-              {formatCurrency(payrolls.reduce((sum, p) => sum + (p.salaryStructure?.netSalary || 0), 0))}
+              {formatCurrency(payrolls.reduce((sum, p) => sum + (p.netSalary ?? p.salaryStructure?.netSalary ?? 0), 0))}
             </div>
             <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
               Net Salary
@@ -377,17 +385,17 @@ const PayrollList = () => {
               </tr>
             </thead>
             <tbody>
-              {payrolls.length > 0 ? (
-                payrolls.map((payroll) => (
+              {filteredPayrolls.length > 0 ? (
+                filteredPayrolls.map((payroll) => (
                   <tr key={payroll._id}>
-                    <td>{payroll.employee?.user?.name || 'N/A'}</td>
-                    <td>{String(payroll.month).padStart(2, '0')}/{payroll.year}</td>
-                    <td>{formatCurrency(payroll.salaryStructure.grossSalary)}</td>
-                    <td>{formatCurrency(payroll.salaryStructure.totalDeductions)}</td>
-                    <td>{formatCurrency(payroll.salaryStructure.netSalary)}</td>
+                    <td>{payroll.employee?.user?.name || payroll.employee?.name || payroll.employee?.fullName || 'N/A'}</td>
+                    <td>{String(payroll.month || 1).padStart(2, '0')}/{payroll.year || new Date().getFullYear()}</td>
+                    <td>{formatCurrency(payroll.grossSalary ?? payroll.salaryStructure?.grossSalary ?? 0)}</td>
+                    <td>{formatCurrency(payroll.deductions ?? payroll.salaryStructure?.totalDeductions ?? 0)}</td>
+                    <td>{formatCurrency(payroll.netSalary ?? payroll.salaryStructure?.netSalary ?? 0)}</td>
                     <td>
                       <span className={`badge badge-${payroll.status === 'paid' ? 'success' : 'warning'}`}>
-                        {payroll.status}
+                        {payroll.status || 'pending'}
                       </span>
                     </td>
                     <td>
