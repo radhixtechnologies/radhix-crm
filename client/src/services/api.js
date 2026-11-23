@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || (
-  import.meta.env.PROD ? 'https://radhix-crm.onrender.com/api' : 'http://localhost:5000/api'
+  import.meta.env.PROD ? 'https://api.radhix.com/api' : 'http://localhost:5000/api'
 );
 
 // Create axios instance
