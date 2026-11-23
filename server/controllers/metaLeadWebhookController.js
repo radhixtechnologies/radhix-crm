@@ -42,15 +42,9 @@ const fetchMetaLead = async (leadId) => {
 };
 
 const saveMetaLead = async (event, pageId) => {
-  if (await Lead.exists({ metaLeadId: event.leadgen_id })) return false;
-
-  const metaLead = await fetchMetaLead(event.leadgen_id);
-  const fields = Array.isArray(metaLead.field_data) ? metaLead.field_data : [];
-  const email = getFieldValue(fields, ['email', 'e-mail']).toLowerCase();
-  const firstName = getFieldValue(fields, ['first_name', 'firstname']);
-  const lastName = getFieldValue(fields, ['last_name', 'lastname']);
-  const name = getFieldValue(fields, ['full_name', 'name']) || `${firstName} ${lastName}`.trim();
-  const phone = getFieldValue(fields, ['phone_number', 'phone', 'mobile_number']);
+  const isTestLead = !event.leadgen_id || String(event.leadgen_id).startsWith('44444') || event.leadgen_id === 'test_lead_id';
+  const effectiveLeadId = isTestLead ? `test_${event.leadgen_id}_${Date.now()}` : event.leadgen_id;
+  if (!isTestLead && await Lead.exists({ metaLeadId: effectiveLeadId })) return false;
 
   // Assign to configured tenant company or default company
   const Company = require('../models/Company');
@@ -62,10 +56,53 @@ const saveMetaLead = async (event, pageId) => {
     if (firstCompany) tenantCompany = firstCompany._id;
   }
 
+  // Handle Meta Test Dashboard / Sample Leads (ID 444444444444 or dummy IDs)
+  if (isTestLead) {
+    const testLead = await Lead.create({
+      name: `Meta Ads Test Lead (${new Date().toLocaleTimeString('en-IN')})`,
+      email: 'meta.test.lead@radhix.com',
+      phone: '+91 98765 43210',
+      company: 'Radhix Meta Ads (Sample)',
+      source: 'meta',
+      tenantCompany,
+      metaLeadId: effectiveLeadId,
+      metaAttribution: {
+        pageId: pageId || event.page_id,
+        formId: event.form_id || 'test_form',
+        adId: event.ad_id || 'test_ad',
+        adName: 'Sample Test Ad',
+        platform: 'facebook',
+      },
+      notes: [{ note: 'Sample lead created from Meta Webhook Test Ping.', createdBy: null }],
+    });
+
+    try {
+      const { executeWorkflowEngine } = require('../services/workflowEngine');
+      executeWorkflowEngine('lead_created', testLead).catch(() => {});
+    } catch {}
+
+    return true;
+  }
+
+  // Fetch real lead data from Meta Graph API
+  let metaLead = {};
+  try {
+    metaLead = await fetchMetaLead(event.leadgen_id);
+  } catch (fetchErr) {
+    console.warn(`Could not fetch details for Meta lead ${event.leadgen_id} from Graph API:`, fetchErr.message);
+  }
+
+  const fields = Array.isArray(metaLead.field_data) ? metaLead.field_data : [];
+  const email = getFieldValue(fields, ['email', 'e-mail']).toLowerCase();
+  const firstName = getFieldValue(fields, ['first_name', 'firstname']);
+  const lastName = getFieldValue(fields, ['last_name', 'lastname']);
+  const name = getFieldValue(fields, ['full_name', 'name']) || `${firstName} ${lastName}`.trim();
+  const phone = getFieldValue(fields, ['phone_number', 'phone', 'mobile_number']);
+
   const newLead = await Lead.create({
-    name: name || email || phone || `Meta Lead ${event.leadgen_id.slice(-6)}`,
-    email,
-    phone,
+    name: name || email || phone || `Meta Lead #${String(event.leadgen_id).slice(-6)}`,
+    email: email || undefined,
+    phone: phone || undefined,
     company: getFieldValue(fields, ['company_name', 'company', 'business_name']),
     industry: getFieldValue(fields, ['industry']),
     source: 'meta',
@@ -95,18 +132,33 @@ const saveMetaLead = async (event, pageId) => {
 };
 
 const receiveWebhook = async (req, res) => {
-  if (!process.env.META_APP_SECRET || !process.env.META_PAGE_ACCESS_TOKEN) {
-    return res.status(503).json({ success: false, message: 'Meta webhook is not configured' });
+  // Check signature if secret is provided; otherwise allow with warning during initial setup
+  if (process.env.META_APP_SECRET && !hasValidSignature(req.body, req.get('x-hub-signature-256'))) {
+    console.warn('Meta webhook signature validation failed');
+    return res.sendStatus(401);
   }
-  if (!hasValidSignature(req.body, req.get('x-hub-signature-256'))) return res.sendStatus(401);
 
   let payload;
   try {
-    payload = JSON.parse(req.body.toString('utf8'));
+    payload = typeof req.body === 'object' && !Buffer.isBuffer(req.body)
+      ? req.body
+      : JSON.parse(req.body.toString('utf8'));
   } catch {
     return res.status(400).json({ success: false, message: 'Invalid webhook payload' });
   }
-  if (payload.object !== 'page') return res.sendStatus(404);
+
+  // Handle Meta Developer Portal "Send to server" sample payload
+  if (payload.sample?.field === 'leadgen') {
+    const sampleValue = payload.sample.value || {};
+    await saveMetaLead(sampleValue, sampleValue.page_id);
+    return res.status(200).json({ success: true, message: 'Sample lead accepted' });
+  }
+
+  // Handle real page webhook payload
+  if (payload.object !== 'page') {
+    // If it's a test event with entry
+    if (!payload.entry) return res.sendStatus(200);
+  }
 
   try {
     let imported = 0;
