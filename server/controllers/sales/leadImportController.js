@@ -37,13 +37,18 @@ const normalizeStatus = (status) => {
 };
 
 /**
- * Clean phone number from Meta prefixes (e.g. "p:+919876543210")
+ * Clean phone number from Meta prefixes (e.g. "p:+919876543210") and reject booleans
  */
 const cleanPhone = (phone) => {
     if (!phone) return '';
     let p = String(phone).trim();
+    const lower = p.toLowerCase();
+    if (lower === 'true' || lower === 'false' || lower === 'null' || lower === 'undefined' || lower === 'n/a') return '';
     p = p.replace(/^p:\s*/i, '');
     p = p.replace(/["']/g, '').trim();
+    // Must contain at least 6 digits to be considered a real phone number
+    const digits = p.replace(/\D/g, '');
+    if (digits.length < 6) return '';
     return p;
 };
 
@@ -87,8 +92,12 @@ const mapRowToLead = (rawRow) => {
             companyName = val;
         }
 
-        // Person Name (guarded against ad_name, campaign_name, company_name)
-        else if (key === 'full_name' || key === 'fullname' || key === 'name' || key === 'lead_name' || key === 'client_name' || key === 'contact_name' || key === 'prospect_name' || key === 'student_name') {
+        // Person Name (guarded against ad_name, campaign_name, company_name, form_name)
+        else if (
+            key === 'full_name' || key === 'fullname' || key === 'name' || key === 'lead_name' ||
+            key === 'client_name' || key === 'contact_name' || key === 'prospect_name' || key === 'student_name' ||
+            (key.includes('name') && !key.includes('ad') && !key.includes('camp') && !key.includes('form') && !key.includes('comp') && !key.includes('org') && !key.includes('business'))
+        ) {
             directName = val;
         } else if (key === 'first_name' || key === 'firstname' || key === 'fname') {
             firstName = val;
@@ -97,13 +106,19 @@ const mapRowToLead = (rawRow) => {
         }
 
         // Email
-        else if (key === 'email' || key === 'e_mail' || key === 'email_address' || key === 'mail') {
+        else if (key === 'email' || key === 'e_mail' || key === 'email_address' || key === 'mail' || (key.includes('email') && !key.includes('verified') && !key.includes('consent') && !key.includes('status'))) {
             email = val.toLowerCase();
         }
 
-        // Phone
-        else if (key.includes('phone') || key.includes('mobile') || key.includes('contact') || key.includes('whatsapp') || key === 'tel') {
-            phone = cleanPhone(val);
+        // Phone (strictly actual phone columns, NEVER status, consent, contacted or boolean columns like is_contacted)
+        else if (
+            (key.includes('phone') || key.includes('mobile') || key.includes('whatsapp') || key === 'tel' || key === 'contact_number' || key === 'contact_no' || key === 'contact_num') &&
+            !key.includes('contacted') && !key.includes('consent') && !key.includes('permission') && !key.includes('status') && !key.includes('opt_in') && !key.includes('verified') && !key.includes('valid') && !key.includes('name')
+        ) {
+            const cleaned = cleanPhone(val);
+            if (cleaned) {
+                phone = cleaned;
+            }
         }
 
         // Source
@@ -424,17 +439,26 @@ exports.importLeads = asyncHandler(async (req, res) => {
             try {
                 // Tenant-scoped duplicate checking
                 let isDuplicate = false;
-                if (leadData.email && leadData.email.trim()) {
+                if (leadData.email && isValidEmail(leadData.email)) {
                     isDuplicate = await Lead.exists({
                         tenantCompany: leadCompanyId || null,
                         email: leadData.email.toLowerCase().trim(),
                         isDeleted: { $ne: true }
                     });
                 }
-                if (!isDuplicate && leadData.phone && leadData.phone.trim()) {
+                // Only check phone duplicate if it has at least 6 digits (never match on booleans or garbage)
+                const phoneDigits = (leadData.phone || '').replace(/\D/g, '');
+                if (!isDuplicate && phoneDigits.length >= 6) {
                     isDuplicate = await Lead.exists({
                         tenantCompany: leadCompanyId || null,
                         phone: leadData.phone.trim(),
+                        isDeleted: { $ne: true }
+                    });
+                }
+                if (!isDuplicate && leadData.metaLeadId) {
+                    isDuplicate = await Lead.exists({
+                        tenantCompany: leadCompanyId || null,
+                        metaLeadId: leadData.metaLeadId,
                         isDeleted: { $ne: true }
                     });
                 }

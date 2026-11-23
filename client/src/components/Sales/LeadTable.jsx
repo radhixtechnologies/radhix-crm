@@ -96,7 +96,7 @@ const LeadTable = ({ leads, onDelete, canDelete = true, pagination, onPageChange
                 <td>{lead.company || 'N/A'}</td>
                 <td>
                   <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                    {lead.phone && (
+                    {lead.phone && !['true', 'false', 'null', 'undefined'].includes(String(lead.phone).toLowerCase()) && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                         <FiPhone size={12} />
                         <span>{lead.phone}</span>
