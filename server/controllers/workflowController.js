@@ -153,8 +153,15 @@ exports.executeWorkflowEngine = async (triggerEvent, lead, extraContext = {}) =>
         switch (rule.actionType) {
           case 'round_robin_assign': {
             if (!lead.assignedTo) {
-              // Find sales employees
-              const salesEmployees = await Employee.find({ status: 'active' }).limit(20);
+              const empQuery = { status: 'active', deletedAt: null };
+              const companyTarget = lead.tenantCompany || rule.company;
+              if (companyTarget) empQuery.company = companyTarget;
+
+              let salesEmployees = await Employee.find({ ...empQuery, department: 'Sales' });
+              if (!salesEmployees || salesEmployees.length === 0) {
+                salesEmployees = await Employee.find(empQuery).limit(50);
+              }
+
               if (salesEmployees.length > 0) {
                 // Round-robin selection based on rule.executionCount % salesEmployees.length
                 const targetIdx = rule.executionCount % salesEmployees.length;
@@ -166,28 +173,48 @@ exports.executeWorkflowEngine = async (triggerEvent, lead, extraContext = {}) =>
                 rule.executionCount += 1;
                 rule.lastExecutedAt = new Date();
                 await rule.save();
+
+                // Send notification to employee user
+                if (assignedEmployee.user) {
+                  await Notification.create({
+                    user: assignedEmployee.user,
+                    title: '🎯 New Lead Assigned',
+                    message: `Lead "${lead.name}" has been assigned to you.`,
+                    type: 'reminder',
+                    relatedEntity: { entityType: 'lead', entityId: lead._id },
+                    actionUrl: `/sales/leads/${lead._id}`,
+                  }).catch(() => {});
+                }
               }
             }
             break;
           }
 
           case 'auto_schedule_followup': {
-            const hours = rule.actionConfig?.followUpHours || 24;
-            const scheduledAt = new Date(Date.now() + hours * 60 * 60 * 1000);
+            if (lead.assignedTo) {
+              const hours = rule.actionConfig?.followUpHours || 24;
+              const scheduledDate = new Date(Date.now() + hours * 60 * 60 * 1000);
+              const employee = await Employee.findById(lead.assignedTo);
+              const creatorUserId = lead.createdBy || rule.createdBy || employee?.user;
 
-            await FollowUp.create({
-              lead: lead._id,
-              assignedTo: lead.assignedTo,
-              scheduledAt,
-              type: 'call',
-              status: 'pending',
-              priority: 'high',
-              notes: `Auto-generated follow-up via Automation Rule "${rule.name}"`,
-            });
+              if (creatorUserId) {
+                await FollowUp.create({
+                  type: 'lead',
+                  relatedId: lead._id,
+                  title: `Welcome Follow-up: ${lead.name}`,
+                  description: `Auto-generated follow-up via Automation Rule "${rule.name}"`,
+                  scheduledDate,
+                  typeOfFollowUp: 'call',
+                  status: 'pending',
+                  assignedTo: lead.assignedTo,
+                  createdBy: creatorUserId,
+                });
 
-            rule.executionCount += 1;
-            rule.lastExecutedAt = new Date();
-            await rule.save();
+                rule.executionCount += 1;
+                rule.lastExecutedAt = new Date();
+                await rule.save();
+              }
+            }
             break;
           }
 
@@ -207,17 +234,21 @@ exports.executeWorkflowEngine = async (triggerEvent, lead, extraContext = {}) =>
 
           case 'notify_sales_rep': {
             if (lead.assignedTo) {
-              await Notification.create({
-                recipient: lead.assignedTo,
-                title: rule.actionConfig?.notificationTitle || '🔥 High-Intent Lead Alert',
-                message: `Lead ${lead.name} needs quick follow-up.`,
-                type: 'lead',
-                link: `/sales/leads/${lead._id}`,
-              }).catch(() => {});
+              const employee = await Employee.findById(lead.assignedTo);
+              if (employee?.user) {
+                await Notification.create({
+                  user: employee.user,
+                  title: rule.actionConfig?.notificationTitle || '🔥 High-Intent Lead Alert',
+                  message: `Lead ${lead.name} needs quick follow-up.`,
+                  type: 'reminder',
+                  relatedEntity: { entityType: 'lead', entityId: lead._id },
+                  actionUrl: `/sales/leads/${lead._id}`,
+                }).catch(() => {});
 
-              rule.executionCount += 1;
-              rule.lastExecutedAt = new Date();
-              await rule.save();
+                rule.executionCount += 1;
+                rule.lastExecutedAt = new Date();
+                await rule.save();
+              }
             }
             break;
           }

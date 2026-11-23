@@ -77,7 +77,7 @@ const saveMetaLead = async (event, pageId) => {
     });
 
     try {
-      const { executeWorkflowEngine } = require('../services/workflowEngine');
+      const { executeWorkflowEngine } = require('./workflowController');
       executeWorkflowEngine('lead_created', testLead).catch(() => {});
     } catch {}
 
@@ -122,7 +122,7 @@ const saveMetaLead = async (event, pageId) => {
 
   // Execute active workflow automation rules (WhatsApp, Email, Auto-assignment)
   try {
-    const { executeWorkflowEngine } = require('../services/workflowEngine');
+    const { executeWorkflowEngine } = require('./workflowController');
     executeWorkflowEngine('lead_created', newLead).catch(err => console.warn('Workflow execution warning for Meta lead:', err.message));
   } catch (wfErr) {
     console.warn('Workflow engine warning for Meta lead:', wfErr.message);
