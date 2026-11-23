@@ -23,6 +23,9 @@ const allowedOrigins = [
   'http://localhost:3000',           // Alternative local port
   'https://crm-1-481e.onrender.com', // Render frontend
   'https://crm.zynextro.com',        // Custom domain (if you have one for frontend)
+  'https://crm.radhix.com',          // Radhix CRM live domain
+  'https://radhix.com',              // Radhix main domain
+  'http://crm.radhix.com',
   // Add more origins as needed
 ];
 
@@ -38,7 +41,8 @@ app.use(cors({
     if (!origin) return callback(null, true);
 
     const isVercelOrigin = /^https:\/\/([a-z0-9-]+\.)*vercel\.app$/i.test(origin);
-    if (allowedOrigins.includes(origin) || configuredOrigins.includes(origin) || isVercelOrigin) {
+    const isRadhixOrigin = /^https?:\/\/([a-z0-9-]+\.)*radhix\.com$/i.test(origin);
+    if (allowedOrigins.includes(origin) || configuredOrigins.includes(origin) || isVercelOrigin || isRadhixOrigin) {
       callback(null, true);
     } else {
       console.log(`⚠️  CORS blocked request from origin: ${origin}`);
