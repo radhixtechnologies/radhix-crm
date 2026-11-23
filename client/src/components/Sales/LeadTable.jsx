@@ -16,9 +16,41 @@ const getInitials = (name) => {
     .toUpperCase();
 };
 
-const LeadTable = ({ leads, onDelete, canDelete = true, pagination, onPageChange }) => {
+const LeadTable = ({
+  leads,
+  onDelete,
+  canDelete = true,
+  pagination,
+  onPageChange,
+  selectedLeads = [],
+  onSelectLeads,
+}) => {
   const navigate = useNavigate();
   const [deleteModal, setDeleteModal] = useState({ open: false, lead: null });
+
+  const allVisibleSelected = leads.length > 0 && leads.every((l) => selectedLeads.includes(l._id));
+  const someVisibleSelected = leads.some((l) => selectedLeads.includes(l._id)) && !allVisibleSelected;
+
+  const handleSelectAll = (e) => {
+    if (!onSelectLeads) return;
+    if (e.target.checked) {
+      const newIds = Array.from(new Set([...selectedLeads, ...leads.map((l) => l._id)]));
+      onSelectLeads(newIds);
+    } else {
+      const visibleIds = new Set(leads.map((l) => l._id));
+      onSelectLeads(selectedLeads.filter((id) => !visibleIds.has(id)));
+    }
+  };
+
+  const handleToggleSelect = (leadId, e) => {
+    if (e) e.stopPropagation();
+    if (!onSelectLeads) return;
+    if (selectedLeads.includes(leadId)) {
+      onSelectLeads(selectedLeads.filter((id) => id !== leadId));
+    } else {
+      onSelectLeads([...selectedLeads, leadId]);
+    }
+  };
 
   const getOwnerName = (lead) => {
     const assignedTo = lead?.assignedTo;
@@ -63,6 +95,16 @@ const LeadTable = ({ leads, onDelete, canDelete = true, pagination, onPageChange
       <table className="table">
         <thead>
           <tr>
+            <th style={{ width: '40px', textAlign: 'center' }}>
+              <input
+                type="checkbox"
+                checked={allVisibleSelected}
+                ref={(el) => { if (el) el.indeterminate = someVisibleSelected; }}
+                onChange={handleSelectAll}
+                title="Select all on this page"
+                style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#3b82f6' }}
+              />
+            </th>
             <th>Lead Name</th>
             <th>Company</th>
             <th>Contact Info</th>
@@ -77,7 +119,21 @@ const LeadTable = ({ leads, onDelete, canDelete = true, pagination, onPageChange
         <tbody>
           {leads.length > 0 ? (
             leads.map((lead) => (
-              <tr key={lead._id}>
+              <tr
+                key={lead._id}
+                style={{
+                  backgroundColor: selectedLeads.includes(lead._id) ? '#eff6ff' : undefined,
+                  transition: 'background-color 0.15s ease'
+                }}
+              >
+                <td style={{ width: '40px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={selectedLeads.includes(lead._id)}
+                    onChange={(e) => handleToggleSelect(lead._id, e)}
+                    style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#3b82f6' }}
+                  />
+                </td>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div className="employee-avatar-table">
@@ -206,7 +262,7 @@ const LeadTable = ({ leads, onDelete, canDelete = true, pagination, onPageChange
             ))
           ) : (
             <tr>
-              <td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+              <td colSpan="10" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
                 No leads found
               </td>
             </tr>

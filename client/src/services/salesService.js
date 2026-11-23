@@ -39,6 +39,9 @@ export const salesService = {
   addCommunication: (id, data) => api.post(`/sales/leads/${id}/communication`, data),
   convertLead: (id, data) => api.post(`/sales/leads/${id}/convert`, data),
   enrollLeadStudent: (id, data) => api.post(`/sales/leads/${id}/enroll`, data),
+  bulkAssignLeads: (leadIds, employeeId) => api.put('/sales/leads/bulk/assign', { leadIds, employeeId }),
+  bulkUpdateStatus: (leadIds, status) => api.put('/sales/leads/bulk/status', { leadIds, status }),
+  bulkDeleteLeads: (leadIds) => api.post('/sales/leads/bulk/delete', { leadIds }),
 
   // Lead Import services
   downloadLeadTemplate: () => api.get('/sales/leads/import/template', { responseType: 'blob' }),

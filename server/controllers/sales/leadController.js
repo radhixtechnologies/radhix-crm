@@ -3,6 +3,7 @@ const Lead = require('../../models/Lead');
 const Employee = require('../../models/Employee');
 const Client = require('../../models/Client');
 const Deal = require('../../models/Deal');
+const Notification = require('../../models/Notification');
 const { executeWorkflowEngine } = require('../workflowController');
 const { applyTenantScope, getTenantCompanyId } = require('../../utils/tenantHelper');
 
@@ -157,6 +158,7 @@ exports.getLeads = async (req, res) => {
       total,
       page,
       pages: Math.ceil(total / limit),
+      limit: Number(limit),
       summary,
     });
   } catch (error) {
@@ -370,6 +372,100 @@ exports.convertLead = async (req, res) => {
     lead.conversionDate = new Date();
     await lead.save();
     res.status(201).json({ success: true, data: { lead, client, deal } });
+  } catch (error) {
+    sendError(res, error);
+  }
+};
+
+exports.bulkAssignLeads = async (req, res) => {
+  if (!canManageSalesTeam(req.user)) {
+    return res.status(403).json({ success: false, message: 'Only Sales managers or Admins can bulk assign leads' });
+  }
+  try {
+    const { leadIds, employeeId, assignedTo } = req.body;
+    if (!Array.isArray(leadIds) || leadIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'Please provide an array of lead IDs to assign' });
+    }
+
+    const target = employeeId || assignedTo;
+    let employee = null;
+    if (target) {
+      employee = await findEmployeeAssignee(target);
+      if (!employee) {
+        return res.status(404).json({ success: false, message: 'Assigned employee was not found' });
+      }
+    }
+
+    const assignedEmployeeId = employee ? employee._id : null;
+    const result = await Lead.updateMany(
+      { _id: { $in: leadIds }, isDeleted: { $ne: true } },
+      { assignedTo: assignedEmployeeId, updatedAt: new Date() }
+    );
+
+    // Send in-app notification to employee's user if assigned
+    if (employee?.user) {
+      await Notification.create({
+        user: employee.user,
+        title: '🎯 Leads Assigned',
+        message: `${leadIds.length} lead(s) have been assigned to you by Admin.`,
+        type: 'reminder',
+        actionUrl: '/sales/leads',
+      }).catch(() => {});
+    }
+
+    res.json({
+      success: true,
+      modifiedCount: result.modifiedCount,
+      message: `Successfully assigned ${result.modifiedCount} lead(s) to ${employee?.user?.name || employee?.employeeId || 'Unassigned'}.`,
+    });
+  } catch (error) {
+    sendError(res, error);
+  }
+};
+
+exports.bulkUpdateStatus = async (req, res) => {
+  try {
+    const { leadIds, status } = req.body;
+    if (!Array.isArray(leadIds) || leadIds.length === 0 || !status) {
+      return res.status(400).json({ success: false, message: 'Please provide lead IDs and new status' });
+    }
+
+    const query = { _id: { $in: leadIds }, isDeleted: { $ne: true } };
+    if (!canManageSalesTeam(req.user)) {
+      query.assignedTo = { $in: await getOwnLeadAssignment(req.user) };
+    }
+
+    const result = await Lead.updateMany(query, { status, updatedAt: new Date() });
+    res.json({
+      success: true,
+      modifiedCount: result.modifiedCount,
+      message: `Successfully updated status to "${status}" for ${result.modifiedCount} lead(s).`,
+    });
+  } catch (error) {
+    sendError(res, error);
+  }
+};
+
+exports.bulkDeleteLeads = async (req, res) => {
+  if (!canManageSalesTeam(req.user)) {
+    return res.status(403).json({ success: false, message: 'Only Sales managers or Admins can bulk delete leads' });
+  }
+  try {
+    const { leadIds } = req.body;
+    if (!Array.isArray(leadIds) || leadIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'Please provide lead IDs to delete' });
+    }
+
+    const result = await Lead.updateMany(
+      { _id: { $in: leadIds } },
+      { isDeleted: true, updatedAt: new Date() }
+    );
+
+    res.json({
+      success: true,
+      modifiedCount: result.modifiedCount,
+      message: `Successfully deleted ${result.modifiedCount} lead(s).`,
+    });
   } catch (error) {
     sendError(res, error);
   }

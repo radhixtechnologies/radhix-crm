@@ -7,6 +7,7 @@ import '../../styles/employee/timesheets.css';
 const LeadTracking = () => {
     const navigate = useNavigate();
     const [leads, setLeads] = useState([]);
+    const [leadSummary, setLeadSummary] = useState({ total: 0, new: 0, contacted: 0, qualified: 0, lost: 0 });
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showFilters, setShowFilters] = useState(false);
@@ -37,9 +38,14 @@ const LeadTracking = () => {
     const fetchLeads = async () => {
         try {
             setLoading(true);
-            const res = await salesService.getLeads();
+            const res = await salesService.getLeads({ limit: 500 });
             if (res.data.success) {
                 setLeads(res.data.data || []);
+                if (res.data.summary) {
+                    setLeadSummary(res.data.summary);
+                } else if (res.data.total) {
+                    setLeadSummary(prev => ({ ...prev, total: res.data.total }));
+                }
             }
         } catch (error) {
             console.error('Error fetching leads:', error);
@@ -208,7 +214,7 @@ const LeadTracking = () => {
                     </div>
                     <div>
                         <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-                            {leads.length}
+                            {leadSummary.total || leads.length}
                         </div>
                         <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
                             Total Leads
@@ -241,7 +247,7 @@ const LeadTracking = () => {
                     </div>
                     <div>
                         <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-                            {leads.filter(l => l.status === 'new').length}
+                            {leadSummary.new ?? leads.filter(l => l.status === 'new').length}
                         </div>
                         <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
                             New
@@ -274,7 +280,7 @@ const LeadTracking = () => {
                     </div>
                     <div>
                         <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-                            {leads.filter(l => l.status === 'contacted').length}
+                            {leadSummary.contacted ?? leads.filter(l => l.status === 'contacted').length}
                         </div>
                         <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
                             Contacted
@@ -307,7 +313,7 @@ const LeadTracking = () => {
                     </div>
                     <div>
                         <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-                            {leads.filter(l => l.status === 'lost').length}
+                            {leadSummary.lost ?? leads.filter(l => l.status === 'lost').length}
                         </div>
                         <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
                             Lost

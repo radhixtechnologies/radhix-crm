@@ -9,6 +9,7 @@ import LeadKanban from '../../components/Sales/LeadKanban';
 import ImportLeadsModal from '../../components/Sales/ImportLeadsModal';
 import MetaAdsModal from '../../components/Sales/MetaAdsModal';
 import Loader from '../../components/common/Loader';
+import Modal from '../../components/common/Modal';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/employee/timesheets.css';
 
@@ -63,6 +64,10 @@ const LeadList = () => {
   const [showMetaModal, setShowMetaModal] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [showMyLeadsOnly, setShowMyLeadsOnly] = useState(isSalesRep);
+  const [bulkEmployeeId, setBulkEmployeeId] = useState('');
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+  const [bulkFeedback, setBulkFeedback] = useState(null);
+  const [showBulkAssignModal, setShowBulkAssignModal] = useState(false);
 
   const handleExportCsv = async () => {
     try {
@@ -122,7 +127,7 @@ const LeadList = () => {
   };
 
   const fetchOwners = async () => {
-    if (!isAdmin) return;
+    if (!isAdmin && roleSlug !== 'super_admin' && roleSlug !== 'admin' && !roleSlug?.endsWith('_manager')) return;
     try {
       const response = await salesService.getLeadOwners();
       setOwners(response.data?.data || []);
@@ -209,8 +214,71 @@ const LeadList = () => {
     }
   };
 
-  const handleBulkAction = (action) => {
-    console.log(action, selectedLeads);
+  const handleBulkAssign = async () => {
+    if (!bulkEmployeeId) {
+      alert('Please select an employee to assign leads to.');
+      return;
+    }
+    if (selectedLeads.length === 0) return;
+
+    try {
+      setBulkProcessing(true);
+      const res = await salesService.bulkAssignLeads(selectedLeads, bulkEmployeeId);
+      if (res.data?.success) {
+        setBulkFeedback({ type: 'success', message: res.data.message || `Assigned ${selectedLeads.length} leads successfully!` });
+        setSelectedLeads([]);
+        setBulkEmployeeId('');
+        setShowBulkAssignModal(false);
+        fetchLeads(false);
+        setTimeout(() => setBulkFeedback(null), 4000);
+      }
+    } catch (err) {
+      console.error('Bulk assign error:', err);
+      alert(err.response?.data?.message || 'Failed to assign selected leads');
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const handleBulkStatusChange = async (newStatus) => {
+    if (!newStatus) return;
+    if (selectedLeads.length === 0) return;
+
+    try {
+      setBulkProcessing(true);
+      const res = await salesService.bulkUpdateStatus(selectedLeads, newStatus);
+      if (res.data?.success) {
+        setBulkFeedback({ type: 'success', message: res.data.message || `Updated status for ${selectedLeads.length} leads!` });
+        setSelectedLeads([]);
+        fetchLeads(false);
+        setTimeout(() => setBulkFeedback(null), 4000);
+      }
+    } catch (err) {
+      console.error('Bulk status error:', err);
+      alert(err.response?.data?.message || 'Failed to update status for selected leads');
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Are you sure you want to delete ${selectedLeads.length} selected leads?`)) return;
+
+    try {
+      setBulkProcessing(true);
+      const res = await salesService.bulkDeleteLeads(selectedLeads);
+      if (res.data?.success) {
+        setBulkFeedback({ type: 'success', message: `Deleted ${selectedLeads.length} leads successfully!` });
+        setSelectedLeads([]);
+        fetchLeads(false);
+        setTimeout(() => setBulkFeedback(null), 4000);
+      }
+    } catch (err) {
+      console.error('Bulk delete error:', err);
+      alert(err.response?.data?.message || 'Failed to delete selected leads');
+    } finally {
+      setBulkProcessing(false);
+    }
   };
 
   return (
@@ -746,16 +814,214 @@ const LeadList = () => {
 
       {/* Content */}
       <div>
+        {/* Feedback Alert */}
+        {bulkFeedback && (
+          <div style={{
+            padding: '12px 16px',
+            marginBottom: '16px',
+            borderRadius: '8px',
+            background: bulkFeedback.type === 'success' ? '#ecfdf5' : '#fef2f2',
+            border: `1px solid ${bulkFeedback.type === 'success' ? '#10b981' : '#ef4444'}`,
+            color: bulkFeedback.type === 'success' ? '#065f46' : '#991b1b',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '14px',
+            fontWeight: 500
+          }}>
+            <span>✓ {bulkFeedback.message}</span>
+            <button
+              onClick={() => setBulkFeedback(null)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
+            >
+              <FiX />
+            </button>
+          </div>
+        )}
+
+        {/* Bulk Selection Bar */}
         {selectedLeads.length > 0 && (
-          <div className="bulk-selection-bar">
-            <span>{selectedLeads.length} selected</span>
-            <div className="bulk-actions">
-              <button className="btn-xs border">Assign</button>
-              <button className="btn-xs border">Status</button>
-              <button className="btn-xs danger" onClick={() => handleBulkAction('delete')}>Delete</button>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 18px',
+            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+            borderRadius: '10px',
+            marginBottom: '16px',
+            color: 'white',
+            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
+            flexWrap: 'wrap',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{
+                background: '#3b82f6',
+                color: 'white',
+                padding: '2px 10px',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: 700
+              }}>
+                {selectedLeads.length} Selected
+              </span>
+              <span style={{ fontSize: '13px', color: '#cbd5e1' }}>
+                Manage or route chosen leads to team
+              </span>
+              <button
+                onClick={() => setSelectedLeads([])}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#94a3b8',
+                  fontSize: '12px',
+                  textDecoration: 'underline',
+                  cursor: 'pointer'
+                }}
+              >
+                Deselect All
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                className="btn btn-sm"
+                onClick={() => setShowBulkAssignModal(true)}
+                disabled={bulkProcessing}
+                style={{
+                  background: '#2563eb',
+                  color: 'white',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <FiUsers /> Assign to Sales Rep
+              </button>
+
+              <select
+                onChange={(e) => {
+                  if (e.target.value) handleBulkStatusChange(e.target.value);
+                }}
+                disabled={bulkProcessing}
+                defaultValue=""
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  background: '#334155',
+                  color: 'white',
+                  border: '1px solid #475569',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="" disabled>Change Status...</option>
+                <option value="new">New</option>
+                <option value="contacted">Contacted</option>
+                <option value="qualified">Qualified</option>
+                <option value="converted">Converted</option>
+                <option value="lost">Lost</option>
+              </select>
+
+              {isAdmin && (
+                <button
+                  className="btn btn-sm"
+                  onClick={handleBulkDelete}
+                  disabled={bulkProcessing}
+                  style={{
+                    background: '#dc2626',
+                    color: 'white',
+                    border: 'none',
+                    fontWeight: 600,
+                    fontSize: '13px'
+                  }}
+                >
+                  Delete ({selectedLeads.length})
+                </button>
+              )}
             </div>
           </div>
         )}
+
+        {/* Bulk Assign Modal */}
+        <Modal
+          isOpen={showBulkAssignModal}
+          onClose={() => setShowBulkAssignModal(false)}
+          title={`Assign ${selectedLeads.length} Lead(s) to Sales Representative`}
+        >
+          <div style={{ padding: '8px 0' }}>
+            <p style={{ fontSize: '14px', color: '#4b5563', marginBottom: '16px' }}>
+              Select a team member. Once assigned, these leads will strictly appear in their <strong>"My Leads"</strong> panel and will not be visible to other sales reps.
+            </p>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+                Select Sales Representative:
+              </label>
+              <select
+                value={bulkEmployeeId}
+                onChange={(e) => setBulkEmployeeId(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid #d1d5db',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  background: 'white'
+                }}
+              >
+                <option value="">-- Choose Employee (e.g. Prasant) --</option>
+                {owners.map((owner) => (
+                  <option key={owner._id} value={owner._id}>
+                    {owner.user?.name || owner.employeeId} ({owner.designation || 'Sales'}) - {owner.user?.email || owner.employeeId}
+                  </option>
+                ))}
+              </select>
+              {owners.length === 0 && (
+                <span style={{ fontSize: '12px', color: '#dc2626', marginTop: '4px', display: 'block' }}>
+                  No active sales employees found. Please check HRM &gt; Employees and ensure Department is set to "Sales".
+                </span>
+              )}
+            </div>
+
+            <div style={{
+              background: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: '8px',
+              padding: '12px',
+              fontSize: '13px',
+              color: '#1e40af',
+              marginBottom: '20px'
+            }}>
+              <strong>🔒 Role-based Data Privacy:</strong> When you assign these {selectedLeads.length} leads, the employee receives an instant in-app notification and only they can make calls, schedule follow-ups, or edit these records.
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShowBulkAssignModal(false)}
+                disabled={bulkProcessing}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleBulkAssign}
+                disabled={!bulkEmployeeId || bulkProcessing}
+                style={{ minWidth: '140px' }}
+              >
+                {bulkProcessing ? 'Assigning...' : `Assign ${selectedLeads.length} Leads`}
+              </button>
+            </div>
+          </div>
+        </Modal>
 
         {initialLoading ? <Loader /> : (
           <div>

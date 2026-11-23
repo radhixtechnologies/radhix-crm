@@ -15,6 +15,9 @@ const {
   changeStatus,
   addCommunication,
   convertLead,
+  bulkAssignLeads,
+  bulkUpdateStatus,
+  bulkDeleteLeads,
 } = require('../controllers/sales/leadController');
 
 // Lead Import controllers
@@ -122,6 +125,11 @@ router.get('/lead-owners', checkModuleAccess('sales'), getLeadOwners);
 // Meta Ads Integration routes
 router.get('/meta-integration/config', checkModuleAccess('sales'), getMetaConfig);
 router.post('/meta-integration/test-lead', checkModuleAccess('sales'), createMetaTestLead);
+
+// Bulk Lead operations
+router.put('/leads/bulk/assign', checkModuleAccess('sales'), bulkAssignLeads);
+router.put('/leads/bulk/status', checkModuleAccess('sales'), bulkUpdateStatus);
+router.post('/leads/bulk/delete', checkModuleAccess('sales'), bulkDeleteLeads);
 
 // Lead routes - Accessible only to Sales module users
 router.route('/leads')
