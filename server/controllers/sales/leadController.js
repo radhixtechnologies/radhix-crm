@@ -81,7 +81,7 @@ const buildLeadListQuery = async (req) => {
   return {
     query: scopedQuery,
     page: Math.max(1, Number(page)),
-    limit: Math.min(100, Math.max(1, Number(limit))),
+    limit: Math.min(500, Math.max(1, Number(limit))),
   };
 };
 
@@ -122,7 +122,12 @@ exports.getLeadOwners = async (req, res) => {
 exports.getLeads = async (req, res) => {
   try {
     const { query, page, limit } = await buildLeadListQuery(req);
-    const [data, total] = await Promise.all([
+
+    // Compute status counts for summary widgets (matching all filters except status)
+    const summaryMatch = { ...query };
+    delete summaryMatch.status;
+
+    const [data, total, statusAgg] = await Promise.all([
       populateAssignedTo(
         Lead.find(query)
           .populate('course', 'name code baseFee duration')
@@ -133,8 +138,27 @@ exports.getLeads = async (req, res) => {
           .limit(limit)
       ).lean(),
       Lead.countDocuments(query),
+      Lead.aggregate([
+        { $match: summaryMatch },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
     ]);
-    res.json({ success: true, data, total, page, pages: Math.ceil(total / limit) });
+
+    const summary = { total, new: 0, contacted: 0, qualified: 0, converted: 0, lost: 0 };
+    (statusAgg || []).forEach(item => {
+      if (item._id && summary[item._id] !== undefined) {
+        summary[item._id] = item.count;
+      }
+    });
+
+    res.json({
+      success: true,
+      data,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      summary,
+    });
   } catch (error) {
     sendError(res, error);
   }

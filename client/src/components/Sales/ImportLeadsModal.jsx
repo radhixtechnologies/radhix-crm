@@ -11,6 +11,7 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
     const [importResults, setImportResults] = useState(null);
     const [error, setError] = useState(null);
     const [previewLoading, setPreviewLoading] = useState(false);
+    const [showSkippedDetails, setShowSkippedDetails] = useState(false);
 
     if (!isOpen) return null;
 
@@ -259,10 +260,50 @@ const ImportLeadsModal = ({ isOpen, onClose, onImportSuccess }) => {
                                     <span className="result-value" style={{ color: '#10b981', fontWeight: 700 }}>{importResults.success.length}</span>
                                 </div>
                                 {importResults.failed.length > 0 && (
-                                    <div className="result-row warning">
-                                        <span className="result-label">Skipped (Duplicate / Missing info):</span>
-                                        <span className="result-value" style={{ color: '#f59e0b', fontWeight: 600 }}>{importResults.failed.length}</span>
-                                    </div>
+                                    <>
+                                        <div className="result-row warning">
+                                            <span className="result-label">Skipped (Duplicate / Missing info):</span>
+                                            <span className="result-value" style={{ color: '#f59e0b', fontWeight: 600 }}>{importResults.failed.length}</span>
+                                        </div>
+                                        <div style={{ marginTop: '12px' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowSkippedDetails(!showSkippedDetails)}
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    color: '#2563eb',
+                                                    fontSize: '12px',
+                                                    fontWeight: 600,
+                                                    cursor: 'pointer',
+                                                    textDecoration: 'underline',
+                                                    padding: 0
+                                                }}
+                                            >
+                                                {showSkippedDetails ? 'Hide Skipped Reasons ▲' : `View ${importResults.failed.length} Skipped Leads Reasons ▼`}
+                                            </button>
+                                            {showSkippedDetails && (
+                                                <div style={{
+                                                    maxHeight: '140px',
+                                                    overflowY: 'auto',
+                                                    background: '#fffbeb',
+                                                    border: '1px solid #fef3c7',
+                                                    borderRadius: '6px',
+                                                    padding: '8px',
+                                                    marginTop: '8px',
+                                                    fontSize: '11px',
+                                                    color: '#92400e',
+                                                    textAlign: 'left'
+                                                }}>
+                                                    {importResults.failed.map((f, i) => (
+                                                        <div key={i} style={{ padding: '3px 0', borderBottom: i < importResults.failed.length - 1 ? '1px dashed #fde68a' : 'none' }}>
+                                                            <strong>Row {f.row} ({f.name}):</strong> {f.reason || f.errors?.join(', ')}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </>
                                 )}
                             </div>
                             <p className="complete-note">Your leads table is updating in real time.</p>

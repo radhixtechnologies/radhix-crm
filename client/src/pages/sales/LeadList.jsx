@@ -58,6 +58,7 @@ const LeadList = () => {
   const [owners, setOwners] = useState([]);
   const [selectedLeads, setSelectedLeads] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, pages: 0 });
+  const [leadSummary, setLeadSummary] = useState({ total: 0, new: 0, qualified: 0, converted: 0 });
   const [showImportModal, setShowImportModal] = useState(false);
   const [showMetaModal, setShowMetaModal] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -104,7 +105,7 @@ const LeadList = () => {
     if (!initialLoading) {
       fetchLeads(false);
     }
-  }, [debouncedSearch, activeFilters, pagination.page, showMyLeadsOnly]);
+  }, [debouncedSearch, activeFilters, pagination.page, pagination.limit, showMyLeadsOnly]);
 
   const fetchCampaigns = async () => {
     try {
@@ -149,10 +150,20 @@ const LeadList = () => {
       const normalized = normalizeSalesListResponse(res);
       if (normalized.success) {
         setLeads(normalized.data || []);
+        if (res.data?.summary) {
+          setLeadSummary(res.data.summary);
+        } else {
+          setLeadSummary({
+            total: normalized.total,
+            new: normalized.total,
+            qualified: 0,
+            converted: 0,
+          });
+        }
         setPagination(prev => ({
           ...prev,
           page: normalized.page,
-          limit: normalized.limit,
+          limit: normalized.limit || prev.limit,
           total: normalized.total,
           pages: normalized.pages,
         }));
@@ -305,7 +316,7 @@ const LeadList = () => {
           </div>
           <div>
             <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-              {leads.length}
+              {leadSummary.total || pagination.total || leads.length}
             </div>
             <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
               Total Leads
@@ -338,7 +349,7 @@ const LeadList = () => {
           </div>
           <div>
             <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-              {leads.filter(l => l.status === 'new').length}
+              {leadSummary.new ?? leads.filter(l => l.status === 'new').length}
             </div>
             <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
               New
@@ -371,7 +382,7 @@ const LeadList = () => {
           </div>
           <div>
             <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-              {leads.filter(l => l.status === 'qualified').length}
+              {leadSummary.qualified ?? leads.filter(l => l.status === 'qualified').length}
             </div>
             <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
               Qualified
@@ -404,7 +415,7 @@ const LeadList = () => {
           </div>
           <div>
             <div style={{ fontSize: '24px', fontWeight: '700', color: '#111827' }}>
-              {leads.filter(l => l.status === 'converted').length}
+              {leadSummary.converted ?? leads.filter(l => l.status === 'converted').length}
             </div>
             <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '500' }}>
               Converted
@@ -747,17 +758,81 @@ const LeadList = () => {
         )}
 
         {initialLoading ? <Loader /> : (
-          <div className="table-container-responsive">
-            <LeadTable
-              leads={leads}
-              selectedLeads={selectedLeads}
-              onSelectLeads={setSelectedLeads}
-              onDelete={handleDelete}
-              canDelete={isAdmin}
-              pagination={pagination}
-              onPageChange={(p) => setPagination({ ...pagination, page: p })}
-              loading={loading}
-            />
+          <div>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '12px',
+              padding: '8px 12px',
+              background: '#f9fafb',
+              borderRadius: '8px',
+              border: '1px solid #e5e7eb',
+              flexWrap: 'wrap',
+              gap: '12px'
+            }}>
+              <div style={{ fontSize: '13px', color: '#4b5563' }}>
+                Showing <strong>{leads.length > 0 ? (pagination.page - 1) * pagination.limit + 1 : 0}</strong> - <strong>{Math.min(pagination.page * pagination.limit, pagination.total || leads.length)}</strong> of <strong>{pagination.total || leads.length}</strong> leads
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#4b5563' }}>
+                  <span>Rows per page:</span>
+                  <select
+                    value={pagination.limit}
+                    onChange={(e) => setPagination(prev => ({ ...prev, page: 1, limit: Number(e.target.value) }))}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid #d1d5db',
+                      background: 'white',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                    <option value={200}>200</option>
+                    <option value={500}>500</option>
+                  </select>
+                </div>
+                {pagination.pages > 1 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      disabled={pagination.page <= 1}
+                      onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+                      style={{ padding: '4px 10px', fontSize: '12px' }}
+                    >
+                      Prev
+                    </button>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#374151' }}>
+                      Page {pagination.page} of {pagination.pages}
+                    </span>
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      disabled={pagination.page >= pagination.pages}
+                      onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+                      style={{ padding: '4px 10px', fontSize: '12px' }}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="table-container-responsive">
+              <LeadTable
+                leads={leads}
+                selectedLeads={selectedLeads}
+                onSelectLeads={setSelectedLeads}
+                onDelete={handleDelete}
+                canDelete={isAdmin}
+                pagination={pagination}
+                onPageChange={(p) => setPagination(prev => ({ ...prev, page: p }))}
+                loading={loading}
+              />
+            </div>
           </div>
         )}
       </div>
