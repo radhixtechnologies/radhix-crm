@@ -79,6 +79,8 @@ const saveMetaLead = async (event, pageId) => {
     try {
       const { executeWorkflowEngine } = require('./workflowController');
       executeWorkflowEngine('lead_created', testLead).catch(() => {});
+      const { sendLeadWelcomeGreeting } = require('../services/whatsappService');
+      sendLeadWelcomeGreeting(testLead).catch(() => {});
     } catch {}
 
     return true;
@@ -124,6 +126,8 @@ const saveMetaLead = async (event, pageId) => {
   try {
     const { executeWorkflowEngine } = require('./workflowController');
     executeWorkflowEngine('lead_created', newLead).catch(err => console.warn('Workflow execution warning for Meta lead:', err.message));
+    const { sendLeadWelcomeGreeting } = require('../services/whatsappService');
+    sendLeadWelcomeGreeting(newLead).catch(err => console.warn('WhatsApp welcome greeting warning for Meta lead:', err.message));
   } catch (wfErr) {
     console.warn('Workflow engine warning for Meta lead:', wfErr.message);
   }

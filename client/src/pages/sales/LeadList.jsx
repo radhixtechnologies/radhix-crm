@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus, FiSearch, FiFilter, FiGrid, FiList, FiDownload, FiUpload, FiX, FiChevronDown, FiChevronUp, FiUsers, FiCheckCircle, FiTarget, FiTrendingUp } from 'react-icons/fi';
-import { FaFacebook } from 'react-icons/fa';
+import { FaFacebook, FaWhatsapp } from 'react-icons/fa';
 import { salesService, normalizeSalesListResponse } from '../../services/salesService';
 import { marketingService } from '../../services/marketingService';
 import LeadTable from '../../components/Sales/LeadTable';
 import LeadKanban from '../../components/Sales/LeadKanban';
 import ImportLeadsModal from '../../components/Sales/ImportLeadsModal';
 import MetaAdsModal from '../../components/Sales/MetaAdsModal';
+import WhatsAppBroadcastModal from '../../components/marketing/WhatsAppBroadcastModal';
 import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
 import { useAuth } from '../../context/AuthContext';
@@ -68,6 +69,7 @@ const LeadList = () => {
   const [bulkProcessing, setBulkProcessing] = useState(false);
   const [bulkFeedback, setBulkFeedback] = useState(null);
   const [showBulkAssignModal, setShowBulkAssignModal] = useState(false);
+  const [showWhatsAppBroadcastModal, setShowWhatsAppBroadcastModal] = useState(false);
 
   const handleExportCsv = async () => {
     try {
@@ -886,6 +888,24 @@ const LeadList = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <button
                 className="btn btn-sm"
+                onClick={() => setShowWhatsAppBroadcastModal(true)}
+                disabled={bulkProcessing}
+                style={{
+                  background: '#25D366',
+                  color: 'white',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <FaWhatsapp size={15} /> WhatsApp Broadcast ({selectedLeads.length})
+              </button>
+
+              <button
+                className="btn btn-sm"
                 onClick={() => setShowBulkAssignModal(true)}
                 disabled={bulkProcessing}
                 style={{
@@ -1116,6 +1136,16 @@ const LeadList = () => {
         isOpen={showMetaModal}
         onClose={() => setShowMetaModal(false)}
         onLeadCreated={() => fetchLeads(false)}
+      />
+
+      <WhatsAppBroadcastModal
+        isOpen={showWhatsAppBroadcastModal}
+        onClose={() => setShowWhatsAppBroadcastModal(false)}
+        selectedItems={leads.filter(l => selectedLeads.includes(l._id))}
+        onSuccess={() => {
+          fetchLeads(false);
+          setSelectedLeads([]);
+        }}
       />
     </div>
   );

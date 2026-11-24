@@ -37,6 +37,7 @@ import {
   FiZap,
   FiMapPin,
 } from 'react-icons/fi';
+import { FaWhatsapp } from 'react-icons/fa';
 import './Sidebar.css';
 
 const Sidebar = () => {
@@ -314,6 +315,7 @@ const Sidebar = () => {
         subItems: [
           { path: '/marketing', label: 'Dashboard', icon: FiLayout },
           { path: '/marketing/campaigns', label: 'Campaigns', icon: FiTarget },
+          { path: '/marketing/whatsapp', label: 'WhatsApp', icon: FaWhatsapp },
           { path: '/marketing/emails', label: 'Emails', icon: FiMail },
           { path: '/marketing/segments', label: 'Segments', icon: FiUsers },
         ],

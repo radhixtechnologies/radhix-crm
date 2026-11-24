@@ -132,6 +132,7 @@ const CampaignList = lazy(() => import('./pages/marketing/CampaignList'));
 const AddCampaign = lazy(() => import('./pages/marketing/AddCampaign'));
 const CampaignDetails = lazy(() => import('./pages/marketing/CampaignDetails'));
 const MarketingDashboard = lazy(() => import('./pages/marketing/MarketingDashboard'));
+const WhatsAppMarketing = lazy(() => import('./pages/marketing/WhatsAppMarketing'));
 const EmailList = lazy(() => import('./pages/marketing/EmailList'));
 const SegmentList = lazy(() => import('./pages/marketing/SegmentList'));
 const CreateEmail = lazy(() => import('./pages/marketing/CreateEmail'));
@@ -1939,6 +1940,16 @@ const AppRoutes = () => {
           <ProtectedRoute requiredModule="marketing">
             <Layout>
               <CampaignList />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/marketing/whatsapp"
+        element={
+          <ProtectedRoute requiredModule="marketing">
+            <Layout>
+              <WhatsAppMarketing />
             </Layout>
           </ProtectedRoute>
         }

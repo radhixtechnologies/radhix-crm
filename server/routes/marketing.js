@@ -5,6 +5,15 @@ const emailController = require('../controllers/emailController');
 const segmentController = require('../controllers/segmentController');
 const automationController = require('../controllers/automationController');
 const marketingReportsController = require('../controllers/marketingReportsController');
+const whatsappController = require('../controllers/whatsappController');
+
+// WhatsApp Marketing & Automation Routes
+router.get('/whatsapp/campaigns', protect, whatsappController.getCampaigns);
+router.get('/whatsapp/templates', protect, whatsappController.getTemplates);
+router.post('/whatsapp/templates', protect, whatsappController.createTemplate);
+router.post('/whatsapp/send-single', protect, whatsappController.sendSingle);
+router.post('/whatsapp/broadcast', protect, whatsappController.sendBroadcast);
+router.get('/whatsapp/status', protect, whatsappController.getStatus);
 
 // Email Routes
 router.get('/emails', protect, emailController.getAllEmails);
