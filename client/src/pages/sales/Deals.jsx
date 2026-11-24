@@ -26,6 +26,8 @@ const Deals = () => {
     });
 
     const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, pages: 0 });
+    const [selectedDeals, setSelectedDeals] = useState([]);
+    const [bulkProcessing, setBulkProcessing] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
     const filterRef = useRef(null);
     const buttonRef = useRef(null);
@@ -106,6 +108,22 @@ const Deals = () => {
         if (window.confirm('Are you sure you want to delete this deal?')) {
             await salesService.deleteDeal(id);
             fetchDeals();
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedDeals.length === 0) return;
+        if (!window.confirm(`Are you sure you want to delete ${selectedDeals.length} selected deal(s)?`)) return;
+        try {
+            setBulkProcessing(true);
+            await Promise.all(selectedDeals.map(id => salesService.deleteDeal(id)));
+            setSelectedDeals([]);
+            fetchDeals(false);
+        } catch (err) {
+            console.error('Error deleting deals:', err);
+            alert('Failed to delete some deals');
+        } finally {
+            setBulkProcessing(false);
         }
     };
 
@@ -481,10 +499,74 @@ const Deals = () => {
 
             {/* Content */}
             <div>
+                {/* Bulk Selection Bar */}
+                {selectedDeals.length > 0 && (
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '12px 18px',
+                        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                        borderRadius: '10px',
+                        marginBottom: '16px',
+                        color: 'white',
+                        boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
+                        flexWrap: 'wrap',
+                        gap: '12px'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{
+                                background: '#3b82f6',
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: 700
+                            }}>
+                                {selectedDeals.length} Selected
+                            </span>
+                            <span style={{ fontSize: '13px', color: '#cbd5e1' }}>
+                                Manage selected deals
+                            </span>
+                            <button
+                                onClick={() => setSelectedDeals([])}
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#94a3b8',
+                                    fontSize: '12px',
+                                    textDecoration: 'underline',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Deselect All
+                            </button>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                            <button
+                                className="btn btn-sm"
+                                onClick={handleBulkDelete}
+                                disabled={bulkProcessing}
+                                style={{
+                                    background: '#ef4444',
+                                    color: 'white',
+                                    border: 'none',
+                                    fontWeight: 600,
+                                    fontSize: '13px'
+                                }}
+                            >
+                                Delete ({selectedDeals.length})
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {initialLoading ? <Loader /> : (
                     <div className="table-container-responsive">
                         <DealTable
                             deals={deals}
+                            selectedDeals={selectedDeals}
+                            onSelectDeals={setSelectedDeals}
                             onDelete={handleDelete}
                             pagination={pagination}
                             onPageChange={(p) => setPagination({ ...pagination, page: p })}

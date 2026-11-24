@@ -5,9 +5,40 @@ import { formatCurrency, formatDate } from '../../utils/format';
 import Modal from '../common/Modal';
 import '../../styles/employee/employees.css';
 
-const ClientTable = ({ clients, onDelete, pagination, onPageChange }) => {
+const ClientTable = ({
+  clients,
+  onDelete,
+  pagination,
+  onPageChange,
+  selectedClients = [],
+  onSelectClients
+}) => {
   const navigate = useNavigate();
   const [deleteModal, setDeleteModal] = useState({ open: false, client: null });
+
+  const allVisibleSelected = clients.length > 0 && clients.every(c => selectedClients.includes(c._id));
+  const someVisibleSelected = clients.some(c => selectedClients.includes(c._id)) && !allVisibleSelected;
+
+  const handleSelectAll = (e) => {
+    if (!onSelectClients) return;
+    if (e.target.checked) {
+      const newIds = Array.from(new Set([...selectedClients, ...clients.map(c => c._id)]));
+      onSelectClients(newIds);
+    } else {
+      const visibleIds = new Set(clients.map(c => c._id));
+      onSelectClients(selectedClients.filter(id => !visibleIds.has(id)));
+    }
+  };
+
+  const handleToggleSelect = (id, e) => {
+    if (e) e.stopPropagation();
+    if (!onSelectClients) return;
+    if (selectedClients.includes(id)) {
+      onSelectClients(selectedClients.filter(item => item !== id));
+    } else {
+      onSelectClients([...selectedClients, id]);
+    }
+  };
 
   const handleDelete = (client) => {
     setDeleteModal({ open: true, client });
@@ -39,6 +70,16 @@ const ClientTable = ({ clients, onDelete, pagination, onPageChange }) => {
       <table className="table">
         <thead>
           <tr>
+            <th style={{ width: '40px', textAlign: 'center' }}>
+              <input
+                type="checkbox"
+                checked={allVisibleSelected}
+                ref={(el) => { if (el) el.indeterminate = someVisibleSelected; }}
+                onChange={handleSelectAll}
+                title="Select all on this page"
+                style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#3b82f6' }}
+              />
+            </th>
             <th>Client</th>
             <th>Company</th>
             <th>Contact Info</th>
@@ -51,7 +92,21 @@ const ClientTable = ({ clients, onDelete, pagination, onPageChange }) => {
         <tbody>
           {clients.length > 0 ? (
             clients.map((client) => (
-              <tr key={client._id}>
+              <tr
+                key={client._id}
+                style={{
+                  backgroundColor: selectedClients.includes(client._id) ? '#eff6ff' : undefined,
+                  transition: 'background-color 0.15s ease'
+                }}
+              >
+                <td style={{ width: '40px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={selectedClients.includes(client._id)}
+                    onChange={(e) => handleToggleSelect(client._id, e)}
+                    style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#3b82f6' }}
+                  />
+                </td>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div className="employee-avatar-table">
@@ -145,7 +200,7 @@ const ClientTable = ({ clients, onDelete, pagination, onPageChange }) => {
             ))
           ) : (
             <tr>
-              <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+              <td colSpan="8" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
                 No clients found
               </td>
             </tr>

@@ -30,6 +30,8 @@ const EmployeeList = () => {
     sortOrder: 'asc'
   });
   const [search, setSearch] = useState('');
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [bulkProcessing, setBulkProcessing] = useState(false);
   const { isAdmin, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
 
@@ -183,6 +185,22 @@ const EmployeeList = () => {
       alert('Error deleting employee');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedEmployees.length === 0) return;
+    if (!window.confirm(`Are you sure you want to delete ${selectedEmployees.length} selected employee(s)?`)) return;
+    try {
+      setBulkProcessing(true);
+      await Promise.all(selectedEmployees.map(id => employeeService.deleteEmployee(id)));
+      setSelectedEmployees([]);
+      await fetchEmployees();
+    } catch (err) {
+      console.error('Error deleting employees:', err);
+      alert('Failed to delete some employees');
+    } finally {
+      setBulkProcessing(false);
     }
   };
 
@@ -422,6 +440,71 @@ const EmployeeList = () => {
         </div>
       </div>
 
+      {/* Bulk Selection Bar */}
+      {selectedEmployees.length > 0 && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 18px',
+          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+          borderRadius: '10px',
+          marginTop: '16px',
+          marginBottom: '16px',
+          color: 'white',
+          boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{
+              background: '#3b82f6',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 700
+            }}>
+              {selectedEmployees.length} Selected
+            </span>
+            <span style={{ fontSize: '13px', color: '#cbd5e1' }}>
+              Manage selected employee records
+            </span>
+            <button
+              onClick={() => setSelectedEmployees([])}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#94a3b8',
+                fontSize: '12px',
+                textDecoration: 'underline',
+                cursor: 'pointer'
+              }}
+            >
+              Deselect All
+            </button>
+          </div>
+
+          {(isAdmin || isSuperAdmin) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                className="btn btn-sm"
+                onClick={handleBulkDelete}
+                disabled={bulkProcessing}
+                style={{
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '13px'
+                }}
+              >
+                Delete ({selectedEmployees.length})
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Content */}
       <div className="leaves-content-wrapper">
         <div style={{ position: 'relative' }}>
@@ -445,6 +528,8 @@ const EmployeeList = () => {
           )}
           <EmployeeTable
             employees={filteredEmployees}
+            selectedEmployees={selectedEmployees}
+            onSelectEmployees={setSelectedEmployees}
             onView={(id) => navigate(`/employees/${id}`)}
             onEdit={(emp) => navigate(`/employees/${emp._id}/edit`)}
             onDelete={handleDelete}

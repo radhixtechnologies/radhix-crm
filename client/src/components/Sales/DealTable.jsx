@@ -15,9 +15,40 @@ const getInitials = (name) => {
         .toUpperCase();
 };
 
-const DealTable = ({ deals, onDelete, pagination, onPageChange }) => {
+const DealTable = ({
+    deals,
+    onDelete,
+    pagination,
+    onPageChange,
+    selectedDeals = [],
+    onSelectDeals
+}) => {
     const navigate = useNavigate();
     const [deleteModal, setDeleteModal] = useState({ open: false, deal: null });
+
+    const allVisibleSelected = deals.length > 0 && deals.every(d => selectedDeals.includes(d._id));
+    const someVisibleSelected = deals.some(d => selectedDeals.includes(d._id)) && !allVisibleSelected;
+
+    const handleSelectAll = (e) => {
+        if (!onSelectDeals) return;
+        if (e.target.checked) {
+            const newIds = Array.from(new Set([...selectedDeals, ...deals.map(d => d._id)]));
+            onSelectDeals(newIds);
+        } else {
+            const visibleIds = new Set(deals.map(d => d._id));
+            onSelectDeals(selectedDeals.filter(id => !visibleIds.has(id)));
+        }
+    };
+
+    const handleToggleSelect = (id, e) => {
+        if (e) e.stopPropagation();
+        if (!onSelectDeals) return;
+        if (selectedDeals.includes(id)) {
+            onSelectDeals(selectedDeals.filter(item => item !== id));
+        } else {
+            onSelectDeals([...selectedDeals, id]);
+        }
+    };
 
     const handleDelete = (deal) => {
         setDeleteModal({ open: true, deal });
@@ -64,25 +95,49 @@ const DealTable = ({ deals, onDelete, pagination, onPageChange }) => {
     return (
         <div className="table-container-responsive">
             <table className="table">
-                <thead>
-                    <tr>
-                        <th>Deal Name</th>
-                        <th>Company</th>
-                        <th>Contact Info</th>
-                        <th>Source</th>
-                        <th>Stage</th>
-                        <th>Value</th>
-                        <th>Owner</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {deals.length > 0 ? (
-                        deals.map((deal) => (
-                            <tr key={deal._id}>
-                                <td>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <thead>
+          <tr>
+            <th style={{ width: '40px', textAlign: 'center' }}>
+              <input
+                type="checkbox"
+                checked={allVisibleSelected}
+                ref={(el) => { if (el) el.indeterminate = someVisibleSelected; }}
+                onChange={handleSelectAll}
+                title="Select all on this page"
+                style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#3b82f6' }}
+              />
+            </th>
+            <th>Deal Name</th>
+            <th>Company</th>
+            <th>Contact Info</th>
+            <th>Source</th>
+            <th>Stage</th>
+            <th>Value</th>
+            <th>Owner</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {deals.length > 0 ? (
+            deals.map((deal) => (
+              <tr
+                key={deal._id}
+                style={{
+                  backgroundColor: selectedDeals.includes(deal._id) ? '#eff6ff' : undefined,
+                  transition: 'background-color 0.15s ease'
+                }}
+              >
+                <td style={{ width: '40px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={selectedDeals.includes(deal._id)}
+                    onChange={(e) => handleToggleSelect(deal._id, e)}
+                    style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#3b82f6' }}
+                  />
+                </td>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <div className="employee-avatar-table">
                                             <span>{getInitials(deal.name || deal.title)}</span>
                                         </div>
@@ -190,7 +245,7 @@ const DealTable = ({ deals, onDelete, pagination, onPageChange }) => {
                         ))
                     ) : (
                         <tr>
-                            <td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                            <td colSpan="10" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
                                 No deals found
                             </td>
                         </tr>

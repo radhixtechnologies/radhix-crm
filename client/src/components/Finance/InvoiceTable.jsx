@@ -16,10 +16,45 @@ const getInitials = (name) => {
     .toUpperCase();
 };
 
-const InvoiceTable = ({ invoices, onDelete, onSendEmail, onDownloadPDF, onStatusChange, loading, onPageChange, pagination }) => {
+const InvoiceTable = ({
+  invoices,
+  onDelete,
+  onSendEmail,
+  onDownloadPDF,
+  onStatusChange,
+  loading,
+  onPageChange,
+  pagination,
+  selectedInvoices = [],
+  onSelectInvoices
+}) => {
   const navigate = useNavigate();
   const [deleteModal, setDeleteModal] = useState({ open: false, invoice: null });
   const [actionMenu, setActionMenu] = useState({ open: false, invoiceId: null });
+
+  const allVisibleSelected = invoices.length > 0 && invoices.every(inv => selectedInvoices.includes(inv._id));
+  const someVisibleSelected = invoices.some(inv => selectedInvoices.includes(inv._id)) && !allVisibleSelected;
+
+  const handleSelectAll = (e) => {
+    if (!onSelectInvoices) return;
+    if (e.target.checked) {
+      const newIds = Array.from(new Set([...selectedInvoices, ...invoices.map(inv => inv._id)]));
+      onSelectInvoices(newIds);
+    } else {
+      const visibleIds = new Set(invoices.map(inv => inv._id));
+      onSelectInvoices(selectedInvoices.filter(id => !visibleIds.has(id)));
+    }
+  };
+
+  const handleToggleSelect = (id, e) => {
+    if (e) e.stopPropagation();
+    if (!onSelectInvoices) return;
+    if (selectedInvoices.includes(id)) {
+      onSelectInvoices(selectedInvoices.filter(item => item !== id));
+    } else {
+      onSelectInvoices([...selectedInvoices, id]);
+    }
+  };
 
   const handleDelete = (invoice) => {
     setDeleteModal({ open: true, invoice });
@@ -72,6 +107,16 @@ const InvoiceTable = ({ invoices, onDelete, onSendEmail, onDownloadPDF, onStatus
       <table className="table">
         <thead>
           <tr>
+            <th style={{ width: '40px', textAlign: 'center' }}>
+              <input
+                type="checkbox"
+                checked={allVisibleSelected}
+                ref={(el) => { if (el) el.indeterminate = someVisibleSelected; }}
+                onChange={handleSelectAll}
+                title="Select all on this page"
+                style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#3b82f6' }}
+              />
+            </th>
             <th>Invoice #</th>
             <th>Client</th>
             <th>Dates</th>
@@ -83,13 +128,27 @@ const InvoiceTable = ({ invoices, onDelete, onSendEmail, onDownloadPDF, onStatus
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan="8" className="text-center">
+              <td colSpan="7" className="text-center">
                 <div className="loader-spinner"></div>
               </td>
             </tr>
           ) : invoices.length > 0 ? (
             invoices.map((invoice) => (
-              <tr key={invoice._id}>
+              <tr
+                key={invoice._id}
+                style={{
+                  backgroundColor: selectedInvoices.includes(invoice._id) ? '#eff6ff' : undefined,
+                  transition: 'background-color 0.15s ease'
+                }}
+              >
+                <td style={{ width: '40px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={selectedInvoices.includes(invoice._id)}
+                    onChange={(e) => handleToggleSelect(invoice._id, e)}
+                    style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#3b82f6' }}
+                  />
+                </td>
                 <td className="invoice-number" style={{ fontWeight: '600', color: 'var(--primary)' }}>
                   {invoice.invoiceNumber}
                 </td>

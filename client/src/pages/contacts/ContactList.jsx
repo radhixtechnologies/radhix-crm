@@ -38,6 +38,8 @@ const ContactList = () => {
     const [activeTab, setActiveTab] = useState('all'); // all, active, lead, inactive
 
     const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
+    const [selectedContacts, setSelectedContacts] = useState([]);
+    const [bulkProcessing, setBulkProcessing] = useState(false);
 
     // Initial load
     useEffect(() => {
@@ -107,6 +109,22 @@ const ContactList = () => {
             } catch (error) {
                 alert('Failed to delete contact');
             }
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedContacts.length === 0) return;
+        if (!window.confirm(`Are you sure you want to delete ${selectedContacts.length} selected contact(s)?`)) return;
+        try {
+            setBulkProcessing(true);
+            await Promise.all(selectedContacts.map(id => contactService.deleteContact(id)));
+            setSelectedContacts([]);
+            fetchContacts(false);
+        } catch (err) {
+            console.error('Error deleting contacts:', err);
+            alert('Failed to delete some contacts');
+        } finally {
+            setBulkProcessing(false);
         }
     };
 
@@ -523,6 +541,69 @@ const ContactList = () => {
                     ))}
                 </div>
 
+                {/* Bulk Selection Bar */}
+                {selectedContacts.length > 0 && (
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '12px 18px',
+                        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                        borderRadius: '10px',
+                        marginTop: '16px',
+                        marginBottom: '16px',
+                        color: 'white',
+                        boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
+                        flexWrap: 'wrap',
+                        gap: '12px'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{
+                                background: '#3b82f6',
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: 700
+                            }}>
+                                {selectedContacts.length} Selected
+                            </span>
+                            <span style={{ fontSize: '13px', color: '#cbd5e1' }}>
+                                Manage selected contact records
+                            </span>
+                            <button
+                                onClick={() => setSelectedContacts([])}
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#94a3b8',
+                                    fontSize: '12px',
+                                    textDecoration: 'underline',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Deselect All
+                            </button>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                            <button
+                                className="btn btn-sm"
+                                onClick={handleBulkDelete}
+                                disabled={bulkProcessing}
+                                style={{
+                                    background: '#ef4444',
+                                    color: 'white',
+                                    border: 'none',
+                                    fontWeight: 600,
+                                    fontSize: '13px'
+                                }}
+                            >
+                                Delete ({selectedContacts.length})
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Table Section */}
                 {initialLoading ? (
                     <div className="loading-container">
@@ -537,6 +618,8 @@ const ContactList = () => {
                         )}
                         <ContactTable
                             contacts={contacts}
+                            selectedContacts={selectedContacts}
+                            onSelectContacts={setSelectedContacts}
                             onDelete={handleDelete}
                             pagination={pagination}
                             onPageChange={(page) => setPagination({ ...pagination, page })}

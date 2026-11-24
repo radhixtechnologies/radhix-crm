@@ -10,11 +10,41 @@ import WhatsAppModal from '../common/WhatsAppModal';
 import Modal from '../common/Modal';
 import '../../styles/sales/followups.css';
 
-const FollowupTable = ({ followups, pagination, onPageChange }) => {
+const FollowupTable = ({
+  followups,
+  pagination,
+  onPageChange,
+  selectedFollowups = [],
+  onSelectFollowups
+}) => {
   const [deleteModal, setDeleteModal] = useState({ open: false, followup: null });
   const [editModal, setEditModal] = useState({ open: false, followup: null });
   const [completeModal, setCompleteModal] = useState({ open: false, followup: null });
   const [waModal, setWaModal] = useState({ open: false, name: '', phone: '' });
+
+  const allVisibleSelected = followups.length > 0 && followups.every(f => selectedFollowups.includes(f._id));
+  const someVisibleSelected = followups.some(f => selectedFollowups.includes(f._id)) && !allVisibleSelected;
+
+  const handleSelectAll = (e) => {
+    if (!onSelectFollowups) return;
+    if (e.target.checked) {
+      const newIds = Array.from(new Set([...selectedFollowups, ...followups.map(f => f._id)]));
+      onSelectFollowups(newIds);
+    } else {
+      const visibleIds = new Set(followups.map(f => f._id));
+      onSelectFollowups(selectedFollowups.filter(id => !visibleIds.has(id)));
+    }
+  };
+
+  const handleToggleSelect = (id, e) => {
+    if (e) e.stopPropagation();
+    if (!onSelectFollowups) return;
+    if (selectedFollowups.includes(id)) {
+      onSelectFollowups(selectedFollowups.filter(item => item !== id));
+    } else {
+      onSelectFollowups([...selectedFollowups, id]);
+    }
+  };
 
   const getOwnerName = (followup) => {
     const assignedTo = followup?.assignedTo;
@@ -51,6 +81,16 @@ const FollowupTable = ({ followups, pagination, onPageChange }) => {
       <table className="followup-table">
         <thead>
           <tr>
+            <th style={{ width: '40px', textAlign: 'center' }}>
+              <input
+                type="checkbox"
+                checked={allVisibleSelected}
+                ref={(el) => { if (el) el.indeterminate = someVisibleSelected; }}
+                onChange={handleSelectAll}
+                title="Select all on this page"
+                style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#3b82f6' }}
+              />
+            </th>
             <th>Title</th>
             <th>Type</th>
             <th>Related To</th>
@@ -63,7 +103,21 @@ const FollowupTable = ({ followups, pagination, onPageChange }) => {
         <tbody>
           {followups.length > 0 ? (
             followups.map((followup) => (
-              <tr key={followup._id}>
+              <tr
+                key={followup._id}
+                style={{
+                  backgroundColor: selectedFollowups.includes(followup._id) ? '#eff6ff' : undefined,
+                  transition: 'background-color 0.15s ease'
+                }}
+              >
+                <td style={{ width: '40px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={selectedFollowups.includes(followup._id)}
+                    onChange={(e) => handleToggleSelect(followup._id, e)}
+                    style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#3b82f6' }}
+                  />
+                </td>
                 <td className="title-cell">{followup.title}</td>
                 <td>
                   <span className="type-badge">{followup.type}</span>

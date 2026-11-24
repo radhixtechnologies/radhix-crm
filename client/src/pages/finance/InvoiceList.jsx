@@ -58,6 +58,8 @@ const InvoiceList = () => {
     total: 0,
     pages: 0,
   });
+  const [selectedInvoices, setSelectedInvoices] = useState([]);
+  const [bulkProcessing, setBulkProcessing] = useState(false);
 
   const [showFilters, setShowFilters] = useState(false);
   const filterRef = useRef(null);
@@ -158,6 +160,22 @@ const InvoiceList = () => {
         console.error('Error deleting invoice:', error);
         alert('Failed to delete invoice');
       }
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedInvoices.length === 0) return;
+    if (!window.confirm(`Are you sure you want to delete ${selectedInvoices.length} selected invoice(s)?`)) return;
+    try {
+      setBulkProcessing(true);
+      await Promise.all(selectedInvoices.map(id => financeService.deleteInvoice(id)));
+      setSelectedInvoices([]);
+      fetchInvoices();
+    } catch (err) {
+      console.error('Error deleting invoices:', err);
+      alert('Failed to delete some invoices');
+    } finally {
+      setBulkProcessing(false);
     }
   };
 
@@ -665,6 +683,68 @@ const InvoiceList = () => {
 
       {/* Content */}
       <div style={{ padding: '0 0px' }}>
+        {/* Bulk Selection Bar */}
+        {selectedInvoices.length > 0 && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 18px',
+            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+            borderRadius: '10px',
+            marginBottom: '16px',
+            color: 'white',
+            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
+            flexWrap: 'wrap',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{
+                background: '#3b82f6',
+                padding: '4px 10px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 700
+              }}>
+                {selectedInvoices.length} Selected
+              </span>
+              <span style={{ fontSize: '13px', color: '#cbd5e1' }}>
+                Manage selected invoices
+              </span>
+              <button
+                onClick={() => setSelectedInvoices([])}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#94a3b8',
+                  fontSize: '12px',
+                  textDecoration: 'underline',
+                  cursor: 'pointer'
+                }}
+              >
+                Deselect All
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <button
+                className="btn btn-sm"
+                onClick={handleBulkDelete}
+                disabled={bulkProcessing}
+                style={{
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '13px'
+                }}
+              >
+                Delete ({selectedInvoices.length})
+              </button>
+            </div>
+          </div>
+        )}
+
         {initialLoading ? (
           <Loader />
         ) : (
@@ -689,6 +769,8 @@ const InvoiceList = () => {
             )}
             <InvoiceTable
               invoices={invoices}
+              selectedInvoices={selectedInvoices}
+              onSelectInvoices={setSelectedInvoices}
               onDelete={handleDelete}
               onSendEmail={handleSendEmail}
               onStatusChange={handleStatusChange}

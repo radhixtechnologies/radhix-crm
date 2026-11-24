@@ -13,6 +13,8 @@ const FollowupList = () => {
   const [filters, setFilters] = useState({ status: '', type: '', search: '', bucket: '' });
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedFollowups, setSelectedFollowups] = useState([]);
+  const [bulkProcessing, setBulkProcessing] = useState(false);
   const [summaryStats, setSummaryStats] = useState({
     total: 0, pending: 0, completed: 0, overdue: 0, dueToday: 0, upcoming: 0, owners: 0,
   });
@@ -78,6 +80,41 @@ const FollowupList = () => {
       } else {
         setLoading(false);
       }
+    }
+  };
+
+  const handleBulkComplete = async () => {
+    if (selectedFollowups.length === 0) return;
+    try {
+      setBulkProcessing(true);
+      await Promise.all(selectedFollowups.map(id => salesService.updateFollowUp(id, { status: 'completed' })));
+      setSelectedFollowups([]);
+      fetchFollowUps(false);
+      const summaryRes = await salesService.getFollowUpsSummary(filters.type ? { type: filters.type } : {});
+      if (summaryRes.data?.success) setSummaryStats(summaryRes.data.data);
+    } catch (err) {
+      console.error('Error completing followups:', err);
+      alert('Failed to complete some follow-ups');
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedFollowups.length === 0) return;
+    if (!window.confirm(`Are you sure you want to delete ${selectedFollowups.length} selected follow-up(s)?`)) return;
+    try {
+      setBulkProcessing(true);
+      await Promise.all(selectedFollowups.map(id => salesService.deleteFollowUp(id)));
+      setSelectedFollowups([]);
+      fetchFollowUps(false);
+      const summaryRes = await salesService.getFollowUpsSummary(filters.type ? { type: filters.type } : {});
+      if (summaryRes.data?.success) setSummaryStats(summaryRes.data.data);
+    } catch (err) {
+      console.error('Error deleting followups:', err);
+      alert('Failed to delete some follow-ups');
+    } finally {
+      setBulkProcessing(false);
     }
   };
 
@@ -318,6 +355,82 @@ const FollowupList = () => {
 
       {errorMessage && <div className="alert alert-error" role="alert">{errorMessage}</div>}
 
+      {/* Bulk Selection Bar */}
+      {selectedFollowups.length > 0 && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 18px',
+          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+          borderRadius: '10px',
+          marginBottom: '16px',
+          color: 'white',
+          boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{
+              background: '#3b82f6',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: 700
+            }}>
+              {selectedFollowups.length} Selected
+            </span>
+            <span style={{ fontSize: '13px', color: '#cbd5e1' }}>
+              Manage selected follow-up records
+            </span>
+            <button
+              onClick={() => setSelectedFollowups([])}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#94a3b8',
+                fontSize: '12px',
+                textDecoration: 'underline',
+                cursor: 'pointer'
+              }}
+            >
+              Deselect All
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              className="btn btn-sm"
+              onClick={handleBulkComplete}
+              disabled={bulkProcessing}
+              style={{
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                fontWeight: 600,
+                fontSize: '13px'
+              }}
+            >
+              Mark Completed ({selectedFollowups.length})
+            </button>
+            <button
+              className="btn btn-sm"
+              onClick={handleBulkDelete}
+              disabled={bulkProcessing}
+              style={{
+                background: '#ef4444',
+                color: 'white',
+                border: 'none',
+                fontWeight: 600,
+                fontSize: '13px'
+              }}
+            >
+              Delete ({selectedFollowups.length})
+            </button>
+          </div>
+        </div>
+      )}
+
       {initialLoading ? (
         <Loader />
       ) : (
@@ -341,7 +454,13 @@ const FollowupList = () => {
                 <Loader />
               </div>
             )}
-            <FollowupTable followups={followups} pagination={pagination} onPageChange={(page) => setPagination({ ...pagination, page })} />
+            <FollowupTable
+              followups={followups}
+              selectedFollowups={selectedFollowups}
+              onSelectFollowups={setSelectedFollowups}
+              pagination={pagination}
+              onPageChange={(page) => setPagination({ ...pagination, page })}
+            />
           </div>
         </div>
       )}
