@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const SidebarContext = createContext();
 
@@ -11,13 +11,22 @@ export const useSidebar = () => {
 };
 
 export const SidebarProvider = ({ children }) => {
-  // Desktop (>= 1024px): closed by default (opens on hover)
-  // Tablet (768px-1023px): closed by default (opens on hover)
-  // Mobile (< 768px): closed (drawer mode, opens via menu button)
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeModule, setActiveModule] = useState(null); // 'hrm', 'finance', 'sales', etc.
+  // Desktop / Tablet preference persisted in localStorage
+  const [isOpen, setIsOpen] = useState(() => {
+    try {
+      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        const saved = localStorage.getItem('radhix_sidebar_open');
+        return saved !== null ? saved === 'true' : false;
+      }
+    } catch {
+      // fallback
+    }
+    return false;
+  });
 
-  // Handle window resize - auto-collapse on tablet, close on mobile
+  const [activeModule, setActiveModuleState] = useState('dashboard');
+
+  // Handle window resize - auto-close when transitioning to mobile
   useEffect(() => {
     let previousWidth = window.innerWidth;
 
@@ -26,53 +35,69 @@ export const SidebarProvider = ({ children }) => {
       const previousIsMobile = previousWidth < 768;
       const currentIsMobile = width < 768;
 
-      // Only force close when transitioning TO mobile from desktop/tablet
       if (currentIsMobile && !previousIsMobile) {
         setIsOpen(false);
-        setActiveModule(null);
       }
 
       previousWidth = width;
     };
 
     window.addEventListener('resize', handleResize);
-    // Don't run on mount to avoid interfering with initial state
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const toggleSidebar = (forceState) => {
-    if (forceState !== undefined) {
-      setIsOpen(forceState);
-    } else {
-      setIsOpen((prev) => !prev);
-    }
-  };
+  const toggleSidebar = useCallback((forceState) => {
+    setIsOpen((prev) => {
+      const next = forceState !== undefined ? Boolean(forceState) : !prev;
+      try {
+        if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+          localStorage.setItem('radhix_sidebar_open', String(next));
+        }
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+  }, []);
 
-  const closeSidebar = () => {
+  const closeSidebar = useCallback(() => {
     setIsOpen(false);
-  };
+    try {
+      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        localStorage.setItem('radhix_sidebar_open', 'false');
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
-  const openSidebar = () => {
+  const openSidebar = useCallback(() => {
     setIsOpen(true);
-  };
+    try {
+      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        localStorage.setItem('radhix_sidebar_open', 'true');
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
-  const setModule = (moduleKey) => {
-    setActiveModule(moduleKey);
-    // If setting a module, we generally want to open the secondary sidebar if it has content
-    // But the Sidebar component will handle the specific logic of what to do
-  };
+  const setActiveModule = useCallback((moduleKey) => {
+    setActiveModuleState(moduleKey);
+  }, []);
 
   return (
-    <SidebarContext.Provider value={{
-      isOpen,
-      toggleSidebar,
-      closeSidebar,
-      openSidebar,
-      activeModule,
-      setActiveModule: setModule
-    }}>
+    <SidebarContext.Provider
+      value={{
+        isOpen,
+        toggleSidebar,
+        closeSidebar,
+        openSidebar,
+        activeModule,
+        setActiveModule,
+      }}
+    >
       {children}
     </SidebarContext.Provider>
   );
 };
-

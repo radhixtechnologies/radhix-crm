@@ -74,7 +74,7 @@ const Sidebar = () => {
   // Determine active module based on path
   useEffect(() => {
     const path = location.pathname;
-    if (path === '/dashboard') {
+    if (path === '/' || path === '/dashboard') {
       setActiveModule('dashboard');
       return;
     }
@@ -134,6 +134,12 @@ const Sidebar = () => {
       if (activeModule !== 'marketing') setActiveModule('marketing');
     } else if (path.startsWith('/inventory') || path.startsWith('/support')) {
       if (activeModule !== 'operations') setActiveModule('operations');
+    } else if (path.startsWith('/settings/branding')) {
+      if (activeModule !== 'branding') setActiveModule('branding');
+    } else if (path.startsWith('/settings')) {
+      if (activeModule !== 'settings') setActiveModule('settings');
+    } else if (path.startsWith('/automation')) {
+      if (activeModule !== 'automation') setActiveModule('automation');
     }
   }, [location.pathname, activeModule, setActiveModule]);
 
@@ -141,48 +147,54 @@ const Sidebar = () => {
   const handlePrimaryClick = (moduleKey, hasSubItems, path) => {
     const isSameModule = activeModule === moduleKey;
 
-    if (path && (!hasSubItems || isSameModule)) {
-      setActiveModule(moduleKey);
-      closeSidebar();
-      navigate(path);
+    if (hasSubItems) {
+      if (isSameModule) {
+        // Clicking the currently active module toggles the secondary drawer
+        toggleSidebar();
+      } else {
+        // Clicking a different module selects it and opens the drawer
+        setActiveModule(moduleKey);
+        openSidebar();
+
+        const defaultModulePath = {
+          sales: '/sales',
+          subscription: '/subscription',
+          industry_hub: '/industry-hub',
+          institute: '/institute/admissions',
+          'real-estate': '/real-estate',
+          construction: '/construction',
+          healthcare: '/healthcare',
+          automotive: '/automotive',
+          travel: '/travel',
+          manufacturing: '/manufacturing',
+          restaurant: '/restaurant',
+          salon: '/salon',
+          retail: '/retail',
+          gym: '/gym',
+          hrm: '/hrm',
+          finance: '/finance',
+          marketing: '/marketing',
+          operations: '/support',
+          reports_analytics: '/reports',
+          'my-workspace': '/employees',
+          dashboard: '/dashboard',
+          branding: '/settings/branding',
+          automation: '/automation/workflows',
+          settings: '/settings',
+          branches: '/branches',
+        }[moduleKey] || path;
+
+        if (defaultModulePath && location.pathname !== defaultModulePath) {
+          navigate(defaultModulePath);
+        }
+      }
       return;
     }
 
-    if (hasSubItems) {
-      if (isSameModule && isOpen) {
-        closeSidebar();
-      } else {
-        setActiveModule(moduleKey);
-        openSidebar();
-      }
-
-      const defaultModulePath = {
-        sales: '/sales',
-        subscription: '/subscription',
-        industry_hub: '/industry-hub',
-        institute: '/institute/admissions',
-        'real-estate': '/real-estate',
-        construction: '/construction',
-        healthcare: '/healthcare',
-        automotive: '/automotive',
-        travel: '/travel',
-        manufacturing: '/manufacturing',
-        restaurant: '/restaurant',
-        salon: '/salon',
-        retail: '/retail',
-        gym: '/gym',
-        hrm: '/hrm',
-        finance: '/finance',
-        marketing: '/marketing',
-        operations: '/support',
-        'reports_analytics': '/reports',
-        'my-workspace': '/employees',
-        dashboard: '/dashboard',
-      }[moduleKey];
-
-      if (defaultModulePath && !isSameModule) {
-        navigate(defaultModulePath);
-      }
+    setActiveModule(moduleKey);
+    closeSidebar();
+    if (path && location.pathname !== path) {
+      navigate(path);
     }
   };
 
@@ -226,6 +238,18 @@ const Sidebar = () => {
         icon: FiLayout,
         path: '/dashboard',
         access: true,
+        subItems: [
+          { path: '/dashboard', label: 'Overview', icon: FiLayout },
+          { path: '/industry-hub', label: 'Suites Hub', icon: FiLayers },
+          { path: '/reports', label: 'Reports & Analytics', icon: FiBarChart2 },
+          ...(isAdmin || isSuperAdmin ? [
+            { path: '/subscription', label: 'Plans & Quotas', icon: FiCreditCard },
+            { path: '/branches', label: 'Branch Hub', icon: FiMapPin },
+            { path: '/automation/workflows', label: 'Workflow Automations', icon: FiZap },
+            { path: '/settings/branding', label: 'Brand & Theme', icon: FiLayers },
+          ] : []),
+          ...(isSuperAdmin ? [{ path: '/settings', label: 'System Settings', icon: FiSettings }] : []),
+        ],
       },
       {
         key: 'my-workspace',
@@ -359,6 +383,9 @@ const Sidebar = () => {
         icon: FiCreditCard,
         access: isAdmin || isSuperAdmin,
         path: '/subscription',
+        subItems: [
+          { path: '/subscription', label: 'Subscription Plan', icon: FiCreditCard },
+        ],
       },
       {
         key: 'branches',
@@ -366,6 +393,9 @@ const Sidebar = () => {
         icon: FiMapPin,
         access: isAdmin || isSuperAdmin,
         path: '/branches',
+        subItems: [
+          { path: '/branches', label: 'Branch Directory', icon: FiMapPin },
+        ],
       },
       {
         key: 'branding',
@@ -373,6 +403,9 @@ const Sidebar = () => {
         icon: FiLayers,
         access: isAdmin || isSuperAdmin,
         path: '/settings/branding',
+        subItems: [
+          { path: '/settings/branding', label: 'White-Label Branding', icon: FiLayers },
+        ],
       },
       {
         key: 'automation',
@@ -380,6 +413,9 @@ const Sidebar = () => {
         icon: FiZap,
         access: isAdmin || isSuperAdmin,
         path: '/automation/workflows',
+        subItems: [
+          { path: '/automation/workflows', label: 'Workflow Rules', icon: FiZap },
+        ],
       },
       {
         key: 'settings',
@@ -387,6 +423,9 @@ const Sidebar = () => {
         icon: FiSettings,
         access: isSuperAdmin,
         path: '/settings',
+        subItems: [
+          { path: '/settings', label: 'System Settings', icon: FiSettings },
+        ],
       },
     ];
   }, [isAllSuites, currentSuite, activeModule, hasModuleAccess, isAdmin, isSuperAdmin, user]);
@@ -397,11 +436,11 @@ const Sidebar = () => {
   };
 
   const getSecondaryTitle = () => {
-    const module = primaryModules.find(m => m.key === activeModule);
+    const module = primaryModules.find(m => m.key === activeModule) || primaryModules[0];
     return module ? module.label : '';
   };
 
-  const currentSubItems = primaryModules.find(m => m.key === activeModule)?.subItems || [];
+  const currentSubItems = primaryModules.find(m => m.key === activeModule)?.subItems || primaryModules[0]?.subItems || [];
 
   // Mobile Menu Render Item
   const renderMobileItem = (module) => {
@@ -484,7 +523,15 @@ const Sidebar = () => {
 
       {/* PRIMARY RAIL */}
       <aside className="sidebar-primary">
-        <div className="primary-logo">
+        <div
+          className="primary-logo"
+          onClick={() => {
+            navigate('/dashboard');
+            setActiveModule('dashboard');
+          }}
+          style={{ cursor: 'pointer' }}
+          title="Go to Dashboard"
+        >
           {branding?.logo ? (
             <img src={branding.logo} alt={branding.companyDisplayName || 'Logo'} style={{ width: 36, height: 36, objectFit: 'contain' }} />
           ) : (
@@ -496,7 +543,7 @@ const Sidebar = () => {
             <div
               key={module.key}
               className={`primary-item ${activeModule === module.key ? 'active' : ''}`}
-              onClick={() => handlePrimaryClick(module.key, !!module.subItems, module.path)}
+              onClick={() => handlePrimaryClick(module.key, !!(module.subItems && module.subItems.length > 0), module.path)}
               title={module.label}
             >
               <module.icon className="primary-icon" />
@@ -504,14 +551,31 @@ const Sidebar = () => {
             </div>
           ))}
         </nav>
+        <div className="primary-footer">
+          <button
+            type="button"
+            className="rail-toggle-btn"
+            onClick={() => toggleSidebar()}
+            aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
+            title={isOpen ? "Collapse sidebar (Ctrl+B)" : "Expand sidebar (Ctrl+B)"}
+          >
+            {isOpen ? <FiChevronLeft /> : <FiChevronRight />}
+          </button>
+        </div>
       </aside>
 
       {/* SECONDARY PANEL */}
       <aside className={`sidebar-secondary ${isOpen && currentSubItems.length > 0 ? 'open' : ''}`}>
         <div className="secondary-header">
           <h3>{getSecondaryTitle()}</h3>
-          <button className="secondary-close-btn" onClick={() => toggleSidebar()}>
-            {isOpen ? <FiChevronLeft /> : <FiChevronRight />}
+          <button
+            type="button"
+            className="secondary-close-btn"
+            onClick={() => closeSidebar()}
+            aria-label="Collapse sidebar"
+            title="Collapse sidebar"
+          >
+            <FiChevronLeft />
           </button>
         </div>
         <div className="secondary-content">

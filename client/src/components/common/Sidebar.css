@@ -124,6 +124,61 @@
   color: #818cf8;
 }
 
+/* ========== PRIMARY RAIL FOOTER TOGGLE ========== */
+.primary-footer {
+  padding: 10px 0;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: inherit;
+  margin-top: auto;
+}
+
+[data-theme='dark'] .primary-footer {
+  border-top-color: #374151;
+}
+
+.rail-toggle-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 19px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rail-toggle-btn:hover {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #4f46e5;
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.18);
+}
+
+.rail-toggle-btn:active {
+  transform: scale(0.96);
+}
+
+[data-theme='dark'] .rail-toggle-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .rail-toggle-btn:hover {
+  background: #312e81;
+  border-color: #4f46e5;
+  color: #a5b4fc;
+}
+
 /* ========== SECONDARY SIDEBAR (PANEL) ========== */
 .sidebar-secondary {
   position: fixed;

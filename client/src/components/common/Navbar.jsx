@@ -96,12 +96,16 @@ const Navbar = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Keyboard shortcut for spotlight command palette (Ctrl+K)
+  // Keyboard shortcut for spotlight command palette (Ctrl+K) & sidebar toggle (Ctrl+B)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent('open-command-palette'));
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleSidebar();
       }
       // Close mobile search on Escape
       if (e.key === 'Escape' && mobileSearchOpen) {
@@ -111,20 +115,20 @@ const Navbar = () => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [mobileSearchOpen]);
+  }, [mobileSearchOpen, toggleSidebar]);
 
   return (
     <nav className="navbar">
       <div className="navbar-left">
-        {isMobile && (
-          <button
-            className="navbar-action-btn mobile-menu-btn"
-            onClick={() => toggleSidebar()}
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <FiX /> : <FiMenu />}
-          </button>
-        )}
+        <button
+          type="button"
+          className="navbar-action-btn navbar-menu-toggle-btn"
+          onClick={() => toggleSidebar()}
+          aria-label={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          title={isOpen ? 'Collapse sidebar (Ctrl+B)' : 'Expand sidebar (Ctrl+B)'}
+        >
+          {isOpen ? <FiX /> : <FiMenu />}
+        </button>
         <div className="navbar-logo" onClick={() => navigate('/dashboard')}>
           <img
             src="/radhix-logo.png"
