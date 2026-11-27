@@ -4,6 +4,7 @@ const Lead = require('../models/Lead');
 const FollowUp = require('../models/FollowUp');
 const Notification = require('../models/Notification');
 const Company = require('../models/Company');
+const User = require('../models/User');
 
 const DEFAULT_WORKFLOWS = [
   {
@@ -140,12 +141,76 @@ exports.deleteWorkflow = async (req, res) => {
 };
 
 /**
+ * Resolve eligible active Sales employees for a tenant without leaking across tenants,
+ * while supporting legacy Sales employees whose `company` field has not been backfilled.
+ */
+const getEligibleSalesEmployees = async (companyTarget) => {
+  const baseFilter = { status: 'active', deletedAt: null };
+  const sortOrder = { createdAt: 1, _id: 1 };
+
+  if (!companyTarget) {
+    const sales = await Employee.find({ ...baseFilter, department: 'Sales' }).sort(sortOrder);
+    return sales.length > 0 ? sales : Employee.find(baseFilter).sort(sortOrder).limit(50);
+  }
+
+  const companyUsers = await User.find({ company: companyTarget }).select('_id').lean();
+  const companyUserIds = companyUsers.map((u) => u._id);
+  const companyScopeOr = [
+    { company: companyTarget },
+    ...(companyUserIds.length > 0 ? [{ user: { $in: companyUserIds } }] : []),
+  ];
+
+  // 1. Strict tenant-scoped Sales employees
+  let salesEmployees = await Employee.find({
+    ...baseFilter,
+    department: 'Sales',
+    $or: companyScopeOr,
+  }).sort(sortOrder);
+  if (salesEmployees.length > 0) return salesEmployees;
+
+  // 2. Legacy unscoped Sales employees (only for the root/default company when sales reps have no company set)
+  const companyTargetStr = companyTarget.toString();
+  const rootCompany = await Company.findOne().sort({ createdAt: 1 }).select('_id').lean();
+  const isRootCompany = rootCompany && rootCompany._id.toString() === companyTargetStr;
+
+  if (isRootCompany) {
+    const legacySales = await Employee.find({
+      ...baseFilter,
+      department: 'Sales',
+      $or: [{ company: null }, { company: { $exists: false } }],
+    })
+      .populate('user', 'company')
+      .sort(sortOrder);
+
+    salesEmployees = legacySales.filter(
+      (emp) => !emp.user?.company || emp.user.company.toString() === companyTargetStr
+    );
+    if (salesEmployees.length > 0) return salesEmployees;
+  }
+
+  // 3. Fallback to any active tenant-scoped employees if no Sales department reps exist yet
+  return Employee.find({ ...baseFilter, $or: companyScopeOr }).sort(sortOrder).limit(50);
+};
+
+/**
  * ENGINE: Execute active workflow triggers
  * Called internally on Lead creation, score update, or status change
  */
 exports.executeWorkflowEngine = async (triggerEvent, lead, extraContext = {}) => {
   try {
-    const rules = await WorkflowRule.find({ triggerEvent, isActive: true });
+    const ruleQuery = { triggerEvent, isActive: true };
+    if (lead?.tenantCompany) {
+      const hasCompanyRules = await WorkflowRule.exists({
+        triggerEvent,
+        isActive: true,
+        company: lead.tenantCompany,
+      });
+      if (hasCompanyRules) {
+        ruleQuery.company = lead.tenantCompany;
+      }
+    }
+
+    const rules = await WorkflowRule.find(ruleQuery);
     if (!rules || rules.length === 0) return;
 
     for (const rule of rules) {
@@ -153,14 +218,8 @@ exports.executeWorkflowEngine = async (triggerEvent, lead, extraContext = {}) =>
         switch (rule.actionType) {
           case 'round_robin_assign': {
             if (!lead.assignedTo) {
-              const empQuery = { status: 'active', deletedAt: null };
               const companyTarget = lead.tenantCompany || rule.company;
-              if (companyTarget) empQuery.company = companyTarget;
-
-              let salesEmployees = await Employee.find({ ...empQuery, department: 'Sales' });
-              if (!salesEmployees || salesEmployees.length === 0) {
-                salesEmployees = await Employee.find(empQuery).limit(50);
-              }
+              const salesEmployees = await getEligibleSalesEmployees(companyTarget);
 
               if (salesEmployees.length > 0) {
                 // Round-robin selection based on rule.executionCount % salesEmployees.length
@@ -177,7 +236,7 @@ exports.executeWorkflowEngine = async (triggerEvent, lead, extraContext = {}) =>
                 // Send notification to employee user
                 if (assignedEmployee.user) {
                   await Notification.create({
-                    user: assignedEmployee.user,
+                    user: assignedEmployee.user?._id || assignedEmployee.user,
                     title: '🎯 New Lead Assigned',
                     message: `Lead "${lead.name}" has been assigned to you.`,
                     type: 'reminder',

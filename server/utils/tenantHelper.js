@@ -131,6 +131,20 @@ async function applyTenantScope(query = {}, user, modelType = 'default') {
         ? { $and: [query, { _id: ownId }] }
         : { _id: ownId };
     }
+    if (modelType === 'lead') {
+      const Employee = require('../models/Employee');
+      const selfEmp = await Employee.findOne({ user: user._id, deletedAt: null }).select('_id');
+      const assigneeIds = selfEmp ? [selfEmp._id, user._id] : [user._id];
+      const leadOwnCondition = {
+        $or: [
+          { createdBy: user._id },
+          { assignedTo: { $in: assigneeIds } },
+        ],
+      };
+      return query && Object.keys(query).length > 0
+        ? { $and: [query, leadOwnCondition] }
+        : leadOwnCondition;
+    }
     return query && Object.keys(query).length > 0
       ? { $and: [query, { createdBy: user._id }] }
       : { createdBy: user._id };

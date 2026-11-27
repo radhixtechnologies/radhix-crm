@@ -1,10 +1,78 @@
 const crypto = require('crypto');
 const Lead = require('../models/Lead');
 
+const FIELD_ALIASES = {
+  email: ['email', 'e-mail', 'email_address', 'work_email'],
+  firstName: ['first_name', 'firstname'],
+  lastName: ['last_name', 'lastname'],
+  fullName: ['full_name', 'fullname', 'name'],
+  phone: ['phone_number', 'phone', 'mobile_number', 'mobile', 'whatsapp_number', 'contact_number'],
+  company: ['company_name', 'company', 'business_name', 'organization', 'org_name'],
+  industry: ['industry', 'sector'],
+};
+
+const STANDARD_FIELD_NAMES = new Set(Object.values(FIELD_ALIASES).flat());
+
 const getFieldValue = (fields, names) => {
   const field = fields.find((item) => names.includes(item.name?.toLowerCase()));
   const value = field?.values?.[0];
   return value === undefined || value === null ? '' : String(value).trim();
+};
+
+const cleanMetaPhone = (rawPhone) => {
+  if (!rawPhone) return '';
+  return String(rawPhone).replace(/^p:\s*/i, '').trim();
+};
+
+const formatQuestionLabel = (rawName = '') => {
+  const cleaned = String(rawName).replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+  return cleaned ? cleaned.charAt(0).toUpperCase() + cleaned.slice(1) : 'Response';
+};
+
+const formatFieldAnswer = (values = []) => {
+  if (!Array.isArray(values)) return '';
+  return values
+    .filter((v) => v !== undefined && v !== null && String(v).trim() !== '')
+    .map((v) => {
+      const str = String(v).trim();
+      // Meta choice slugs often use underscores without spaces (e.g. digital_marketing, ₹10,000_–_₹25,000)
+      if (str.includes('_') && !str.includes(' ') && !str.includes('@') && !str.includes('://')) {
+        return str.replace(/_/g, ' ');
+      }
+      return str;
+    })
+    .join(', ');
+};
+
+const buildMetaFormNotes = (fields = []) => {
+  const lines = [];
+  for (const field of fields) {
+    const key = field?.name?.toLowerCase();
+    if (!key || STANDARD_FIELD_NAMES.has(key)) continue;
+    const answer = formatFieldAnswer(field.values);
+    if (!answer) continue;
+    lines.push(`• ${formatQuestionLabel(field.name)}: ${answer}`);
+  }
+  if (lines.length === 0) return [];
+  return [{
+    content: `Meta Instant Form Responses:\n${lines.join('\n')}`,
+    addedBy: null,
+  }];
+};
+
+const triggerLeadAutomations = (lead, label = 'Meta lead') => {
+  try {
+    const { executeWorkflowEngine } = require('./workflowController');
+    executeWorkflowEngine('lead_created', lead).catch((err) =>
+      console.warn(`Workflow execution warning for ${label}:`, err.message)
+    );
+    const { sendLeadWelcomeGreeting } = require('../services/whatsappService');
+    sendLeadWelcomeGreeting(lead).catch((err) =>
+      console.warn(`WhatsApp welcome greeting warning for ${label}:`, err.message)
+    );
+  } catch (wfErr) {
+    console.warn(`Workflow engine warning for ${label}:`, wfErr.message);
+  }
 };
 
 const verifyWebhook = (req, res) => {
@@ -27,7 +95,7 @@ const hasValidSignature = (rawBody, signatureHeader) => {
 };
 
 const fetchMetaLead = async (leadId) => {
-  const accessToken = process.env.META_PAGE_ACCESS_TOKEN;
+  const accessToken = process.env.META_PAGE_ACCESS_TOKEN || process.env.WHATSAPP_TOKEN;
   if (!accessToken) throw new Error('Meta Page access token is not configured');
 
   const version = process.env.META_GRAPH_API_VERSION || 'v23.0';
@@ -73,16 +141,10 @@ const saveMetaLead = async (event, pageId) => {
         adName: 'Sample Test Ad',
         platform: 'facebook',
       },
-      notes: [{ note: 'Sample lead created from Meta Webhook Test Ping.', createdBy: null }],
+      notes: [{ content: 'Sample lead created from Meta Webhook Test Ping.', addedBy: null }],
     });
 
-    try {
-      const { executeWorkflowEngine } = require('./workflowController');
-      executeWorkflowEngine('lead_created', testLead).catch(() => {});
-      const { sendLeadWelcomeGreeting } = require('../services/whatsappService');
-      sendLeadWelcomeGreeting(testLead).catch(() => {});
-    } catch {}
-
+    triggerLeadAutomations(testLead, 'Meta test lead');
     return true;
   }
 
@@ -95,23 +157,26 @@ const saveMetaLead = async (event, pageId) => {
   }
 
   const fields = Array.isArray(metaLead.field_data) ? metaLead.field_data : [];
-  const email = getFieldValue(fields, ['email', 'e-mail']).toLowerCase();
-  const firstName = getFieldValue(fields, ['first_name', 'firstname']);
-  const lastName = getFieldValue(fields, ['last_name', 'lastname']);
-  const name = getFieldValue(fields, ['full_name', 'name']) || `${firstName} ${lastName}`.trim();
-  const phone = getFieldValue(fields, ['phone_number', 'phone', 'mobile_number']);
+  const email = getFieldValue(fields, FIELD_ALIASES.email).toLowerCase();
+  const firstName = getFieldValue(fields, FIELD_ALIASES.firstName);
+  const lastName = getFieldValue(fields, FIELD_ALIASES.lastName);
+  const name = getFieldValue(fields, FIELD_ALIASES.fullName) || `${firstName} ${lastName}`.trim();
+  const phone = cleanMetaPhone(getFieldValue(fields, FIELD_ALIASES.phone));
+  const company = getFieldValue(fields, FIELD_ALIASES.company);
+  const industry = getFieldValue(fields, FIELD_ALIASES.industry);
+  const notes = buildMetaFormNotes(fields);
 
   const newLead = await Lead.create({
     name: name || email || phone || `Meta Lead #${String(event.leadgen_id).slice(-6)}`,
-    email: email || undefined,
-    phone: phone || undefined,
-    company: getFieldValue(fields, ['company_name', 'company', 'business_name']),
-    industry: getFieldValue(fields, ['industry']),
+    email: email || '',
+    phone: phone || '',
+    company: company || '',
+    industry: industry || '',
     source: 'meta',
     tenantCompany,
     metaLeadId: event.leadgen_id,
     metaAttribution: {
-      pageId,
+      pageId: pageId || event.page_id,
       formId: metaLead.form_id || event.form_id,
       campaignId: metaLead.campaign_id || event.campaign_id,
       adId: metaLead.ad_id || event.ad_id,
@@ -120,17 +185,11 @@ const saveMetaLead = async (event, pageId) => {
       adsetName: metaLead.adset_name || event.adset_name,
       platform: metaLead.platform,
     },
+    ...(notes.length > 0 ? { notes } : {}),
   });
 
   // Execute active workflow automation rules (WhatsApp, Email, Auto-assignment)
-  try {
-    const { executeWorkflowEngine } = require('./workflowController');
-    executeWorkflowEngine('lead_created', newLead).catch(err => console.warn('Workflow execution warning for Meta lead:', err.message));
-    const { sendLeadWelcomeGreeting } = require('../services/whatsappService');
-    sendLeadWelcomeGreeting(newLead).catch(err => console.warn('WhatsApp welcome greeting warning for Meta lead:', err.message));
-  } catch (wfErr) {
-    console.warn('Workflow engine warning for Meta lead:', wfErr.message);
-  }
+  triggerLeadAutomations(newLead, 'Meta lead');
 
   return true;
 };
