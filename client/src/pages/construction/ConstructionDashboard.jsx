@@ -56,7 +56,7 @@ const ConstructionDashboard = () => {
         jobs.push(constructionService.getProjects({ search: search.trim() }).then((response) => setProjects(response.data.data || [])));
       }
       if (['overview', 'vendors', 'estimates'].includes(section)) {
-        jobs.push(constructionService.getVendors({ status: 'active' }).then((response) => setVendors(response.data.data || [])));
+        jobs.push(constructionService.getVendors(section === 'vendors' ? {} : { status: 'active' }).then((response) => setVendors(response.data.data || [])));
       }
       if (['overview', 'projects'].includes(section)) {
         jobs.push(salesService.getLeads({ search: '', limit: 100 }).then((response) => setClients(response.data.data || [])));
@@ -225,6 +225,18 @@ const ConstructionDashboard = () => {
     }
   };
 
+  const deleteVendor = async (vendor) => {
+    const label = vendor.company ? `${vendor.company} (${vendor.name})` : vendor.name;
+    if (!window.confirm(`Delete vendor "${label}" permanently?`)) return;
+    try {
+      await constructionService.deleteVendor(vendor._id);
+      flash('Vendor deleted.');
+      await fetchData();
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Could not delete this vendor.');
+    }
+  };
+
   const actions = (
     <div className="con-actions">
       {section === 'projects' && <button className="con-button con-button--primary" onClick={() => openProject()}><FiPlus /> New project</button>}
@@ -362,7 +374,7 @@ const ConstructionDashboard = () => {
                 <label className="con-search"><FiSearch /><input type="search" placeholder="Search vendor, company, trade, or phone" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
                 <span className="con-count">{filteredVendors.length} trade partners</span>
               </div>
-              {filteredVendors.length ? <div className="con-vendor-grid">{filteredVendors.map((vendor) => <VendorCard key={vendor._id} vendor={vendor} onEdit={() => openVendor(vendor)} onDeactivate={() => deactivateVendor(vendor)} />)}</div> : <EmptyState icon={FiUsers} title="Build your trusted vendor network" description="Keep supplier, contractor, equipment, and specialist contacts close to every project." action="Add first vendor" onClick={() => openVendor()} />}
+              {filteredVendors.length ? <div className="con-vendor-grid">{filteredVendors.map((vendor) => <VendorCard key={vendor._id} vendor={vendor} onEdit={() => openVendor(vendor)} onDeactivate={() => deactivateVendor(vendor)} onDelete={() => deleteVendor(vendor)} />)}</div> : <EmptyState icon={FiUsers} title="Build your trusted vendor network" description="Keep supplier, contractor, equipment, and specialist contacts close to every project." action="Add first vendor" onClick={() => openVendor()} />}
             </section>
           )}
         </>
@@ -455,13 +467,24 @@ const ProjectCard = ({ project, onEdit, onDelete, onEstimate, onStatus }) => {
   );
 };
 
-const VendorCard = ({ vendor, onEdit, onDeactivate }) => (
+const VendorCard = ({ vendor, onEdit, onDeactivate, onDelete }) => (
   <article className="con-vendor-card">
     <div className="con-vendor-card__top"><div className="con-vendor-avatar"><FiUsers /></div><span className="con-vendor-trade">{titleCase(vendor.category)}</span></div>
     <h3>{vendor.company || vendor.name}</h3><p>{vendor.company ? vendor.name : titleCase(vendor.category)}</p>
     <a href={`tel:${vendor.phone}`} className="con-vendor-contact">{vendor.phone}</a>{vendor.email && <a href={`mailto:${vendor.email}`} className="con-vendor-contact">{vendor.email}</a>}
     {vendor.address && <span className="con-vendor-address"><FiMapPin /> {vendor.address}</span>}
-    <div className="con-vendor-card__footer"><span className="con-status con-status--active">Active partner</span><div><button className="con-icon-action" onClick={onEdit} aria-label={`Edit ${vendor.name}`}><FiEdit2 /></button><button className="con-icon-action con-icon-action--danger" onClick={onDeactivate} aria-label={`Deactivate ${vendor.name}`}><FiX /></button></div></div>
+    <div className="con-vendor-card__footer">
+      <span className={`con-status con-status--${vendor.status === 'active' ? 'active' : 'on_hold'}`}>
+        {vendor.status === 'active' ? 'Active partner' : 'Inactive'}
+      </span>
+      <div>
+        <button className="con-icon-action" onClick={onEdit} title="Edit vendor" aria-label={`Edit ${vendor.name}`}><FiEdit2 /></button>
+        {vendor.status === 'active' && (
+          <button className="con-icon-action" onClick={onDeactivate} title="Mark inactive" aria-label={`Deactivate ${vendor.name}`}><FiX /></button>
+        )}
+        <button className="con-icon-action con-icon-action--danger" onClick={onDelete} title="Delete vendor" aria-label={`Delete ${vendor.name}`}><FiTrash2 /></button>
+      </div>
+    </div>
   </article>
 );
 

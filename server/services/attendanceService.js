@@ -347,6 +347,188 @@ class AttendanceService {
   }
 
   /**
+   * Add or overwrite a manual / backdated ("old") attendance entry
+   * @param {Object} data - { employeeId, date, status, checkIn, checkOut, checkInTime, checkOutTime, timezoneOffsetMinutes, notes, overwrite }
+   * @param {Object} user - Current user
+   * @returns {Promise<Object>}
+   */
+  async markManualAttendance(data = {}, user) {
+    const { employeeId, date, status = 'present', notes = '', overwrite = false } = data;
+
+    if (!employeeId) {
+      throw new AppError('Employee is required', 400);
+    }
+    if (!date) {
+      throw new AppError('Attendance date is required', 400);
+    }
+
+    const allowedStatuses = ['present', 'late', 'wfh', 'half-day', 'absent', 'leave'];
+    if (!allowedStatuses.includes(status)) {
+      throw new AppError(`Invalid status. Must be one of: ${allowedStatuses.join(', ')}`, 400);
+    }
+
+    const roleSlug = typeof user.role === 'object' ? user.role?.slug : user.role;
+    const isAllowedRole =
+      roleSlug === 'super_admin' ||
+      roleSlug === 'admin' ||
+      /_admin$/.test(roleSlug || '') ||
+      /_manager$/.test(roleSlug || '');
+
+    if (!isAllowedRole) {
+      throw new AppError('Not authorized to add manual attendance', 403);
+    }
+
+    const employee = await employeeRepository.findById(employeeId);
+    if (!employee) {
+      throw new AppError('Employee not found', 404);
+    }
+
+    const canAccess = await canAccessEmployeeResource(employee, user);
+    if (!canAccess) {
+      throw new AppError('Not authorized to manage attendance for this employee', 403);
+    }
+
+    const isGlobalHR = roleSlug === 'super_admin' || roleSlug === 'admin' || roleSlug === 'hrm_admin';
+    if (!isGlobalHR) {
+      const currentEmployee = await employeeRepository.findByUserId(user._id);
+      if (currentEmployee?.department && employee.department && currentEmployee.department !== employee.department) {
+        throw new AppError('Not authorized to manage attendance outside your department', 403);
+      }
+    }
+
+    // Parse YYYY-MM-DD strictly to prevent rollover bugs (e.g. Feb 31)
+    const dateStr = String(date).trim().slice(0, 10);
+    const dateMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!dateMatch) {
+      throw new AppError('Date must be in YYYY-MM-DD format', 400);
+    }
+    const year = parseInt(dateMatch[1], 10);
+    const month = parseInt(dateMatch[2], 10);
+    const day = parseInt(dateMatch[3], 10);
+    const utcCheck = new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
+    if (
+      utcCheck.getUTCFullYear() !== year ||
+      utcCheck.getUTCMonth() !== month - 1 ||
+      utcCheck.getUTCDate() !== day
+    ) {
+      throw new AppError('Invalid calendar date', 400);
+    }
+
+    // Disallow future dates (allowing up to IST/UTC+14 "today")
+    const offsetMin = Number.isFinite(Number(data.timezoneOffsetMinutes))
+      ? Number(data.timezoneOffsetMinutes)
+      : -330; // Default IST (-330 mins) if omitted
+    const clientTodayStr = new Date(Date.now() - offsetMin * 60000).toISOString().slice(0, 10);
+    if (dateStr > clientTodayStr) {
+      throw new AppError('Cannot mark attendance for a future date', 400);
+    }
+
+    const parseDateTimeInput = (isoVal, timeVal) => {
+      if (isoVal) {
+        const parsed = new Date(isoVal);
+        if (isNaN(parsed.getTime())) {
+          throw new AppError('Invalid check-in or check-out timestamp', 400);
+        }
+        return parsed;
+      }
+      if (timeVal) {
+        const tm = String(timeVal).trim().match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+        if (!tm) {
+          throw new AppError('Time must be in HH:mm format', 400);
+        }
+        const hh = parseInt(tm[1], 10);
+        const mm = parseInt(tm[2], 10);
+        const ss = tm[3] ? parseInt(tm[3], 10) : 0;
+        if (hh > 23 || mm > 59 || ss > 59) {
+          throw new AppError('Invalid time value', 400);
+        }
+        return new Date(Date.UTC(year, month - 1, day, hh, mm, ss, 0) + offsetMin * 60000);
+      }
+      return null;
+    };
+
+    const requiresTime = !['absent', 'leave'].includes(status);
+    let checkInDate = parseDateTimeInput(data.checkIn, data.checkInTime);
+    let checkOutDate = parseDateTimeInput(data.checkOut, data.checkOutTime);
+
+    if (requiresTime && !checkInDate) {
+      throw new AppError('Check-in time is required for this status', 400);
+    }
+
+    let hoursWorked = 0;
+    if (checkInDate && checkOutDate) {
+      if (checkOutDate <= checkInDate) {
+        throw new AppError('Check-out time must be after check-in time', 400);
+      }
+      hoursWorked = Math.round(((checkOutDate - checkInDate) / 3600000) * 100) / 100;
+    }
+
+    const isLate = status === 'late';
+    let lateMinutes = 0;
+    if (isLate && checkInDate && employee.attendanceSettings?.shiftTimings?.startTime) {
+      const shiftStart = parseDateTimeInput(null, employee.attendanceSettings.shiftTimings.startTime);
+      if (shiftStart && checkInDate > shiftStart) {
+        lateMinutes = Math.floor((checkInDate - shiftStart) / 60000);
+      }
+    }
+
+    // Find any existing record on that same calendar day (UTC or IST)
+    const searchStart = new Date(utcCheck.getTime() - 24 * 3600000);
+    const searchEnd = new Date(utcCheck.getTime() + 24 * 3600000);
+    const nearbyRecords = await attendanceRepository.findByDateRange(employeeId, searchStart, searchEnd, {
+      populate: '',
+    });
+    const existing = nearbyRecords.find((rec) => {
+      if (attendanceRepository.isSameDay(rec.date, utcCheck)) return true;
+      const recUtcDate = new Date(rec.date).toISOString().slice(0, 10);
+      return recUtcDate === dateStr;
+    });
+
+    const trimmedNotes = String(notes || '').trim();
+    const recordPayload = {
+      date: utcCheck,
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
+      hoursWorked,
+      status,
+      isLate,
+      lateMinutes,
+      checkInMethod: checkInDate ? 'manual' : '',
+      checkOutMethod: checkOutDate ? 'manual' : '',
+      notes: trimmedNotes,
+      correctedBy: user._id,
+      correctedAt: new Date(),
+    };
+
+    if (existing) {
+      if (!overwrite) {
+        throw new AppError(
+          'Attendance record already exists for this date. Enable "Update existing record" to overwrite it.',
+          409
+        );
+      }
+      const updated = await attendanceRepository.updateById(existing._id, recordPayload);
+      return {
+        success: true,
+        data: updated,
+        message: 'Attendance updated for selected date',
+      };
+    }
+
+    const created = await attendanceRepository.create({
+      employee: employeeId,
+      ...recordPayload,
+    });
+    const populated = await attendanceRepository.findById(created._id, { populate: 'employee' });
+
+    return {
+      success: true,
+      data: populated || created,
+      message: 'Old attendance added successfully',
+    };
+  }
+
+  /**
    * Get today's attendance status
    * @param {String} employeeId - Employee ID
    * @returns {Promise<Object>}

@@ -35,6 +35,7 @@ export const employeeService = {
   getAttendanceSelf: (params) => api.get('/attendance', { params }),
   getTodayStatusSelf: () => api.get('/attendance/today'),
   getAllAttendance: (params) => api.get('/employees/attendance/all', { params }),
+  markManualAttendance: (data) => api.post('/employees/attendance/manual', data),
 
   createLeave: (data) => {
     // Format payload to prevent 400 errors

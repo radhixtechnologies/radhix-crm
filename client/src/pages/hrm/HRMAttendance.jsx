@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { employeeService } from '../../services/employeeService';
-import { FiClock, FiLogIn, FiLogOut, FiCalendar, FiUsers, FiSearch, FiFilter, FiChevronDown, FiChevronUp, FiX, FiHome, FiCheck, FiUserCheck } from 'react-icons/fi';
+import { FiClock, FiLogIn, FiLogOut, FiCalendar, FiUsers, FiSearch, FiFilter, FiChevronDown, FiChevronUp, FiX, FiHome, FiCheck, FiUserCheck, FiPlus } from 'react-icons/fi';
 import Loader from '../../components/common/Loader';
+import AddOldAttendanceModal from '../../components/Employees/AddOldAttendanceModal';
 import { formatDate } from '../../utils/format';
 import dayjs from 'dayjs';
 import '../../styles/employee/attendance.css';
 
 const HRMAttendance = () => {
-    const { user, isAdmin, isSuperAdmin } = useAuth();
+    const { user, isAdmin, isSuperAdmin, roleSlug } = useAuth();
+    const canManageOldAttendance = isAdmin || isSuperAdmin || roleSlug === 'hrm_admin' || /_admin$/.test(roleSlug || '') || /_manager$/.test(roleSlug || '');
+    const [showOldModal, setShowOldModal] = useState(false);
     const [attendance, setAttendance] = useState(null);
     const [attendanceHistory, setAttendanceHistory] = useState([]);
     const [initialLoading, setInitialLoading] = useState(true);
@@ -284,6 +287,27 @@ const HRMAttendance = () => {
         }
     };
 
+    const handleOldAttendanceAdded = async (_record, addedDate) => {
+        const needsFromUpdate = addedDate && addedDate < activeFilters.dateFrom;
+        const needsToUpdate = addedDate && addedDate > activeFilters.dateTo;
+
+        if (needsFromUpdate || needsToUpdate) {
+            const updatedFilters = {
+                ...activeFilters,
+                dateFrom: needsFromUpdate ? addedDate : activeFilters.dateFrom,
+                dateTo: needsToUpdate ? addedDate : activeFilters.dateTo,
+            };
+            setFilterInputs(updatedFilters);
+            setActiveFilters(updatedFilters);
+        } else if (viewMode === 'my') {
+            await fetchAttendance();
+            await fetchAttendanceHistory();
+        } else {
+            await fetchAllAttendance();
+        }
+        alert('Old attendance added successfully!');
+    };
+
     const today = dayjs().format('YYYY-MM-DD');
     const isCheckedIn = attendance && attendance.checkIn && dayjs(attendance.date).isSame(today, 'day');
     const isCheckedOut = attendance && attendance.checkOut && dayjs(attendance.date).isSame(today, 'day');
@@ -298,8 +322,15 @@ const HRMAttendance = () => {
                         Monitor and manage employee attendance
                     </p>
                 </div>
-                <div className="header-actions">
-                    {/* Command Center Mode: No toggle needed, purely 'all' view */}
+                <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                    {canManageOldAttendance && (
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => setShowOldModal(true)}
+                        >
+                            <FiPlus /> Add Old Attendance
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -835,6 +866,12 @@ const HRMAttendance = () => {
                     </div>
                 )}
             </div>
+
+            <AddOldAttendanceModal
+                isOpen={showOldModal}
+                onClose={() => setShowOldModal(false)}
+                onSuccess={handleOldAttendanceAdded}
+            />
         </div>
     );
 };

@@ -26,7 +26,7 @@ const {
   approveTask,
   rejectTask,
 } = require('../controllers/employeeController');
-const { getAllAttendance } = require('../controllers/attendanceController');
+const { getAllAttendance, markManualAttendance } = require('../controllers/attendanceController');
 const {
   getTimesheets,
   getTimesheet,
@@ -124,6 +124,7 @@ router.get('/dashboard', checkModuleAccess('employee'), getEmployeeDashboard);
 // Attendance routes - MUST come before any /:id routes
 // Get all employees attendance (accessible to all, filtered by department in service layer)
 router.get('/attendance/all', checkModuleAccess('employee'), getAllAttendance);
+router.post('/attendance/manual', checkModuleAccess('employee'), markManualAttendance);
 
 // Exit Process - Must come before /:id
 const {

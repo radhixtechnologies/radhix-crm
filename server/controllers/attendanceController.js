@@ -69,3 +69,10 @@ exports.checkOut = async (req, res, next) => {
 exports.getAllAttendance = async (req, res, next) => {
   try { res.json(await attendanceService.getAllAttendance(req.query, req.user)); } catch (error) { next(error); }
 };
+
+exports.markManualAttendance = async (req, res, next) => {
+  try {
+    const result = await attendanceService.markManualAttendance(req.body, req.user);
+    res.status(201).json(result);
+  } catch (error) { next(error); }
+};

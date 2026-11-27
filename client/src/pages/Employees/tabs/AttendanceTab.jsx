@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
+import { FiPlus } from 'react-icons/fi';
+import { useAuth } from '../../../context/AuthContext';
 import { employeeService } from '../../../services/employeeService';
 import { formatDate } from '../../../utils/format';
 import AttendanceCalendar from '../../../components/Employees/AttendanceCalendar';
+import AddOldAttendanceModal from '../../../components/Employees/AddOldAttendanceModal';
 import '../../../styles/attendance.css';
 
 const AttendanceTab = ({ employeeId }) => {
+  const { isAdmin, isSuperAdmin, roleSlug } = useAuth();
+  const canManageOldAttendance = isAdmin || isSuperAdmin || roleSlug === 'hrm_admin' || /_admin$/.test(roleSlug || '') || /_manager$/.test(roleSlug || '');
+  const [showOldModal, setShowOldModal] = useState(false);
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
@@ -33,19 +39,30 @@ const AttendanceTab = ({ employeeId }) => {
     }
   };
 
+  const handleOldAttendanceAdded = async (_record, addedDate) => {
+    const needsStart = addedDate && addedDate < startDate;
+    const needsEnd = addedDate && addedDate > endDate;
+    if (needsStart) setStartDate(addedDate);
+    if (needsEnd) setEndDate(addedDate);
+    if (!needsStart && !needsEnd) {
+      await fetchAttendance();
+    }
+    alert('Old attendance added successfully!');
+  };
+
   if (loading) {
     return <div style={{ textAlign: 'center', padding: '40px' }}>Loading attendance...</div>;
   }
 
   return (
     <div className="attendance-tab">
-      <div style={{ marginBottom: '24px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+      <div style={{ marginBottom: '24px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
         <input
           type="date"
           className="form-input"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
-          style={{ minWidth: '150px' }}
+          style={{ minWidth: '150px', width: 'auto' }}
         />
         <span style={{ alignSelf: 'center' }}>to</span>
         <input
@@ -53,8 +70,17 @@ const AttendanceTab = ({ employeeId }) => {
           className="form-input"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
-          style={{ minWidth: '150px' }}
+          style={{ minWidth: '150px', width: 'auto' }}
         />
+        {canManageOldAttendance && (
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowOldModal(true)}
+            style={{ marginLeft: 'auto' }}
+          >
+            <FiPlus /> Add Old Attendance
+          </button>
+        )}
       </div>
 
       <div className="card" style={{ marginBottom: '24px' }}>
@@ -113,6 +139,13 @@ const AttendanceTab = ({ employeeId }) => {
           </tbody>
         </table>
       </div>
+
+      <AddOldAttendanceModal
+        isOpen={showOldModal}
+        onClose={() => setShowOldModal(false)}
+        onSuccess={handleOldAttendanceAdded}
+        defaultEmployeeId={employeeId}
+      />
     </div>
   );
 };
