@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiEdit, FiMail, FiFileText, FiDownload, FiArrowLeft, FiDollarSign, FiCheckCircle, FiClock } from 'react-icons/fi';
-import { financeService } from '../../services/financeService';
+import { FiEdit, FiMail, FiFileText, FiDownload, FiArrowLeft, FiDollarSign, FiCheckCircle, FiClock, FiPrinter } from 'react-icons/fi';
+import { financeService, resolveServerOrigin } from '../../services/financeService';
 import InvoiceStatusBadge from '../../components/Finance/InvoiceStatusBadge';
+import TaxInvoiceSheet from '../../components/Finance/TaxInvoiceSheet';
 import Loader from '../../components/common/Loader';
 import { formatCurrency, formatDate } from '../../utils/format';
 import UpiPaymentQR from '../../components/common/UpiPaymentQR';
@@ -12,6 +13,9 @@ const InvoiceDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [invoice, setInvoice] = useState(null);
+  const [sellerDetails, setSellerDetails] = useState({});
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  const [viewMode, setViewMode] = useState('tax-invoice'); // 'tax-invoice' | 'summary'
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,6 +28,8 @@ const InvoiceDetails = () => {
       const res = await financeService.getInvoice(id);
       if (res.data.success) {
         setInvoice(res.data.data);
+        setSellerDetails(res.data.sellerDetails || {});
+        setQrDataUrl(res.data.qrDataUrl || '');
       }
     } catch (error) {
       console.error('Error fetching invoice:', error);
@@ -40,7 +46,7 @@ const InvoiceDetails = () => {
         const pdfUrl = res.data.data.pdfUrl;
         await fetchInvoice();
         if (pdfUrl) {
-          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+          const apiUrl = resolveServerOrigin();
           const fullUrl = pdfUrl.startsWith('http') ? pdfUrl : `${apiUrl}${pdfUrl.startsWith('/') ? pdfUrl : '/' + pdfUrl}`;
           window.open(fullUrl, '_blank');
         }
@@ -117,11 +123,20 @@ const InvoiceDetails = () => {
 
         <div className="header-actions-row">
           <div className="primary-actions">
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => setViewMode(viewMode === 'tax-invoice' ? 'summary' : 'tax-invoice')}
+            >
+              <FiFileText /> <span className="btn-text">{viewMode === 'tax-invoice' ? 'Compact Summary' : 'GST Tax Invoice View'}</span>
+            </button>
+            <button className="btn btn-secondary btn-sm" onClick={() => window.print()}>
+              <FiPrinter /> <span className="btn-text">Print</span>
+            </button>
             <button className="btn btn-secondary btn-sm" onClick={() => navigate(`/finance/invoices/${id}/edit`)}>
               <FiEdit /> <span className="btn-text">Edit</span>
             </button>
             <button className="btn btn-secondary btn-sm" onClick={handleGeneratePDF} disabled={loading}>
-              <FiFileText /> <span className="btn-text">Generate PDF</span>
+              <FiFileText /> <span className="btn-text">Generate Tax PDF</span>
             </button>
             <button className="btn btn-secondary btn-sm" onClick={handleSendEmail} disabled={loading}>
               <FiMail /> <span className="btn-text">Send Email</span>
@@ -130,7 +145,7 @@ const InvoiceDetails = () => {
               <button
                 className="btn btn-primary btn-sm"
                 onClick={() => {
-                  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                  const apiUrl = resolveServerOrigin();
                   const fullUrl = invoice.pdfUrl.startsWith('http') ? invoice.pdfUrl : `${apiUrl}${invoice.pdfUrl.startsWith('/') ? invoice.pdfUrl : '/' + invoice.pdfUrl}`;
                   window.open(fullUrl, '_blank');
                 }}
@@ -177,7 +192,10 @@ const InvoiceDetails = () => {
       <main className="details-grid">
         {/* LEFT COLUMN: INVOICE DOCUMENT */}
         <div className="left-column">
-          <div className="details-card">
+          {viewMode === 'tax-invoice' ? (
+            <TaxInvoiceSheet invoice={invoice} sellerDetails={sellerDetails} qrDataUrl={qrDataUrl} />
+          ) : (
+            <div className="details-card">
             <div className="card-header-sm">
               <h3>Invoice Document</h3>
             </div>
@@ -267,6 +285,7 @@ const InvoiceDetails = () => {
               )}
             </div>
           </div>
+          )}
         </div>
 
         {/* RIGHT COLUMN: ACTIONS & INFO */}

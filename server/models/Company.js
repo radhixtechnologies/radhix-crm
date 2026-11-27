@@ -92,6 +92,37 @@ const companySchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
+    pan: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    cin: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    website: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    stateName: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    stateCode: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    bankDetails: {
+      bankName: { type: String, default: '', trim: true },
+      branch: { type: String, default: '', trim: true },
+      accountNumber: { type: String, default: '', trim: true },
+      ifscCode: { type: String, default: '', trim: true },
+    },
     branding: {
       brandColor: { type: String, default: '#6366f1' },
       accentColor: { type: String, default: '#8b5cf6' },
@@ -105,6 +136,9 @@ const companySchema = new mongoose.Schema(
       invoiceHeaderNote: { type: String, default: 'Thank you for your business!' },
       invoiceFooterTerms: { type: String, default: 'Payment is due within 15 days of invoice date. All disputes subject to local jurisdiction.' },
       signatureUrl: { type: String, default: '' },
+      signatoryName: { type: String, default: '' },
+      declarationText: { type: String, default: 'Certified that Particulars given above are true & correct under GST Act 2017 and amount indicated represent the price actually charged and that there is no flow of additional consideration directly or indirectly from buyer.' },
+      jurisdiction: { type: String, default: '' },
     },
   },
   { timestamps: true }

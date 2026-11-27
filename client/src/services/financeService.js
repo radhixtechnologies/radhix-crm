@@ -1,6 +1,10 @@
 import api from './api';
 
-const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://radhix-crm.onrender.com/api' : 'http://localhost:5000/api');
+const API_URL = import.meta.env.VITE_API_URL || (
+  import.meta.env.PROD ? 'https://api.radhix.com/api' : 'http://localhost:5000/api'
+);
+
+export const resolveServerOrigin = () => API_URL.replace(/\/api\/?$/, '');
 
 export const financeService = {
   // Client services (for invoice creation) - returns ALL clients without pagination
@@ -15,6 +19,15 @@ export const financeService = {
   getInvoice: (id) => api.get(`/finance/invoices/${id}`),
   createInvoice: (data) => api.post('/finance/invoices', data),
   createInvoiceFromDeal: (dealId) => api.post(`/finance/invoices/from-deal/${dealId}`),
+  parseInvoicePDF: (formData) => api.post('/finance/invoices/parse-pdf', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  importInvoicePDF: (payload) => {
+    const isFormData = typeof FormData !== 'undefined' && payload instanceof FormData;
+    return api.post('/finance/invoices/import-pdf', payload, isFormData ? {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    } : undefined);
+  },
   updateInvoice: (id, data) => api.put(`/finance/invoices/${id}`, data),
   deleteInvoice: (id) => api.delete(`/finance/invoices/${id}`),
   generateInvoicePDF: (id) => api.post(`/finance/invoices/${id}/generate-pdf`),

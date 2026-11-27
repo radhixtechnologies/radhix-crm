@@ -1,7 +1,18 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const { protect, checkModuleAccess, authorize } = require('../middlewares/auth');
 const { uploadReceipt } = require('../utils/upload');
+
+const uploadInvoicePdf = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const isPdf = /\.pdf$/i.test(file.originalname || '') || file.mimetype === 'application/pdf';
+    if (isPdf) return cb(null, true);
+    cb(new Error('Only PDF (.pdf) invoice files are allowed'));
+  },
+}).single('file');
 
 // Invoice controllers
 const {
@@ -9,6 +20,8 @@ const {
   getInvoice,
   createInvoice,
   createInvoiceFromDeal,
+  parseInvoicePDF,
+  importInvoicePDF,
   updateInvoice,
   deleteInvoice,
   generatePDF,
@@ -83,6 +96,9 @@ router.use(checkModuleAccess('finance'));
 router.get('/clients', getClients);
 
 // Invoice routes
+router.post('/invoices/parse-pdf', uploadInvoicePdf, parseInvoicePDF);
+router.post('/invoices/import-pdf', uploadInvoicePdf, importInvoicePDF);
+
 router.route('/invoices')
   .get(getInvoices)
   .post(createInvoice);

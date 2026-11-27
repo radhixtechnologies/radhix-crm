@@ -7,7 +7,7 @@ const clientSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
+    default: '',
   },
   phone: {
     type: String,
@@ -16,6 +16,21 @@ const clientSchema = new mongoose.Schema({
   company: {
     type: String,
     required: true,
+  },
+  gstin: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  pan: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  stateCode: {
+    type: String,
+    default: '',
+    trim: true,
   },
   industry: {
     type: String,

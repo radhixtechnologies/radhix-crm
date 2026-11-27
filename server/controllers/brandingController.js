@@ -12,8 +12,45 @@ const DEFAULT_BRANDING = {
   supportPhone: '+91 98765 43210',
   customDomain: '',
   invoiceHeaderNote: 'Thank you for your business! We appreciate your partnership.',
-  invoiceFooterTerms: 'Payment is due within 15 days of invoice date. All disputes subject to local jurisdiction.',
+  invoiceFooterTerms: '1. Interest @24% P.A. will be charged extra if not paid within due date.\n2. Goods/Services once billed will not be reversed.\n3. All disputes subject to local jurisdiction.',
   signatureUrl: '',
+  signatoryName: '',
+  declarationText: 'Certified that Particulars given above are true & correct under GST Act 2017 and amount indicated represent the price actually charged and that there is no flow of additional consideration directly or indirectly from buyer.',
+  jurisdiction: '',
+};
+
+const formatBrandingResponse = (company) => {
+  const brandingObj = company.branding?.toObject ? company.branding.toObject() : (company.branding || {});
+  const addressObj = company.address?.toObject ? company.address.toObject() : (company.address || {});
+  const bankObj = company.bankDetails?.toObject ? company.bankDetails.toObject() : (company.bankDetails || {});
+  return {
+    ...DEFAULT_BRANDING,
+    ...brandingObj,
+    companyName: company.name || '',
+    companyEmail: company.email || '',
+    companyPhone: company.phone || '',
+    upiId: company.upiId || '',
+    upiName: company.upiName || '',
+    gstin: company.gstin || '',
+    pan: company.pan || '',
+    cin: company.cin || '',
+    website: company.website || '',
+    stateName: company.stateName || addressObj.state || '',
+    stateCode: company.stateCode || '',
+    address: {
+      street: addressObj.street || '',
+      city: addressObj.city || '',
+      state: addressObj.state || '',
+      postalCode: addressObj.postalCode || '',
+      country: addressObj.country || 'India',
+    },
+    bankDetails: {
+      bankName: bankObj.bankName || '',
+      branch: bankObj.branch || '',
+      accountNumber: bankObj.accountNumber || '',
+      ifscCode: bankObj.ifscCode || '',
+    },
+  };
 };
 
 // Helper to get or create company
@@ -56,20 +93,10 @@ exports.getBranding = async (req, res) => {
     }
 
     const company = await resolveUserCompany(user);
-    const branding = company.branding || DEFAULT_BRANDING;
 
     res.json({
       success: true,
-      data: {
-        ...DEFAULT_BRANDING,
-        ...(branding.toObject ? branding.toObject() : branding),
-        companyName: company.name,
-        companyEmail: company.email,
-        companyPhone: company.phone,
-        upiId: company.upiId,
-        upiName: company.upiName,
-        gstin: company.gstin,
-      },
+      data: formatBrandingResponse(company),
     });
   } catch (error) {
     console.error('Error fetching branding:', error);
@@ -125,12 +152,22 @@ exports.updateBranding = async (req, res) => {
       invoiceHeaderNote,
       invoiceFooterTerms,
       signatureUrl,
+      signatoryName,
+      declarationText,
+      jurisdiction,
       companyName,
       companyPhone,
       companyEmail,
       upiId,
       upiName,
       gstin,
+      pan,
+      cin,
+      website,
+      stateName,
+      stateCode,
+      address,
+      bankDetails,
     } = req.body;
 
     if (!company.branding) {
@@ -149,29 +186,34 @@ exports.updateBranding = async (req, res) => {
     if (invoiceHeaderNote !== undefined) company.branding.invoiceHeaderNote = invoiceHeaderNote;
     if (invoiceFooterTerms !== undefined) company.branding.invoiceFooterTerms = invoiceFooterTerms;
     if (signatureUrl !== undefined) company.branding.signatureUrl = signatureUrl;
+    if (signatoryName !== undefined) company.branding.signatoryName = signatoryName;
+    if (declarationText !== undefined) company.branding.declarationText = declarationText;
+    if (jurisdiction !== undefined) company.branding.jurisdiction = jurisdiction;
 
     if (companyName) company.name = companyName;
-    if (companyPhone) company.phone = companyPhone;
-    if (companyEmail) company.email = companyEmail;
+    if (companyPhone !== undefined) company.phone = companyPhone;
+    if (companyEmail !== undefined) company.email = companyEmail;
     if (upiId !== undefined) company.upiId = upiId;
     if (upiName !== undefined) company.upiName = upiName;
     if (gstin !== undefined) company.gstin = gstin;
+    if (pan !== undefined) company.pan = pan;
+    if (cin !== undefined) company.cin = cin;
+    if (website !== undefined) company.website = website;
+    if (stateName !== undefined) company.stateName = stateName;
+    if (stateCode !== undefined) company.stateCode = stateCode;
+    if (address && typeof address === 'object') {
+      company.address = { ...(company.address?.toObject?.() || company.address || {}), ...address };
+    }
+    if (bankDetails && typeof bankDetails === 'object') {
+      company.bankDetails = { ...(company.bankDetails?.toObject?.() || company.bankDetails || {}), ...bankDetails };
+    }
 
     await company.save();
 
     res.json({
       success: true,
       message: 'Branding and white-label settings updated successfully',
-      data: {
-        ...DEFAULT_BRANDING,
-        ...company.branding.toObject(),
-        companyName: company.name,
-        companyEmail: company.email,
-        companyPhone: company.phone,
-        upiId: company.upiId,
-        upiName: company.upiName,
-        gstin: company.gstin,
-      },
+      data: formatBrandingResponse(company),
     });
   } catch (error) {
     console.error('Error updating branding:', error);

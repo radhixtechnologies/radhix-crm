@@ -1,0 +1,417 @@
+.tax-invoice-sheet-wrapper {
+  background: #ffffff;
+  color: #000000;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 20px 24px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+  max-width: 900px;
+  margin: 0 auto;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.tax-inv-top-strip {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  align-items: end;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.tax-inv-top-center {
+  text-align: center;
+}
+
+.tax-inv-heading {
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: underline;
+  letter-spacing: 0.4px;
+}
+
+.tax-inv-subheading {
+  font-size: 11px;
+}
+
+.tax-inv-top-right {
+  text-align: right;
+  text-decoration: underline;
+}
+
+.tax-inv-outer-box {
+  border: 1.5px solid #111827;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.tax-inv-seller-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1.2px solid #111827;
+  gap: 14px;
+}
+
+.tax-inv-logo-wrap {
+  width: 96px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tax-inv-logo-wrap img {
+  max-width: 90px;
+  max-height: 66px;
+  object-fit: contain;
+}
+
+.tax-inv-seller-info {
+  flex: 1;
+  text-align: center;
+}
+
+.tax-inv-seller-info h2 {
+  margin: 0 0 2px;
+  font-size: 21px;
+  font-weight: 800;
+  color: #000;
+  letter-spacing: 0.2px;
+}
+
+.tax-inv-addr-line {
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.tax-inv-contact-line {
+  font-size: 11px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.tax-inv-cin-line {
+  font-size: 11.5px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.tax-inv-parties-grid {
+  display: grid;
+  grid-template-columns: 49% 51%;
+  border-bottom: 1.2px solid #111827;
+}
+
+.tax-inv-parties-left {
+  border-right: 1.2px solid #111827;
+  display: flex;
+  flex-direction: column;
+}
+
+.tax-inv-party-block {
+  padding: 8px 10px;
+}
+
+.tax-inv-shipped-block {
+  border-top: 1.2px solid #111827;
+}
+
+.tax-inv-party-heading {
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  margin-bottom: 4px;
+}
+
+.tax-inv-party-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.tax-inv-party-addr {
+  white-space: pre-line;
+  font-size: 11.5px;
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.tax-inv-party-meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11.5px;
+  margin-top: 2px;
+}
+
+.tax-inv-parties-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.tax-inv-meta-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+.tax-inv-meta-table td {
+  border-bottom: 1px solid #111827;
+  padding: 4px 6px;
+}
+
+.tax-inv-meta-table td + td {
+  border-left: 1px solid #111827;
+}
+
+.tax-inv-meta-table .meta-lbl {
+  width: 115px;
+  font-weight: 700;
+}
+
+.tax-inv-meta-table .meta-date-lbl {
+  width: 40px;
+  font-weight: 700;
+}
+
+.tax-inv-meta-table .meta-date-val {
+  width: 85px;
+}
+
+.tax-inv-irn-qr-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 8px 10px;
+  gap: 10px;
+  flex: 1;
+}
+
+.tax-inv-irn-text {
+  font-size: 11.5px;
+  flex: 1;
+  word-break: break-all;
+}
+
+.tax-inv-irn-text .irn-val,
+.tax-inv-irn-text .irn-hash {
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.tax-inv-qr-img img {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+}
+
+.tax-inv-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.tax-inv-items-table th,
+.tax-inv-items-table td {
+  border-right: 1px solid #111827;
+  padding: 6px 8px;
+  vertical-align: top;
+}
+
+.tax-inv-items-table th:last-child,
+.tax-inv-items-table td:last-child {
+  border-right: none;
+}
+
+.tax-inv-items-table thead th {
+  border-bottom: 1.2px solid #111827;
+  text-align: center;
+  font-weight: 700;
+  font-size: 11.5px;
+}
+
+.tax-inv-filler-row td {
+  height: 90px;
+}
+
+.tax-inv-items-total-row td {
+  border-top: 1px solid #111827;
+  border-bottom: 1.2px solid #111827;
+  padding: 5px 8px;
+}
+
+.tax-inv-items-total-row .no-left-border {
+  border-top: none;
+}
+
+.tax-inv-bottom-split {
+  display: grid;
+  grid-template-columns: 1fr 272px;
+  border-bottom: 1.2px solid #111827;
+}
+
+.tax-inv-logistics-bank {
+  border-right: 1.2px solid #111827;
+  display: flex;
+  flex-direction: column;
+}
+
+.tax-inv-row-strip {
+  padding: 4px 8px;
+  border-bottom: 1px solid #111827;
+  font-size: 11.5px;
+}
+
+.tax-inv-row-strip:last-child {
+  border-bottom: none;
+}
+
+.tax-inv-blank-strip {
+  height: 22px;
+}
+
+.tax-inv-two-col {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tax-inv-bank-block {
+  padding: 6px 8px;
+  border-bottom: 1px solid #111827;
+  font-size: 11.5px;
+  line-height: 1.45;
+  flex: 1;
+}
+
+.tax-inv-tax-summary {
+  display: flex;
+  flex-direction: column;
+}
+
+.tax-sum-row {
+  display: grid;
+  grid-template-columns: 1fr 108px;
+  border-bottom: 1px solid #111827;
+  font-size: 11.5px;
+}
+
+.tax-sum-row:last-child {
+  border-bottom: none;
+}
+
+.tax-sum-row span {
+  padding: 4px 8px;
+}
+
+.tax-sum-row span:first-child {
+  font-weight: 700;
+  border-right: 1px solid #111827;
+}
+
+.tax-sum-row span:last-child {
+  text-align: right;
+}
+
+.tax-sum-row.grand {
+  font-size: 12.5px;
+}
+
+.tax-inv-words-strip {
+  padding: 6px 8px;
+  border-bottom: 1.2px solid #111827;
+  font-size: 11.5px;
+}
+
+.tax-inv-footer-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  padding: 8px 10px;
+  gap: 16px;
+}
+
+.tax-inv-decl {
+  margin: 0 0 8px;
+  font-size: 10.5px;
+  line-height: 1.3;
+}
+
+.tax-inv-terms-title {
+  font-weight: 700;
+  text-decoration: underline;
+  font-size: 11.5px;
+  margin-bottom: 3px;
+}
+
+.tax-inv-terms-body {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.tax-inv-signatory-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.tax-inv-for-company {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.tax-inv-sign-mid {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.tax-inv-sign-name {
+  font-size: 13px;
+  letter-spacing: 0.4px;
+}
+
+.tax-inv-sign-img {
+  max-height: 48px;
+  max-width: 130px;
+  object-fit: contain;
+}
+
+.tax-inv-sign-label {
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.tax-inv-jurisdiction {
+  margin-top: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .tax-invoice-sheet-wrapper,
+  .tax-invoice-sheet-wrapper * {
+    visibility: visible;
+  }
+  .tax-invoice-sheet-wrapper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none;
+    padding: 8px;
+  }
+}

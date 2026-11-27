@@ -38,11 +38,32 @@ const BrandingSettings = () => {
     customDomain: '',
     companyName: '',
     gstin: '',
+    pan: '',
+    cin: '',
+    website: '',
+    stateName: '',
+    stateCode: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'India',
+    },
+    bankDetails: {
+      bankName: '',
+      branch: '',
+      accountNumber: '',
+      ifscCode: '',
+    },
     upiId: '',
     upiName: '',
     invoiceHeaderNote: 'Thank you for your business! We appreciate your partnership.',
-    invoiceFooterTerms: 'Payment is due within 15 days of invoice date. All disputes subject to local jurisdiction.',
+    invoiceFooterTerms: '1. Interest @24% P.A. will be charged extra if not paid within due date.\n2. Goods/Services once billed will not be reversed.',
     signatureUrl: '',
+    signatoryName: '',
+    declarationText: 'Certified that Particulars given above are true & correct under GST Act 2017 and amount indicated represent the price actually charged and that there is no flow of additional consideration directly or indirectly from buyer.',
+    jurisdiction: '',
   });
 
   const [activeTab, setActiveTab] = useState('theme');
@@ -54,6 +75,8 @@ const BrandingSettings = () => {
       setFormData(prev => ({
         ...prev,
         ...branding,
+        address: { ...prev.address, ...(branding.address || {}) },
+        bankDetails: { ...prev.bankDetails, ...(branding.bankDetails || {}) },
       }));
     }
   }, [branding]);
@@ -61,6 +84,13 @@ const BrandingSettings = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleNestedChange = (group, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [group]: { ...(prev[group] || {}), [field]: value },
+    }));
   };
 
   const handleColorSelect = (hex) => {
@@ -330,10 +360,186 @@ const BrandingSettings = () => {
                       name="gstin"
                       value={formData.gstin}
                       onChange={handleChange}
-                      placeholder="e.g. 29AAAAA0000A1Z5"
+                      placeholder="e.g. 07AAAAA0000A1Z5"
                       className="form-control"
                     />
                   </div>
+                </div>
+
+                <div className="form-row-2">
+                  <div className="form-group">
+                    <label>PAN Number</label>
+                    <input
+                      type="text"
+                      name="pan"
+                      value={formData.pan}
+                      onChange={handleChange}
+                      placeholder="e.g. AABCR1234D"
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>CIN Number</label>
+                    <input
+                      type="text"
+                      name="cin"
+                      value={formData.cin}
+                      onChange={handleChange}
+                      placeholder="e.g. U72900DL2026PTC000000"
+                      className="form-control"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row-2">
+                  <div className="form-group">
+                    <label>Company Website</label>
+                    <input
+                      type="text"
+                      name="website"
+                      value={formData.website}
+                      onChange={handleChange}
+                      placeholder="e.g. www.radhix.com"
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>State Code (GST 2-Digit)</label>
+                    <input
+                      type="text"
+                      name="stateCode"
+                      value={formData.stateCode}
+                      onChange={handleChange}
+                      placeholder="e.g. 07 (Delhi) / 06 (Haryana)"
+                      className="form-control"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Registered Office Street Address</label>
+                  <input
+                    type="text"
+                    value={formData.address?.street || ''}
+                    onChange={(e) => handleNestedChange('address', 'street', e.target.value)}
+                    placeholder="Building / Plot / Sector / Street"
+                    className="form-control"
+                  />
+                </div>
+
+                <div className="form-row-2">
+                  <div className="form-group">
+                    <label>City</label>
+                    <input
+                      type="text"
+                      value={formData.address?.city || ''}
+                      onChange={(e) => handleNestedChange('address', 'city', e.target.value)}
+                      placeholder="e.g. Noida / Faridabad"
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>State &amp; PIN Code</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        type="text"
+                        value={formData.address?.state || ''}
+                        onChange={(e) => handleNestedChange('address', 'state', e.target.value)}
+                        placeholder="State"
+                        className="form-control"
+                      />
+                      <input
+                        type="text"
+                        value={formData.address?.postalCode || ''}
+                        onChange={(e) => handleNestedChange('address', 'postalCode', e.target.value)}
+                        placeholder="PIN Code"
+                        className="form-control"
+                        style={{ maxWidth: '120px' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-row-2">
+                  <div className="form-group">
+                    <label>Bank Name (For Tax Invoice)</label>
+                    <input
+                      type="text"
+                      value={formData.bankDetails?.bankName || ''}
+                      onChange={(e) => handleNestedChange('bankDetails', 'bankName', e.target.value)}
+                      placeholder="e.g. ICICI BANK LTD"
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Bank Branch</label>
+                    <input
+                      type="text"
+                      value={formData.bankDetails?.branch || ''}
+                      onChange={(e) => handleNestedChange('bankDetails', 'branch', e.target.value)}
+                      placeholder="e.g. SECTOR-16, FARIDABAD"
+                      className="form-control"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row-2">
+                  <div className="form-group">
+                    <label>Bank Account Number</label>
+                    <input
+                      type="text"
+                      value={formData.bankDetails?.accountNumber || ''}
+                      onChange={(e) => handleNestedChange('bankDetails', 'accountNumber', e.target.value)}
+                      placeholder="Account No."
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>IFSC Code</label>
+                    <input
+                      type="text"
+                      value={formData.bankDetails?.ifscCode || ''}
+                      onChange={(e) => handleNestedChange('bankDetails', 'ifscCode', e.target.value.toUpperCase())}
+                      placeholder="e.g. ICIC0000083"
+                      className="form-control"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row-2">
+                  <div className="form-group">
+                    <label>Authorised Signatory Name</label>
+                    <input
+                      type="text"
+                      name="signatoryName"
+                      value={formData.signatoryName}
+                      onChange={handleChange}
+                      placeholder="e.g. SUDHIR KUMAR JADAUN"
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Jurisdiction City</label>
+                    <input
+                      type="text"
+                      name="jurisdiction"
+                      value={formData.jurisdiction}
+                      onChange={handleChange}
+                      placeholder="e.g. FARIDABAD / NEW DELHI"
+                      className="form-control"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>GST Declaration Text</label>
+                  <textarea
+                    rows={2}
+                    name="declarationText"
+                    value={formData.declarationText}
+                    onChange={handleChange}
+                    className="form-control"
+                  />
                 </div>
 
                 <div className="form-row-2">

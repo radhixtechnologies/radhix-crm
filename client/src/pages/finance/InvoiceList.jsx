@@ -13,10 +13,12 @@ import {
   FiAlertCircle,
   FiTrendingUp,
   FiDownload,
-  FiRefreshCw
+  FiRefreshCw,
+  FiUpload
 } from 'react-icons/fi';
-import { financeService } from '../../services/financeService';
+import { financeService, resolveServerOrigin } from '../../services/financeService';
 import InvoiceTable from '../../components/Finance/InvoiceTable';
+import ImportInvoicePdfModal from '../../components/Finance/ImportInvoicePdfModal';
 import Loader from '../../components/common/Loader';
 import '../../styles/finance/invoices.css';
 
@@ -60,6 +62,7 @@ const InvoiceList = () => {
   });
   const [selectedInvoices, setSelectedInvoices] = useState([]);
   const [bulkProcessing, setBulkProcessing] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const [showFilters, setShowFilters] = useState(false);
   const filterRef = useRef(null);
@@ -203,13 +206,12 @@ const InvoiceList = () => {
 
   const handleDownloadPDF = async (invoice) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const apiUrl = resolveServerOrigin();
 
       // Helper function to construct full PDF URL
       const getFullPdfUrl = (pdfUrl) => {
         if (!pdfUrl) return null;
         if (pdfUrl.startsWith('http')) return pdfUrl;
-        // Ensure pdfUrl starts with / if it doesn't already
         const normalizedUrl = pdfUrl.startsWith('/') ? pdfUrl : '/' + pdfUrl;
         return `${apiUrl}${normalizedUrl}`;
       };
@@ -336,6 +338,22 @@ const InvoiceList = () => {
           >
             <FiRefreshCw className={loading ? 'spin' : ''} />
             Refresh
+          </button>
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowImportModal(true)}
+            title="Import PDF Invoice and convert to GST Tax Invoice format"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              borderColor: '#2563eb',
+              color: '#2563eb',
+              background: '#eff6ff',
+              fontWeight: 600,
+            }}
+          >
+            <FiUpload /> Import PDF
           </button>
           <button className="btn btn-primary" onClick={() => navigate('/finance/invoices/new')}>
             <FiPlus /> Create Invoice
@@ -782,6 +800,18 @@ const InvoiceList = () => {
           </div>
         )}
       </div>
+
+      <ImportInvoicePdfModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImported={(importedInvoice) => {
+          setShowImportModal(false);
+          fetchInvoices(false);
+          if (importedInvoice?._id) {
+            navigate(`/finance/invoices/${importedInvoice._id}`);
+          }
+        }}
+      />
     </div>
   );
 };

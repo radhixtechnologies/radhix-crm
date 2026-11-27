@@ -1,6 +1,8 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const Company = require('../models/Company');
+const { generateGstTaxInvoicePDF } = require('./gstTaxInvoicePdf');
 
 const LOGO_PATH = path.join(__dirname, 'radhix-technologies-logo.png');
 
@@ -15,9 +17,28 @@ requiredDirs.forEach(dir => {
 });
 
 /**
- * Generate Invoice PDF - Professional Template for Software Development Company
+ * Generate Invoice PDF using Indian GST Tax Invoice template driven by Company/Branding settings.
  */
-exports.generateInvoicePDF = async (invoice, client, createdBy) => {
+exports.generateInvoicePDF = async (invoice, client, createdByOrCompany) => {
+  let company = null;
+  if (createdByOrCompany && (createdByOrCompany.branding || createdByOrCompany.bankDetails || createdByOrCompany.gstin !== undefined)) {
+    company = createdByOrCompany;
+  } else {
+    const ownerCandidate = createdByOrCompany?._id || invoice?.createdBy?._id || invoice?.createdBy;
+    if (createdByOrCompany?.company) {
+      company = await Company.findById(createdByOrCompany.company).lean();
+    }
+    if (!company && ownerCandidate) {
+      company = await Company.findOne({ owner: ownerCandidate }).lean();
+    }
+    if (!company) {
+      company = await Company.findOne().sort({ createdAt: 1 }).lean();
+    }
+  }
+  return generateGstTaxInvoicePDF(invoice, client || {}, company || {});
+};
+
+exports._legacyGenerateInvoicePDF = async (invoice, client, createdBy) => {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ margin: 50, size: 'A4' });
