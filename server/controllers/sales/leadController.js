@@ -6,6 +6,7 @@ const Deal = require('../../models/Deal');
 const Notification = require('../../models/Notification');
 const { executeWorkflowEngine } = require('../workflowController');
 const { applyTenantScope, getTenantCompanyId } = require('../../utils/tenantHelper');
+const { getIstDayRange, recordLeadRemarkAndFollowUp } = require('../../utils/followUpSync');
 
 const sendError = (res, error) => res.status(error.statusCode || 500).json({ success: false, message: error.message });
 const roleSlug = (user) => typeof user?.role === 'object' ? user.role?.slug : user?.role;
@@ -21,6 +22,17 @@ const populateAssignedTo = (query) => query.populate({
   select: 'user employeeId department designation',
   populate: { path: 'user', select: 'name email' },
 });
+
+const populateLeadRelations = (query) => populateAssignedTo(query)
+  .populate('campaign', 'name')
+  .populate('course', 'name code baseFee duration')
+  .populate('batch', 'name startDate endDate schedule capacity status')
+  .populate('convertedToStudent', 'studentId name status enrollmentDate')
+  .populate('notes.addedBy', 'name email')
+  .populate('communicationHistory.addedBy', 'name email')
+  .populate('lastRemark.addedBy', 'name email');
+
+const escapeRegex = (val) => String(val || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const getCurrentEmployee = (user) => Employee.findOne({ user: user._id, deletedAt: null });
 
@@ -50,24 +62,42 @@ const addAndCondition = (query, condition) => {
 };
 
 const buildLeadListQuery = async (req) => {
-  const { page = 1, limit = 50, search, status, source, campaign, owner, myLeads, instituteInquiry, industry } = req.query;
+  const { page = 1, limit = 50, search, status, source, campaign, owner, myLeads, instituteInquiry, industry, followUpBucket, sortBy } = req.query;
   const query = { isDeleted: { $ne: true } };
   if (industry) query.industry = industry;
   if (instituteInquiry === 'true') query.isInstituteInquiry = true;
   else if (instituteInquiry === 'false') query.isInstituteInquiry = { $ne: true };
   if (search) {
+    const rx = { $regex: escapeRegex(search.trim()), $options: 'i' };
     addAndCondition(query, {
       $or: [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { company: { $regex: search, $options: 'i' } },
-        { courseInterested: { $regex: search, $options: 'i' } },
+        { name: rx },
+        { phone: rx },
+        { email: rx },
+        { company: rx },
+        { courseInterested: rx },
       ],
     });
   }
   if (status) query.status = status;
   if (source) query.source = source;
   if (campaign) query.campaign = campaign;
+
+  if (followUpBucket) {
+    const { start, next } = getIstDayRange();
+    if (!status) {
+      query.status = { $nin: ['converted', 'lost'] };
+    }
+    if (followUpBucket === 'today') {
+      query.followUpDate = { $gte: start, $lt: next };
+    } else if (followUpBucket === 'overdue') {
+      query.followUpDate = { $ne: null, $lt: start };
+    } else if (followUpBucket === 'upcoming') {
+      query.followUpDate = { $gte: next };
+    } else if (followUpBucket === 'unscheduled') {
+      query.followUpDate = null;
+    }
+  }
 
   if (!canManageSalesTeam(req.user)) {
     query.assignedTo = { $in: await getOwnLeadAssignment(req.user) };
@@ -79,8 +109,15 @@ const buildLeadListQuery = async (req) => {
   }
 
   const scopedQuery = await applyTenantScope(query, req.user, 'lead');
+  const sortMap = {
+    newest: { createdAt: -1 },
+    oldest: { createdAt: 1 },
+    'value-high': { value: -1, createdAt: -1 },
+    'followup-soon': { followUpDate: 1, createdAt: -1 },
+  };
   return {
     query: scopedQuery,
+    sortSpec: sortMap[sortBy] || { createdAt: -1 },
     page: Math.max(1, Number(page)),
     limit: Math.min(500, Math.max(1, Number(limit))),
   };
@@ -122,7 +159,7 @@ exports.getLeadOwners = async (req, res) => {
 
 exports.getLeads = async (req, res) => {
   try {
-    const { query, page, limit } = await buildLeadListQuery(req);
+    const { query, sortSpec, page, limit } = await buildLeadListQuery(req);
 
     // Compute status counts for summary widgets (matching all filters except status)
     const summaryMatch = { ...query };
@@ -134,7 +171,9 @@ exports.getLeads = async (req, res) => {
           .populate('course', 'name code baseFee duration')
           .populate('batch', 'name startDate endDate schedule capacity status')
           .populate('convertedToStudent', 'studentId name status')
-          .sort({ createdAt: -1 })
+          .populate('lastRemark.addedBy', 'name email')
+          .populate('notes.addedBy', 'name email')
+          .sort(sortSpec || { createdAt: -1 })
           .skip((page - 1) * limit)
           .limit(limit)
       ).lean(),
@@ -168,11 +207,9 @@ exports.getLeads = async (req, res) => {
 
 exports.getLead = async (req, res) => {
   try {
-    const data = await populateAssignedTo(Lead.findOne(await leadAccessQuery(req, req.params.id)))
-      .populate('campaign', 'name')
-      .populate('course', 'name code baseFee duration')
-      .populate('batch', 'name startDate endDate schedule capacity status')
-      .populate('convertedToStudent', 'studentId name status enrollmentDate');
+    const data = await populateLeadRelations(
+      Lead.findOne(await leadAccessQuery(req, req.params.id))
+    );
     if (!data) return res.status(404).json({ success: false, message: 'Lead not found' });
     res.json({ success: true, data });
   } catch (error) {
@@ -312,13 +349,27 @@ exports.changeStatus = async (req, res) => {
 
 exports.addNote = async (req, res) => {
   try {
-    const data = await Lead.findOneAndUpdate(
-      await leadAccessQuery(req, req.params.id),
-      { $push: { notes: { content: req.body.content, addedBy: req.user._id } }, updatedAt: new Date() },
-      { new: true },
-    );
-    if (!data) return res.status(404).json({ success: false, message: 'Lead not found' });
-    res.json({ success: true, data });
+    const lead = await Lead.findOne(await leadAccessQuery(req, req.params.id));
+    if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
+
+    const { followUp } = await recordLeadRemarkAndFollowUp({
+      lead,
+      user: req.user,
+      content: req.body.content,
+      remarkType: req.body.remarkType || 'remark',
+      outcome: req.body.outcome || '',
+      nextFollowUpDate: req.body.nextFollowUpDate || null,
+      nextFollowUpTime: req.body.nextFollowUpTime || '',
+      nextFollowUpTitle: req.body.nextFollowUpTitle || '',
+      assignedTo: req.body.assignedTo || null,
+      leadStatus: req.body.status || '',
+      leadTemperature: req.body.leadTemperature || '',
+      createFollowUpTask: req.body.createFollowUpTask !== false,
+      completePreviousPending: Boolean(req.body.completePreviousPending),
+    });
+
+    const populated = await populateLeadRelations(Lead.findById(lead._id));
+    res.json({ success: true, data: populated, followUp });
   } catch (error) {
     sendError(res, error);
   }
@@ -326,18 +377,50 @@ exports.addNote = async (req, res) => {
 
 exports.addCommunication = async (req, res) => {
   try {
-    const data = await Lead.findOneAndUpdate(
-      await leadAccessQuery(req, req.params.id),
-      {
-        $push: {
-          communicationHistory: { ...req.body, date: req.body.date || new Date(), addedBy: req.user._id },
-        },
-        updatedAt: new Date(),
-      },
-      { new: true },
-    );
-    if (!data) return res.status(404).json({ success: false, message: 'Lead not found' });
-    res.json({ success: true, data });
+    const lead = await Lead.findOne(await leadAccessQuery(req, req.params.id));
+    if (!lead) return res.status(404).json({ success: false, message: 'Lead not found' });
+
+    const commEntry = {
+      type: req.body.type || 'call',
+      description: req.body.description || req.body.notes || '',
+      outcome: req.body.outcome || '',
+      notes: req.body.notes || '',
+      duration: req.body.duration,
+      direction: req.body.direction,
+      date: req.body.date || req.body.timestamp || new Date(),
+      addedBy: req.user._id,
+    };
+
+    lead.communicationHistory.push(commEntry);
+
+    let followUp = null;
+    if (req.body.notes || req.body.outcome || req.body.nextFollowUpDate || req.body.status || req.body.leadTemperature) {
+      const remarkType = ['call', 'whatsapp', 'email', 'meeting'].includes(req.body.type)
+        ? req.body.type
+        : 'call';
+      const syncResult = await recordLeadRemarkAndFollowUp({
+        lead,
+        user: req.user,
+        content: req.body.notes || (req.body.outcome ? `Call outcome: ${req.body.outcome}` : ''),
+        remarkType,
+        outcome: req.body.outcome || '',
+        nextFollowUpDate: req.body.nextFollowUpDate || null,
+        nextFollowUpTime: req.body.nextFollowUpTime || '',
+        nextFollowUpTitle: req.body.nextFollowUpTitle || '',
+        leadStatus: req.body.status || '',
+        leadTemperature: req.body.leadTemperature || '',
+        createFollowUpTask: Boolean(req.body.nextFollowUpDate),
+        completePreviousPending: Boolean(req.body.completePreviousPending),
+      });
+      followUp = syncResult.followUp;
+    } else {
+      lead.lastActivityDate = new Date();
+      lead.updatedAt = new Date();
+      await lead.save();
+    }
+
+    const populated = await populateLeadRelations(Lead.findById(lead._id));
+    res.json({ success: true, data: populated, followUp });
   } catch (error) {
     sendError(res, error);
   }

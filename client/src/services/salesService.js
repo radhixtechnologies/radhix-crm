@@ -34,7 +34,7 @@ export const salesService = {
   updateLead: (id, data) => api.put(`/sales/leads/${id}`, data),
   deleteLead: (id) => api.delete(`/sales/leads/${id}`),
   assignLead: (id, employeeId) => api.put(`/sales/leads/${id}/assign`, { employeeId }),
-  addLeadNote: (id, content) => api.post(`/sales/leads/${id}/notes`, { content }),
+  addLeadNote: (id, data) => api.post(`/sales/leads/${id}/notes`, typeof data === 'string' ? { content: data } : data),
   changeLeadStatus: (id, status) => api.put(`/sales/leads/${id}/status`, { status }),
   addCommunication: (id, data) => api.post(`/sales/leads/${id}/communication`, data),
   convertLead: (id, data) => api.post(`/sales/leads/${id}/convert`, data),

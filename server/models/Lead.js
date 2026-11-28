@@ -127,9 +127,38 @@ const leadSchema = new mongoose.Schema({
   notes: [
     {
       content: String,
+      remarkType: {
+        type: String,
+        enum: ['remark', 'call', 'whatsapp', 'email', 'meeting', 'status_change', 'followup'],
+        default: 'remark',
+      },
+      outcome: {
+        type: String,
+        default: '',
+      },
+      nextFollowUpDate: {
+        type: Date,
+        default: null,
+      },
+      nextFollowUpTime: {
+        type: String,
+        default: '',
+      },
+      statusSnapshot: {
+        type: String,
+        default: '',
+      },
+      temperatureSnapshot: {
+        type: String,
+        default: '',
+      },
       addedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+      },
+      addedByEmployeeName: {
+        type: String,
+        default: '',
       },
       addedAt: {
         type: Date,
@@ -141,9 +170,13 @@ const leadSchema = new mongoose.Schema({
     {
       type: {
         type: String,
-        enum: ['call', 'email', 'meeting', 'note'],
+        enum: ['call', 'email', 'meeting', 'note', 'whatsapp'],
       },
       description: String,
+      outcome: String,
+      notes: String,
+      duration: Number,
+      direction: String,
       date: Date,
       addedBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -168,6 +201,20 @@ const leadSchema = new mongoose.Schema({
   followUpDate: {
     type: Date,
     default: null,
+  },
+  followUpTime: {
+    type: String,
+    default: '',
+  },
+  lastRemark: {
+    content: { type: String, default: '' },
+    remarkType: { type: String, default: 'remark' },
+    outcome: { type: String, default: '' },
+    addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    addedByName: { type: String, default: '' },
+    addedAt: { type: Date, default: null },
+    nextFollowUpDate: { type: Date, default: null },
+    nextFollowUpTime: { type: String, default: '' },
   },
   convertedToClient: {
     type: mongoose.Schema.Types.ObjectId,
@@ -231,6 +278,7 @@ leadSchema.index({ leadTemperature: 1 });
 leadSchema.index({ isInstituteInquiry: 1, createdAt: -1 });
 leadSchema.index({ tenantCompany: 1, isDeleted: 1, createdAt: -1 });
 leadSchema.index({ tenantCompany: 1, status: 1 });
+leadSchema.index({ followUpDate: 1, status: 1 });
 
 
 // Pre-save middleware

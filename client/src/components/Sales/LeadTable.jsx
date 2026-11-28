@@ -1,10 +1,44 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiEye, FiEdit, FiTrash2, FiMail, FiPhone, FiCalendar, FiDollarSign } from 'react-icons/fi';
+import { FiEye, FiEdit, FiTrash2, FiMail, FiPhone, FiCalendar, FiDollarSign, FiMessageSquare, FiClock } from 'react-icons/fi';
+import dayjs from 'dayjs';
 import StatusBadge from './StatusBadge';
 import { formatCurrency, formatDate } from '../../utils/format';
 import Modal from '../common/Modal';
 import '../../styles/employee/employees.css';
+
+const getLeadFollowUpBadge = (dateVal, timeVal, status) => {
+  if (!dateVal) return null;
+  if (['converted', 'lost'].includes(status)) return null;
+  const dateStr = dayjs(dateVal).format('YYYY-MM-DD');
+  const todayStr = dayjs().format('YYYY-MM-DD');
+  const timeSuffix = timeVal ? ` • ${timeVal}` : '';
+  if (dateStr < todayStr) {
+    return { text: `Overdue (${dayjs(dateVal).format('DD MMM')}${timeSuffix})`, bg: '#fef2f2', color: '#dc2626', border: '#fecaca' };
+  }
+  if (dateStr === todayStr) {
+    return { text: `Today${timeSuffix}`, bg: '#fffbeb', color: '#d97706', border: '#fde68a' };
+  }
+  return { text: `${dayjs(dateVal).format('DD MMM')}${timeSuffix}`, bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' };
+};
+
+const getLatestRemarkInfo = (lead) => {
+  if (lead?.lastRemark?.content) {
+    return {
+      text: lead.lastRemark.content,
+      author: lead.lastRemark.addedBy?.name || lead.lastRemark.addedByName || '',
+      count: Array.isArray(lead.notes) ? lead.notes.length : 1,
+    };
+  }
+  const notes = Array.isArray(lead?.notes) ? lead.notes : [];
+  if (notes.length === 0) return null;
+  const latest = notes[notes.length - 1];
+  return {
+    text: latest.content || '',
+    author: latest.addedBy?.name || latest.addedByEmployeeName || '',
+    count: notes.length,
+  };
+};
 
 const getInitials = (name) => {
   if (!name) return '?';
@@ -112,13 +146,17 @@ const LeadTable = ({
             <th>Status</th>
             <th>Value</th>
             <th>Owner</th>
+            <th>Follow-up &amp; Latest Remark</th>
             <th>Created</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {leads.length > 0 ? (
-            leads.map((lead) => (
+            leads.map((lead) => {
+              const followUpBadge = getLeadFollowUpBadge(lead.followUpDate, lead.followUpTime, lead.status);
+              const remarkInfo = getLatestRemarkInfo(lead);
+              return (
               <tr
                 key={lead._id}
                 style={{
@@ -146,7 +184,22 @@ const LeadTable = ({
                         <span>{getInitials(lead.name)}</span>
                       )}
                     </div>
-                    <span style={{ fontWeight: '500' }}>{lead.name || 'N/A'}</span>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/sales/leads/${lead._id}`)}
+                      style={{
+                        border: 'none',
+                        background: 'transparent',
+                        padding: 0,
+                        font: 'inherit',
+                        fontWeight: '600',
+                        color: 'var(--text-main)',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                      }}
+                    >
+                      {lead.name || 'N/A'}
+                    </button>
                   </div>
                 </td>
                 <td>{lead.company || 'N/A'}</td>
@@ -224,6 +277,55 @@ const LeadTable = ({
                     {getOwnerName(lead)}
                   </span>
                 </td>
+                <td style={{ minWidth: '210px', maxWidth: '280px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {followUpBadge ? (
+                      <span
+                        style={{
+                          alignSelf: 'flex-start',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          padding: '2px 8px',
+                          borderRadius: '999px',
+                          background: followUpBadge.bg,
+                          color: followUpBadge.color,
+                          border: `1px solid ${followUpBadge.border}`,
+                        }}
+                      >
+                        <FiClock size={10} /> {followUpBadge.text}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: '11.5px', color: '#94a3b8' }}>No callback set</span>
+                    )}
+                    {remarkInfo?.text && (
+                      <div
+                        style={{
+                          fontSize: '12px',
+                          color: '#475569',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '4px',
+                        }}
+                        title={`${remarkInfo.text}${remarkInfo.author ? ` — by ${remarkInfo.author}` : ''}`}
+                      >
+                        <FiMessageSquare size={11} style={{ marginTop: '3px', flexShrink: 0, color: '#64748b' }} />
+                        <span
+                          style={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            maxWidth: '230px',
+                          }}
+                        >
+                          {remarkInfo.text}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </td>
                 <td>
                   {lead.createdAt ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}>
@@ -237,7 +339,7 @@ const LeadTable = ({
                     <button
                       className="btn btn-sm btn-secondary"
                       onClick={() => navigate(`/sales/leads/${lead._id}`)}
-                      title="View"
+                      title="Open Lead, Remarks & Next Follow-up"
                     >
                       <FiEye />
                     </button>
@@ -259,10 +361,11 @@ const LeadTable = ({
                   </div>
                 </td>
               </tr>
-            ))
+              );
+            })
           ) : (
             <tr>
-              <td colSpan="10" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+              <td colSpan="11" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
                 No leads found
               </td>
             </tr>

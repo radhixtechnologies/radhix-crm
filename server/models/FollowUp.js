@@ -70,6 +70,10 @@ const followUpSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  nextFollowUpTime: {
+    type: String,
+    default: '',
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -81,6 +85,8 @@ const followUpSchema = new mongoose.Schema({
 });
 
 followUpSchema.index({ status: 1, scheduledDate: 1, reminderSent: 1 });
+followUpSchema.index({ assignedTo: 1, status: 1, scheduledDate: 1 });
+followUpSchema.index({ type: 1, relatedId: 1 });
 
 module.exports = mongoose.model('FollowUp', followUpSchema);
 

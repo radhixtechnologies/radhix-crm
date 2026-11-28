@@ -33,6 +33,7 @@ const LeadList = () => {
     source: '',
     campaign: '',
     owner: '',
+    followUpBucket: '',
     dateFrom: '',
     dateTo: ''
   });
@@ -44,6 +45,7 @@ const LeadList = () => {
     source: '',
     campaign: '',
     owner: '',
+    followUpBucket: '',
     dateFrom: '',
     dateTo: ''
   });
@@ -191,7 +193,7 @@ const LeadList = () => {
   };
 
   const handleClearFilters = () => {
-    const resetState = { sortBy: 'newest', status: '', source: '', campaign: '', owner: '', dateFrom: '', dateTo: '' };
+    const resetState = { sortBy: 'newest', status: '', source: '', campaign: '', owner: '', followUpBucket: '', dateFrom: '', dateTo: '' };
     setFilterInputs(resetState);
     setActiveFilters(resetState);
     setSearchQuery('');
@@ -205,6 +207,7 @@ const LeadList = () => {
     if (filterInputs.source) count++;
     if (filterInputs.campaign) count++;
     if (filterInputs.owner) count++;
+    if (filterInputs.followUpBucket) count++;
     if (filterInputs.dateFrom) count++;
     return count;
   };
@@ -494,16 +497,62 @@ const LeadList = () => {
         </div>
       </div>
 
-      {/* Search Bar Section */}
-      <div className="search-bar-section" style={{ marginBottom: '16px' }}>
+      {/* Search & Follow-up Quick Filters Row */}
+      <div
+        className="search-bar-section"
+        style={{
+          marginBottom: '16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          flexWrap: 'wrap',
+        }}
+      >
         <div className="toolbar-search" style={{ margin: 0, width: '100%', maxWidth: '280px' }}>
           <FiSearch className="search-icon" />
           <input
             type="text"
-            placeholder="Search leads..."
+            placeholder="Search name, phone, email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {[
+            { value: '', label: 'All Leads', activeBg: '#1e293b', activeColor: '#ffffff' },
+            { value: 'today', label: 'Call Today', activeBg: '#d97706', activeColor: '#ffffff' },
+            { value: 'overdue', label: 'Overdue Call', activeBg: '#dc2626', activeColor: '#ffffff' },
+            { value: 'upcoming', label: 'Upcoming Call', activeBg: '#2563eb', activeColor: '#ffffff' },
+          ].map((pill) => {
+            const isActive = activeFilters.followUpBucket === pill.value;
+            return (
+              <button
+                key={pill.value || 'all'}
+                type="button"
+                onClick={() => {
+                  const nextFilter = { ...filterInputs, followUpBucket: pill.value };
+                  setFilterInputs(nextFilter);
+                  setActiveFilters({ ...activeFilters, followUpBucket: pill.value });
+                  setPagination((prev) => ({ ...prev, page: 1 }));
+                }}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '999px',
+                  border: isActive ? `1px solid ${pill.activeBg}` : '1px solid #d1d5db',
+                  background: isActive ? pill.activeBg : '#ffffff',
+                  color: isActive ? pill.activeColor : '#374151',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {pill.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -562,7 +611,7 @@ const LeadList = () => {
               {/* Sort By */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '11px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sort By</label>
-                <div style={{ position: 'relative', width: '140px' }}>
+                <div style={{ position: 'relative', width: '170px' }}>
                   <select
                     value={filterInputs.sortBy}
                     onChange={(e) => setFilterInputs({ ...filterInputs, sortBy: e.target.value })}
@@ -584,6 +633,7 @@ const LeadList = () => {
                     <option value="newest">Newest First</option>
                     <option value="oldest">Oldest First</option>
                     <option value="value-high">Value: High-Low</option>
+                    <option value="followup-soon">Next Follow-up Soon</option>
                   </select>
                   <FiChevronDown style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', pointerEvents: 'none' }} />
                 </div>

@@ -15,6 +15,8 @@ import EmailComposeModal from '../../components/Sales/EmailComposeModal';
 import ChatModal from '../../components/Sales/ChatModal';
 import WhatsAppModal from '../../components/common/WhatsAppModal';
 import LogCallModal from '../../components/Sales/LogCallModal';
+import CompleteFollowUpModal from '../../components/Sales/CompleteFollowUpModal';
+import LeadRemarkWorkspace, { LeadFollowUpStrip } from '../../components/Sales/LeadRemarkWorkspace';
 import AiLeadCopilot from '../../components/Sales/AiLeadCopilot';
 import ActivitySection from '../../components/activities/ActivitySection';
 import EnrollStudentModal from '../../components/institute/EnrollStudentModal';
@@ -43,9 +45,17 @@ const LeadDetails = () => {
   const [followUpHistory, setFollowUpHistory] = useState([]);
   const [followUpHistoryLoading, setFollowUpHistoryLoading] = useState(false);
   const [followUpHistoryError, setFollowUpHistoryError] = useState('');
+  const [completeFollowUpModal, setCompleteFollowUpModal] = useState({ open: false, followup: null });
+
+  const showSuccessToast = (msg) => {
+    setToastMessage(msg);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
 
   useEffect(() => {
     fetchLead();
+    fetchFollowUpHistory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -442,6 +452,12 @@ const LeadDetails = () => {
         </div>
       </section>
 
+      <LeadFollowUpStrip
+        lead={lead}
+        onLeadUpdated={(updated) => (updated ? setLead(updated) : fetchLead())}
+        onShowToast={showSuccessToast}
+      />
+
       {/* MAIN GRID */}
       <main className="details-grid">
 
@@ -449,6 +465,14 @@ const LeadDetails = () => {
         <div className="left-column">
           {/* AI Intelligence & Smart Follow-up Copilot */}
           <AiLeadCopilot lead={lead} />
+
+          {/* Remark & Next Follow-up Workspace */}
+          <LeadRemarkWorkspace
+            lead={lead}
+            onLeadUpdated={(updated) => (updated ? setLead(updated) : fetchLead())}
+            onFollowUpChanged={fetchFollowUpHistory}
+            onShowToast={showSuccessToast}
+          />
 
           {/* Institute Inquiry Details Card */}
           {lead.isInstituteInquiry && (
@@ -589,16 +613,42 @@ const LeadDetails = () => {
                   <p>No follow-ups have been recorded for this lead yet.</p>
                 ) : (
                   <div className="follow-up-history">
-                    {followUpHistory.map((item) => (
-                      <article key={item._id} className="follow-up-history-item">
-                        <div>
-                          <strong>{item.title}</strong>
-                          <p>{formatDate(item.scheduledDate)}{item.scheduledTime ? ` at ${item.scheduledTime}` : ''} · {item.typeOfFollowUp || 'call'}</p>
-                          {item.outcome && <p>{item.outcome}</p>}
-                        </div>
-                        <span className={`status-badge status-${item.status}`}>{item.status}</span>
-                      </article>
-                    ))}
+                    {followUpHistory.map((item) => {
+                      const handlerName = item.assignedTo?.user?.name || item.assignedTo?.employeeId || 'Unassigned';
+                      const isOpenTask = ['pending', 'overdue'].includes(item.status);
+                      return (
+                        <article key={item._id} className="follow-up-history-item">
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <strong>{item.title}</strong>
+                              <span style={{ fontSize: '11.5px', padding: '2px 8px', borderRadius: '999px', background: '#eef2ff', color: '#4338ca', fontWeight: 600 }}>
+                                {handlerName}
+                              </span>
+                            </div>
+                            <p>
+                              {formatDate(item.scheduledDate)}{item.scheduledTime ? ` at ${item.scheduledTime}` : ''} · {item.typeOfFollowUp || 'call'}
+                            </p>
+                            {(item.outcome || item.description) && (
+                              <p style={{ color: '#334155', marginTop: '6px' }}>
+                                {item.outcome || item.description}
+                              </p>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                            <span className={`status-badge status-${item.status}`}>{item.status}</span>
+                            {isOpenTask && (
+                              <button
+                                type="button"
+                                className="btn btn-success btn-sm"
+                                onClick={() => setCompleteFollowUpModal({ open: true, followup: item })}
+                              >
+                                <FiCheck size={12} /> Complete
+                              </button>
+                            )}
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
                 )
               ) : (
@@ -662,8 +712,12 @@ const LeadDetails = () => {
                   )}
                 </div>
                 <div className="info-item-compact">
-                  <span className="info-label">Follow-up</span>
-                  <span className="info-value text-warning">{lead.followUpDate ? formatDate(lead.followUpDate) : '-'}</span>
+                  <span className="info-label">Next Call</span>
+                  <span className="info-value text-warning">
+                    {lead.followUpDate
+                      ? `${formatDate(lead.followUpDate)}${lead.followUpTime ? ` • ${lead.followUpTime}` : ''}`
+                      : '-'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -751,12 +805,22 @@ const LeadDetails = () => {
         isOpen={showFollowUpModal}
         onClose={() => setShowFollowUpModal(false)}
         prefilledData={{ type: 'lead', relatedId: id }}
-        onSuccess={() => {
+        onSuccess={async () => {
           setShowFollowUpModal(false);
-          fetchFollowUpHistory();
-          setToastMessage('Follow-up scheduled successfully!');
-          setShowToast(true);
-          setTimeout(() => setShowToast(false), 3000);
+          await Promise.all([fetchLead(), fetchFollowUpHistory()]);
+          showSuccessToast('Follow-up scheduled successfully!');
+        }}
+      />
+
+      {/* Complete Follow-up Modal */}
+      <CompleteFollowUpModal
+        isOpen={completeFollowUpModal.open}
+        onClose={() => setCompleteFollowUpModal({ open: false, followup: null })}
+        followup={completeFollowUpModal.followup}
+        onSuccess={async () => {
+          setCompleteFollowUpModal({ open: false, followup: null });
+          await Promise.all([fetchLead(), fetchFollowUpHistory()]);
+          showSuccessToast('Follow-up completed and remark logged!');
         }}
       />
 
@@ -779,11 +843,9 @@ const LeadDetails = () => {
         isOpen={showLogCallModal}
         onClose={() => setShowLogCallModal(false)}
         lead={lead}
-        onCallLogged={() => {
-          fetchLead();
-          setToastMessage('Phone call logged successfully!');
-          setShowToast(true);
-          setTimeout(() => setShowToast(false), 3000);
+        onCallLogged={async () => {
+          await Promise.all([fetchLead(), fetchFollowUpHistory()]);
+          showSuccessToast('Phone call logged & synced to remarks!');
         }}
       />
     </div>

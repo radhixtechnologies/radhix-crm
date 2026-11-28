@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FiPhone, FiX, FiCheck, FiClock, FiFileText } from 'react-icons/fi';
+import { FiPhone, FiX, FiCheck, FiClock, FiFileText, FiCalendar } from 'react-icons/fi';
+import dayjs from 'dayjs';
 import { salesService } from '../../services/salesService';
 import './LogCallModal.css';
 
@@ -16,6 +17,8 @@ const LogCallModal = ({ isOpen, onClose, lead, onCallLogged }) => {
   const [outcome, setOutcome] = useState('connected');
   const [durationMinutes, setDurationMinutes] = useState(5);
   const [notes, setNotes] = useState('');
+  const [nextFollowUpDate, setNextFollowUpDate] = useState('');
+  const [nextFollowUpTime, setNextFollowUpTime] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
@@ -33,15 +36,20 @@ const LogCallModal = ({ isOpen, onClose, lead, onCallLogged }) => {
         type: 'call',
         direction: 'outbound',
         phoneNumber: lead.phone || '',
-        status: 'completed',
+        status: lead.status === 'new' ? 'contacted' : undefined,
         duration: Number(durationMinutes) || 1,
         outcome,
         notes: notes || `Call completed with outcome: ${outcome}`,
+        nextFollowUpDate: nextFollowUpDate || null,
+        nextFollowUpTime: nextFollowUpDate ? nextFollowUpTime : '',
         timestamp: new Date(),
       };
 
       const res = await salesService.addCommunication(lead._id, payload);
       if (res.data?.success) {
+        setNotes('');
+        setNextFollowUpDate('');
+        setNextFollowUpTime('');
         if (onCallLogged) onCallLogged();
         onClose();
       }
@@ -119,12 +127,35 @@ const LogCallModal = ({ isOpen, onClose, lead, onCallLogged }) => {
           <div className="form-group">
             <label><FiFileText /> Discussion Notes &amp; Next Steps</label>
             <textarea
-              rows={4}
+              rows={3}
               className="form-control"
-              placeholder="e.g. Discussed pricing requirements. Customer asked for quotation by tomorrow evening..."
+              placeholder="e.g. Discussed pricing requirements. Customer asked to call tomorrow at 4 PM..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
+          </div>
+
+          <div className="form-row-2">
+            <div className="form-group">
+              <label><FiCalendar /> Next Follow-up Date (Optional)</label>
+              <input
+                type="date"
+                className="form-control"
+                min={dayjs().format('YYYY-MM-DD')}
+                value={nextFollowUpDate}
+                onChange={(e) => setNextFollowUpDate(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label><FiClock /> Preferred Call Time</label>
+              <input
+                type="time"
+                className="form-control"
+                value={nextFollowUpTime}
+                onChange={(e) => setNextFollowUpTime(e.target.value)}
+                disabled={!nextFollowUpDate}
+              />
+            </div>
           </div>
 
           <div className="log-call-footer">

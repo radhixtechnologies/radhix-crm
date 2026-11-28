@@ -367,3 +367,91 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Employee Follow-up Tracker Strip */
+.employee-tracker-bar {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.employee-tracker-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.employee-tracker-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+}
+
+.tracker-reset-btn {
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.employee-tracker-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.employee-tracker-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.employee-tracker-pill:hover {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.employee-tracker-pill.is-active {
+  border-color: #2563eb;
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
+.tracker-counts {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tracker-counts em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+.tc-overdue { background: #fee2e2; color: #b91c1c; }
+.tc-today { background: #fef3c7; color: #b45309; }
+.tc-pending { background: #e0e7ff; color: #3730a3; }
+.tc-done { background: #dcfce7; color: #166534; }
