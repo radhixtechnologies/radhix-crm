@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiPlus, FiSearch, FiFilter, FiGrid, FiList, FiDownload, FiUpload, FiX, FiChevronDown, FiChevronUp, FiUsers, FiCheckCircle, FiTarget, FiTrendingUp } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiFilter, FiGrid, FiList, FiDownload, FiUpload, FiX, FiChevronDown, FiChevronUp, FiUsers, FiCheckCircle, FiTarget, FiTrendingUp, FiCpu } from 'react-icons/fi';
 import { FaFacebook, FaWhatsapp } from 'react-icons/fa';
 import { salesService, normalizeSalesListResponse } from '../../services/salesService';
 import { marketingService } from '../../services/marketingService';
+import { aiCallingService } from '../../services/aiCallingService';
 import LeadTable from '../../components/Sales/LeadTable';
 import LeadKanban from '../../components/Sales/LeadKanban';
 import ImportLeadsModal from '../../components/Sales/ImportLeadsModal';
@@ -281,6 +282,38 @@ const LeadList = () => {
     } catch (err) {
       console.error('Bulk delete error:', err);
       alert(err.response?.data?.message || 'Failed to delete selected leads');
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const handleBulkAiCall = async () => {
+    if (selectedLeads.length === 0) return;
+    try {
+      setBulkProcessing(true);
+      const cfgRes = await aiCallingService.getConfig();
+      const cfg = cfgRes.data?.data;
+      const isLiveReady = Boolean(cfg?.enabled && cfg?.provider !== 'simulator' && cfg?.hasApiKey && cfg?.agentId);
+      const confirmMsg = isLiveReady
+        ? `Start live AI Voice Calls via ${cfg.provider.toUpperCase()} for ${selectedLeads.length} selected lead(s)?`
+        : `Live AI provider is not configured yet. Run ${selectedLeads.length} lead(s) in CRM Test Simulator mode?`;
+      if (!window.confirm(confirmMsg)) return;
+
+      const res = await aiCallingService.bulkTriggerCalls({
+        leadIds: selectedLeads,
+        simulate: !isLiveReady,
+      });
+      if (res.data) {
+        setBulkFeedback({
+          type: res.data.initiatedCount > 0 ? 'success' : 'error',
+          message: res.data.message || `Initiated AI calls for ${res.data.initiatedCount} lead(s). Check AI Calling Console for live logs.`,
+        });
+        setSelectedLeads([]);
+        setTimeout(() => setBulkFeedback(null), 6000);
+      }
+    } catch (err) {
+      console.error('Bulk AI call error:', err);
+      alert(err.response?.data?.message || 'Failed to initiate bulk AI calls');
     } finally {
       setBulkProcessing(false);
     }
@@ -952,6 +985,24 @@ const LeadList = () => {
                 }}
               >
                 <FaWhatsapp size={15} /> WhatsApp Broadcast ({selectedLeads.length})
+              </button>
+
+              <button
+                className="btn btn-sm"
+                onClick={handleBulkAiCall}
+                disabled={bulkProcessing}
+                style={{
+                  background: 'linear-gradient(135deg, #4f46e5 0%, #2563eb 100%)',
+                  color: 'white',
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <FiCpu size={14} /> AI Call ({selectedLeads.length})
               </button>
 
               <button

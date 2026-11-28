@@ -191,6 +191,21 @@ const saveMetaLead = async (event, pageId) => {
   // Execute active workflow automation rules (WhatsApp, Email, Auto-assignment)
   triggerLeadAutomations(newLead, 'Meta lead');
 
+  // Auto-trigger AI Voice Call if enabled in company AI Calling settings
+  if (newLead.phone) {
+    const { getEffectiveAiConfig, initiateAiCallForLead } = require('../services/aiCallingService');
+    getEffectiveAiConfig({ companyId: newLead.tenantCompany })
+      .then((aiCfg) => {
+        if (aiCfg?.enabled && aiCfg?.autoCallNewLeads) {
+          return initiateAiCallForLead({ lead: newLead, companyId: newLead.tenantCompany });
+        }
+        return null;
+      })
+      .catch((aiErr) => {
+        console.warn('Auto AI Call trigger skipped/failed:', aiErr.message);
+      });
+  }
+
   return true;
 };
 

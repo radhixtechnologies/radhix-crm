@@ -121,6 +121,7 @@ const ProposalDetails = lazy(() => import('./pages/sales/ProposalDetails'));
 const CreateQuotation = lazy(() => import('./pages/sales/CreateQuotation'));
 const QuotationDetails = lazy(() => import('./pages/sales/QuotationDetails'));
 const FollowupList = lazy(() => import('./pages/sales/FollowupList'));
+const AiCallingConsole = lazy(() => import('./pages/sales/AiCallingConsole'));
 
 // Contact Management
 const ContactList = lazy(() => import('./pages/contacts/ContactList'));
@@ -1469,6 +1470,16 @@ const AppRoutes = () => {
           <ProtectedRoute requiredModule="sales">
             <Layout>
               <FollowupList />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales/ai-calling"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <AiCallingConsole />
             </Layout>
           </ProtectedRoute>
         }

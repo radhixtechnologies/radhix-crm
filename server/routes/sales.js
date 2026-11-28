@@ -127,10 +127,28 @@ router.get('/lead-owners', checkModuleAccess('sales'), getLeadOwners);
 router.get('/meta-integration/config', checkModuleAccess('sales'), getMetaConfig);
 router.post('/meta-integration/test-lead', checkModuleAccess('sales'), createMetaTestLead);
 
+const {
+  getAiCallingConfig,
+  updateAiCallingConfig,
+  testAiCallingConnection,
+  getAiCallLogs,
+  triggerLeadAiCall,
+  bulkTriggerAiCalls,
+  simulateCallWebhookResult,
+} = require('../controllers/sales/aiCallingController');
+
+// AI Voice Calling routes
+router.get('/ai-calling/config', checkModuleAccess('sales'), getAiCallingConfig);
+router.put('/ai-calling/config', checkModuleAccess('sales'), updateAiCallingConfig);
+router.post('/ai-calling/test-connection', checkModuleAccess('sales'), testAiCallingConnection);
+router.get('/ai-calling/calls', checkModuleAccess('sales'), getAiCallLogs);
+router.post('/ai-calling/calls/:callId/simulate-complete', checkModuleAccess('sales'), simulateCallWebhookResult);
+
 // Bulk Lead operations
 router.put('/leads/bulk/assign', checkModuleAccess('sales'), bulkAssignLeads);
 router.put('/leads/bulk/status', checkModuleAccess('sales'), bulkUpdateStatus);
 router.post('/leads/bulk/delete', checkModuleAccess('sales'), bulkDeleteLeads);
+router.post('/leads/bulk/ai-call', checkModuleAccess('sales'), bulkTriggerAiCalls);
 
 // Lead routes - Accessible only to Sales module users
 router.route('/leads')
@@ -146,6 +164,7 @@ router.put('/leads/:id/assign', checkModuleAccess('sales'), assignLead);
 router.post('/leads/:id/notes', checkModuleAccess('sales'), addNote);
 router.put('/leads/:id/status', checkModuleAccess('sales'), changeStatus);
 router.post('/leads/:id/communication', checkModuleAccess('sales'), addCommunication);
+router.post('/leads/:id/ai-call', checkModuleAccess('sales'), triggerLeadAiCall);
 router.post('/leads/:id/convert', checkModuleAccess('sales'), convertLead);
 router.post('/leads/:id/enroll', checkModuleAccess('sales'), (req, res, next) => {
   req.body.inquiryId = req.params.id;

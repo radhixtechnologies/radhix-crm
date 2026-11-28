@@ -140,6 +140,21 @@ const companySchema = new mongoose.Schema(
       declarationText: { type: String, default: 'Certified that Particulars given above are true & correct under GST Act 2017 and amount indicated represent the price actually charged and that there is no flow of additional consideration directly or indirectly from buyer.' },
       jurisdiction: { type: String, default: '' },
     },
+    aiCalling: {
+      enabled: { type: Boolean, default: false },
+      provider: { type: String, enum: ['bolna', 'retell', 'vapi', 'simulator'], default: 'bolna' },
+      apiKey: { type: String, default: '', trim: true },
+      agentId: { type: String, default: '', trim: true },
+      fromNumber: { type: String, default: '', trim: true },
+      webhookSecret: { type: String, default: '', trim: true },
+      autoCallNewLeads: { type: Boolean, default: false },
+      defaultLanguage: { type: String, default: 'hi-IN', trim: true },
+      systemScript: {
+        type: String,
+        default: 'Namaste {name} ji, main {company} ki taraf se baat kar raha hoon. Aapne hamari service me interest dikhaya tha. Kya abhi 2 minute baat karne ka sahi samay hai?',
+        trim: true,
+      },
+    },
   },
   { timestamps: true }
 );

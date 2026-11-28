@@ -15,6 +15,9 @@ import EmailComposeModal from '../../components/Sales/EmailComposeModal';
 import ChatModal from '../../components/Sales/ChatModal';
 import WhatsAppModal from '../../components/common/WhatsAppModal';
 import LogCallModal from '../../components/Sales/LogCallModal';
+import AiCallTriggerModal from '../../components/Sales/AiCallTriggerModal';
+import AiCallHistoryPanel from '../../components/Sales/AiCallHistoryPanel';
+import { FiCpu } from 'react-icons/fi';
 import CompleteFollowUpModal from '../../components/Sales/CompleteFollowUpModal';
 import LeadRemarkWorkspace, { LeadFollowUpStrip } from '../../components/Sales/LeadRemarkWorkspace';
 import AiLeadCopilot from '../../components/Sales/AiLeadCopilot';
@@ -39,6 +42,8 @@ const LeadDetails = () => {
   const [showChatModal, setShowChatModal] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [showLogCallModal, setShowLogCallModal] = useState(false);
+  const [showAiCallModal, setShowAiCallModal] = useState(false);
+  const [aiCallRefreshKey, setAiCallRefreshKey] = useState(0);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [isInitiatingCall, setIsInitiatingCall] = useState(false);
   const [activeActivityTab, setActiveActivityTab] = useState('activities');
@@ -383,6 +388,14 @@ const LeadDetails = () => {
                 <FiCheckCircle size={12} /> Converted
               </span>
             )}
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => setShowAiCallModal(true)}
+              aria-label="Start AI voice call"
+              style={{ background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)', border: 'none' }}
+            >
+              <FiCpu size={14} className="mr-1" /> AI Call
+            </button>
             <button className="btn btn-secondary btn-sm" onClick={() => setShowFollowUpModal(true)} aria-label="Schedule follow-up">
               <FiCalendar size={14} className="mr-1" /> Follow-up
             </button>
@@ -817,6 +830,15 @@ const LeadDetails = () => {
 
       </main>
 
+      <AiCallHistoryPanel
+        leadId={id}
+        refreshKey={aiCallRefreshKey}
+        onCallUpdated={async () => {
+          await Promise.all([fetchLead(), fetchFollowUpHistory()]);
+          showSuccessToast('AI call synced to Remark Trail & Follow-ups!');
+        }}
+      />
+
       {/* Schedule Follow-up Modal */}
       <ScheduleFollowUpModal
         isOpen={showFollowUpModal}
@@ -864,6 +886,17 @@ const LeadDetails = () => {
         onCallLogged={async () => {
           await Promise.all([fetchLead(), fetchFollowUpHistory()]);
           showSuccessToast('Phone call logged & synced to remarks!');
+        }}
+      />
+
+      {/* AI Voice Agent Calling Modal */}
+      <AiCallTriggerModal
+        isOpen={showAiCallModal}
+        onClose={() => setShowAiCallModal(false)}
+        lead={lead}
+        onCallCompleted={async () => {
+          setAiCallRefreshKey((k) => k + 1);
+          await Promise.all([fetchLead(), fetchFollowUpHistory()]);
         }}
       />
     </div>

@@ -337,6 +337,7 @@ mountRoute('/api/lead-forms', './routes/leadForms');
 mountRoute('/api/branding', './routes/branding');
 mountRoute('/api/workflows', './routes/workflows');
 mountRoute('/api/branches', './routes/branches');
+mountRoute('/api/webhooks/ai-call', './routes/aiWebhook');
 
 
 // Health check route

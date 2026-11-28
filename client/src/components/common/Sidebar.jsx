@@ -36,6 +36,7 @@ import {
   FiGlobe,
   FiZap,
   FiMapPin,
+  FiCpu,
 } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
 import './Sidebar.css';
@@ -281,6 +282,8 @@ const Sidebar = () => {
           { path: '/sales', label: 'Dashboard', icon: FiLayout },
           { path: '/sales/leads', label: 'Leads', icon: FiUsers },
           { path: '/sales/leads/tracking', label: 'Tracking', icon: FiTrendingUp },
+          { path: '/sales/followups', label: 'Follow-ups', icon: FiClock },
+          { path: '/sales/ai-calling', label: 'AI Calling', icon: FiCpu },
           { path: '/calendar', label: 'Calendar', icon: FiCalendar },
           { path: '/sales/pipeline', label: 'Pipeline', icon: FiBarChart2 },
           { path: '/sales/deals', label: 'Deals', icon: FiDollarSign },
