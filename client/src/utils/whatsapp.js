@@ -53,6 +53,12 @@ export const WHATSAPP_TEMPLATES = [
     template: 'Hi {name}, friendly reminder that our scheduled call is set for today at {time}. Looking forward to connecting with you.',
   },
   {
+    id: 'callback_confirmation',
+    name: 'Callback / Follow-up Confirmation',
+    category: 'Sales',
+    template: 'Hello {name}, as discussed on our call with {senderName} from {company}, your follow-up call is scheduled for {date} at {time}. Feel free to reply here if you need any changes.',
+  },
+  {
     id: 'realestate_sitevisit',
     name: 'Real Estate Site Visit Confirmation',
     category: 'Real Estate',

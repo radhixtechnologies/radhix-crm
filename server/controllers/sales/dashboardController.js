@@ -2,6 +2,9 @@ const Lead = require('../../models/Lead');
 const Deal = require('../../models/Deal');
 const Client = require('../../models/Client');
 const Activity = require('../../models/Activity');
+const FollowUp = require('../../models/FollowUp');
+const Employee = require('../../models/Employee');
+const { getIstDayRange } = require('../../utils/followUpSync');
 const mongoose = require('mongoose');
 
 let Quotation;
@@ -236,6 +239,143 @@ exports.getDashboardStats = async (req, res) => {
             avgDaysToClose = Math.round(totalDays / closedDealsWithDates.length);
         }
 
+        // Follow-up SLA & Employee Calling Metrics
+        const { start: istTodayStart, next: istTodayEnd } = getIstDayRange();
+        const staleCutoff = new Date(Date.now() - 48 * 3600000);
+        const [
+            fuDueToday,
+            fuOverdue,
+            fuUpcoming,
+            fuCompletedToday,
+            staleLeads48h,
+            salesEmployees,
+            leadStatsByEmp,
+            fuStatsByEmp,
+        ] = await Promise.all([
+            FollowUp.countDocuments({ status: 'pending', scheduledDate: { $gte: istTodayStart, $lt: istTodayEnd } }),
+            FollowUp.countDocuments({
+                $or: [
+                    { status: 'overdue' },
+                    { status: 'pending', scheduledDate: { $lt: istTodayStart } },
+                ],
+            }),
+            FollowUp.countDocuments({ status: 'pending', scheduledDate: { $gte: istTodayEnd } }),
+            FollowUp.countDocuments({ status: 'completed', completedAt: { $gte: istTodayStart, $lt: istTodayEnd } }),
+            Lead.countDocuments({
+                isDeleted: { $ne: true },
+                status: { $nin: ['converted', 'lost'] },
+                $or: [
+                    { lastActivityDate: null },
+                    { lastActivityDate: { $lt: staleCutoff } },
+                ],
+            }),
+            Employee.find({ department: 'Sales', status: 'active', deletedAt: null })
+                .select('user employeeId department designation')
+                .populate('user', 'name email')
+                .lean(),
+            Lead.aggregate([
+                { $match: { isDeleted: { $ne: true }, assignedTo: { $ne: null } } },
+                {
+                    $group: {
+                        _id: '$assignedTo',
+                        assignedLeads: { $sum: 1 },
+                        contactedToday: {
+                            $sum: {
+                                $cond: [{ $gte: ['$lastActivityDate', istTodayStart] }, 1, 0],
+                            },
+                        },
+                        convertedLeads: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $or: [
+                                            { $eq: ['$status', 'converted'] },
+                                            { $ne: ['$convertedToClient', null] },
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                    },
+                },
+            ]),
+            FollowUp.aggregate([
+                { $match: { assignedTo: { $ne: null } } },
+                {
+                    $group: {
+                        _id: '$assignedTo',
+                        openFollowUps: {
+                            $sum: { $cond: [{ $in: ['$status', ['pending', 'overdue']] }, 1, 0] },
+                        },
+                        dueToday: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $and: [
+                                            { $eq: ['$status', 'pending'] },
+                                            { $gte: ['$scheduledDate', istTodayStart] },
+                                            { $lt: ['$scheduledDate', istTodayEnd] },
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        overdue: {
+                            $sum: {
+                                $cond: [
+                                    {
+                                        $or: [
+                                            { $eq: ['$status', 'overdue'] },
+                                            { $and: [{ $eq: ['$status', 'pending'] }, { $lt: ['$scheduledDate', istTodayStart] }] },
+                                        ],
+                                    },
+                                    1,
+                                    0,
+                                ],
+                            },
+                        },
+                        completedFollowUps: {
+                            $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] },
+                        },
+                    },
+                },
+            ]),
+        ]);
+
+        const leadStatMap = new Map(leadStatsByEmp.map((row) => [String(row._id), row]));
+        const fuStatMap = new Map(fuStatsByEmp.map((row) => [String(row._id), row]));
+        const employeeCallingStats = salesEmployees
+            .map((emp) => {
+                const l = leadStatMap.get(String(emp._id)) || {};
+                const f = fuStatMap.get(String(emp._id)) || {};
+                return {
+                    employeeId: String(emp._id),
+                    name: emp.user?.name || emp.employeeId || 'Team Member',
+                    department: emp.department || 'Sales',
+                    assignedLeads: l.assignedLeads || 0,
+                    contactedToday: l.contactedToday || 0,
+                    convertedLeads: l.convertedLeads || 0,
+                    openFollowUps: f.openFollowUps || 0,
+                    dueToday: f.dueToday || 0,
+                    overdue: f.overdue || 0,
+                    completedFollowUps: f.completedFollowUps || 0,
+                };
+            })
+            .sort((a, b) => (b.dueToday + b.overdue + b.assignedLeads) - (a.dueToday + a.overdue + a.assignedLeads));
+
+        const followUpMetrics = {
+            totalOpen: fuDueToday + fuOverdue + fuUpcoming,
+            dueToday: fuDueToday,
+            overdue: fuOverdue,
+            upcoming: fuUpcoming,
+            completedToday: fuCompletedToday,
+            staleLeads48h,
+        };
+
         // ===== RESPONSE =====
         res.status(200).json({
             success: true,
@@ -250,7 +390,7 @@ exports.getDashboardStats = async (req, res) => {
                     winRate,
                     averageDealSize,
                     conversionRate,
-                    followUpsPending,
+                    followUpsPending: followUpMetrics.totalOpen || followUpsPending,
                     currentMonthLeads,
                     leadsChange,
                     currentRevenue,
@@ -271,7 +411,9 @@ exports.getDashboardStats = async (req, res) => {
                     deals: recentDeals,
                     activities: upcomingActivities
                 },
-                topDeals
+                topDeals,
+                followUpMetrics,
+                employeeCallingStats,
             }
         });
     } catch (error) {

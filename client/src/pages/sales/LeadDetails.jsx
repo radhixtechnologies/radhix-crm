@@ -209,10 +209,27 @@ const LeadDetails = () => {
           onClose={() => setShowWhatsAppModal(false)}
           recipientName={lead.name}
           recipientPhone={lead.phone}
-          defaultTemplateId="general_followup"
+          defaultTemplateId={lead.followUpDate ? 'callback_confirmation' : 'general_followup'}
           contextVariables={{
             property: lead.requirements || 'Property',
             amount: lead.value ? String(lead.value) : '10,000',
+            date: lead.followUpDate ? formatDate(lead.followUpDate) : undefined,
+            time: lead.followUpTime || undefined,
+          }}
+          onSent={async ({ message }) => {
+            try {
+              const res = await salesService.addCommunication(id, {
+                type: 'whatsapp',
+                outcome: 'whatsapp_sent',
+                notes: `WhatsApp sent: ${message}`,
+              });
+              if (res.data?.success) {
+                setLead(res.data.data);
+                showSuccessToast('WhatsApp message logged to remark trail!');
+              }
+            } catch (err) {
+              console.warn('Failed to log WhatsApp to lead:', err);
+            }
           }}
         />
       )}
@@ -829,6 +846,7 @@ const LeadDetails = () => {
         isOpen={showEmailModal}
         onClose={() => setShowEmailModal(false)}
         lead={lead}
+        onEmailQueued={fetchLead}
       />
 
       {/* Chat Modal */}

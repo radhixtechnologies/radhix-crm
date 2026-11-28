@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   FiPlus, FiSearch, FiCalendar, FiClock, FiCheckCircle,
-  FiAlertCircle, FiUsers, FiTrendingUp, FiUser
+  FiAlertCircle, FiUsers, FiTrendingUp, FiUser, FiPhone, FiDownload
 } from 'react-icons/fi';
 import { salesService, normalizeSalesListResponse } from '../../services/salesService';
 import { employeeService } from '../../services/employeeService';
 import { useAuth } from '../../context/AuthContext';
 import FollowupTable from '../../components/Sales/FollowupTable';
 import ScheduleFollowUpModal from '../../components/Sales/ScheduleFollowUpModal';
+import CallingQueueModal from '../../components/Sales/CallingQueueModal';
 import Loader from '../../components/common/Loader';
 import '../../styles/sales/followups.css';
 
@@ -33,6 +34,8 @@ const FollowupList = () => {
   });
   const [pagination, setPagination] = useState({ page: 1, limit: 15, total: 0, pages: 0 });
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showCallingQueue, setShowCallingQueue] = useState(false);
+  const [exportingCsv, setExportingCsv] = useState(false);
   const [selectedFollowups, setSelectedFollowups] = useState([]);
   const [bulkProcessing, setBulkProcessing] = useState(false);
   const [summaryStats, setSummaryStats] = useState({
@@ -152,16 +155,61 @@ const FollowupList = () => {
     setPagination((current) => ({ ...current, page: 1 }));
   };
 
+  const handleExportCsv = async () => {
+    try {
+      setExportingCsv(true);
+      const res = await salesService.exportFollowUpsCsv(filters);
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'text/csv' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Followups_Report_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export follow-ups failed:', err);
+      alert('Failed to export follow-ups CSV.');
+    } finally {
+      setExportingCsv(false);
+    }
+  };
+
+  const openQueueCount = (summaryStats.overdue || 0) + (summaryStats.dueToday || 0);
+
   return (
     <div className="followup-list-page fade-in">
-      <div className="page-header">
+      <div className="page-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h1 className="page-title">Follow-ups &amp; Reminders</h1>
           <p className="page-subtitle">Track which employee is following up with each client, remarks, and next callback schedule</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowScheduleModal(true)}>
-          <FiPlus /> Schedule Follow-up
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={handleExportCsv}
+            disabled={exportingCsv}
+          >
+            <FiDownload /> {exportingCsv ? 'Exporting...' : 'Export CSV'}
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setShowCallingQueue(true)}
+            style={{
+              background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+              color: '#ffffff',
+              border: 'none',
+              fontWeight: 600,
+            }}
+          >
+            <FiPhone /> Start Calling Queue {openQueueCount > 0 ? `(${openQueueCount})` : ''}
+          </button>
+          <button className="btn btn-primary" onClick={() => setShowScheduleModal(true)}>
+            <FiPlus /> Schedule Follow-up
+          </button>
+        </div>
       </div>
 
       {/* Pulse Panel */}
@@ -502,6 +550,13 @@ const FollowupList = () => {
           setShowScheduleModal(false);
           await handleRefreshAll();
         }}
+      />
+
+      <CallingQueueModal
+        isOpen={showCallingQueue}
+        onClose={() => setShowCallingQueue(false)}
+        initialFilterAssignedTo={filters.assignedTo}
+        onQueueUpdated={handleRefreshAll}
       />
     </div>
   );

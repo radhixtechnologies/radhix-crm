@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { FiMail, FiX, FiPaperclip, FiSend } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { salesService } from '../../services/salesService';
 import '../../styles/sales/email-compose-modal.css';
 
-const EmailComposeModal = ({ isOpen, onClose, lead }) => {
+const EmailComposeModal = ({ isOpen, onClose, lead, onEmailQueued }) => {
     const navigate = useNavigate();
     const [emailData, setEmailData] = useState({
         to: lead?.email || '',
@@ -16,10 +17,23 @@ const EmailComposeModal = ({ isOpen, onClose, lead }) => {
 
     if (!isOpen) return null;
 
-    const handleSendEmail = () => {
+    const handleSendEmail = async () => {
         if (!lead.email) {
             alert('No email address available for this lead');
             return;
+        }
+
+        if (lead?._id && (emailData.subject.trim() || emailData.body.trim())) {
+            try {
+                await salesService.addCommunication(lead._id, {
+                    type: 'email',
+                    outcome: 'email_prepared',
+                    notes: `Email composed — Subject: ${emailData.subject.trim()}${emailData.body.trim() ? ` | ${emailData.body.trim().slice(0, 140)}` : ''}`,
+                });
+                if (onEmailQueued) await onEmailQueued();
+            } catch (err) {
+                console.warn('Could not log email to lead trail:', err);
+            }
         }
 
         // Navigate to the email creation page with pre-filled data

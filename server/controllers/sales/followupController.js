@@ -527,3 +527,83 @@ exports.deleteFollowUp = async (req, res) => {
     sendError(res, error);
   }
 };
+
+const escapeCsvCell = (val) => {
+  let str = String(val ?? '').replace(/\r?\n/g, ' ').trim();
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = `'${str}`;
+  }
+  return `"${str.replace(/"/g, '""')}"`;
+};
+
+exports.exportFollowUpsCsv = async (req, res) => {
+  try {
+    const { status, type, search, bucket, relatedId, assignedTo } = req.query;
+    const query = await buildFollowUpQuery(
+      { status, type, search, bucket, assignedTo, relatedId },
+      req.user
+    );
+
+    const results = await populateAssignee(
+      FollowUp.find(query).sort({ scheduledDate: 1, createdAt: -1 }).limit(1000)
+    ).lean();
+
+    const { start } = getIstDayRange();
+    const withOverdueStatus = results.map((item) => (
+      item.status === 'pending' && new Date(item.scheduledDate) < start
+        ? { ...item, status: 'overdue' }
+        : item
+    ));
+    const hydrated = await hydrateFollowUps(withOverdueStatus);
+
+    const headers = [
+      'Client / Lead',
+      'Phone',
+      'Email',
+      'Company',
+      'Entity Type',
+      'Lead Stage',
+      'Follow-up Title',
+      'Mode',
+      'Scheduled Date',
+      'Scheduled Time',
+      'Status',
+      'Assigned Employee',
+      'Department',
+      'Latest Client Remark',
+      'Follow-up Outcome',
+    ];
+
+    const rows = hydrated.map((item) => {
+      const rel = item.relatedId && typeof item.relatedId === 'object' ? item.relatedId : null;
+      const clientName = rel?.name || rel?.title || 'Unlinked';
+      const ownerName = item.assignedTo?.user?.name || item.assignedTo?.employeeId || 'Unassigned';
+      const latestRemark = rel?.lastRemark?.content || item.description || '';
+      return [
+        clientName,
+        rel?.phone || '',
+        rel?.email || '',
+        rel?.company || '',
+        item.type || '',
+        rel?.status || rel?.stage || '',
+        item.title || '',
+        item.typeOfFollowUp || '',
+        item.scheduledDate ? new Date(item.scheduledDate).toISOString().slice(0, 10) : '',
+        item.scheduledTime || '',
+        item.status || '',
+        ownerName,
+        item.assignedTo?.department || '',
+        latestRemark,
+        item.outcome || '',
+      ].map(escapeCsvCell).join(',');
+    });
+
+    const csvContent = [headers.map(escapeCsvCell).join(','), ...rows].join('\r\n');
+    const filename = `Followups_Report_${new Date().toISOString().slice(0, 10)}.csv`;
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csvContent);
+  } catch (error) {
+    sendError(res, error);
+  }
+};

@@ -86,6 +86,7 @@ const {
 const {
   getFollowUps,
   getFollowUpsSummary,
+  exportFollowUpsCsv,
   getFollowUp,
   scheduleFollowUp,
   updateFollowUp,
@@ -212,6 +213,7 @@ router.route('/followups')
   .post(checkModuleAccess('sales'), scheduleFollowUp);
 
 router.get('/followups/summary', checkModuleAccess('sales'), getFollowUpsSummary);
+router.get('/followups/export/csv', checkModuleAccess('sales'), exportFollowUpsCsv);
 
 router.route('/followups/:id')
   .get(checkModuleAccess('sales'), getFollowUp)

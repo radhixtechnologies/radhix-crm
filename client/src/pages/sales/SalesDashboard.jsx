@@ -96,7 +96,7 @@ const SalesDashboard = () => {
     );
   }
 
-  const { kpis, pipeline, monthlyRevenue, leadsBySource, recentActivity, topDeals } = stats;
+  const { kpis, pipeline, monthlyRevenue, leadsBySource, recentActivity, topDeals, followUpMetrics, employeeCallingStats } = stats;
 
   // Format monthly revenue for charts
   const revenueChartData = monthlyRevenue?.map(item => ({
@@ -222,10 +222,10 @@ const SalesDashboard = () => {
           )}
           {activeTab === 'activity' && (
             <>
-              <KPIBadge icon={<FiCalendar />} label="Follow-ups" value={formatNumber(kpis.followUpsPending)} color="orange" />
-              <KPIBadge icon={<FiActivity />} label="Recent Acts" value={formatNumber(recentActivity?.upcoming?.length || 0)} color="blue" />
-              <KPIBadge icon={<FiTarget />} label="Sales Hit Rate" value={`${kpis.winRate}%`} color="green" />
-              <KPIBadge icon={<FiClock />} label="Avg Response" value="4h" color="purple" />
+              <KPIBadge icon={<FiCalendar />} label="Due Today" value={formatNumber(followUpMetrics?.dueToday ?? 0)} color="orange" />
+              <KPIBadge icon={<FiClock />} label="Overdue Calls" value={formatNumber(followUpMetrics?.overdue ?? 0)} color="blue" />
+              <KPIBadge icon={<FiCheckCircle />} label="Completed Today" value={formatNumber(followUpMetrics?.completedToday ?? 0)} color="green" />
+              <KPIBadge icon={<FiActivity />} label="Untouched 48h+" value={formatNumber(followUpMetrics?.staleLeads48h ?? 0)} color="purple" />
             </>
           )}
         </div>
@@ -236,6 +236,70 @@ const SalesDashboard = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {/* Option 1: Sales Gamification & Leaderboard Podium */}
               <SalesLeaderboardPodium />
+
+              {/* Team Calling & Follow-up SLA Snapshot */}
+              {followUpMetrics && (
+                <div className="ep-card">
+                  <div className="ep-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="ep-card-title">Team Follow-up &amp; Calling SLA</div>
+                    <button
+                      type="button"
+                      className="btn-outline-sm"
+                      onClick={() => navigate('/sales/followups')}
+                    >
+                      Open Follow-ups Board →
+                    </button>
+                  </div>
+                  <div className="ep-card-body">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px', marginBottom: employeeCallingStats?.length ? '18px' : 0 }}>
+                      {[
+                        { label: 'Calls Due Today', value: followUpMetrics.dueToday, bg: '#fffbeb', color: '#d97706' },
+                        { label: 'Overdue Calls', value: followUpMetrics.overdue, bg: '#fef2f2', color: '#dc2626' },
+                        { label: 'Completed Today', value: followUpMetrics.completedToday, bg: '#ecfdf5', color: '#059669' },
+                        { label: 'Untouched Leads (48h+)', value: followUpMetrics.staleLeads48h, bg: '#f1f5f9', color: '#475569' },
+                      ].map((box) => (
+                        <div key={box.label} style={{ background: box.bg, borderRadius: '12px', padding: '14px 16px' }}>
+                          <div style={{ fontSize: '22px', fontWeight: 800, color: box.color }}>{box.value ?? 0}</div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, color: '#334155', marginTop: '2px' }}>{box.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {Array.isArray(employeeCallingStats) && employeeCallingStats.length > 0 && (
+                      <div style={{ overflowX: 'auto' }}>
+                        <table className="ep-table">
+                          <thead>
+                            <tr>
+                              <th>Employee</th>
+                              <th>Assigned Leads</th>
+                              <th>Contacted Today</th>
+                              <th>Due Today</th>
+                              <th>Overdue</th>
+                              <th>Open Follow-ups</th>
+                              <th>Completed</th>
+                              <th>Converted</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {employeeCallingStats.map((emp) => (
+                              <tr key={emp.employeeId} onClick={() => navigate('/sales/followups')} style={{ cursor: 'pointer' }}>
+                                <td style={{ fontWeight: 600 }}>{emp.name}</td>
+                                <td>{emp.assignedLeads}</td>
+                                <td style={{ color: '#059669', fontWeight: 600 }}>{emp.contactedToday}</td>
+                                <td style={{ color: '#d97706', fontWeight: 700 }}>{emp.dueToday}</td>
+                                <td style={{ color: emp.overdue > 0 ? '#dc2626' : '#64748b', fontWeight: 700 }}>{emp.overdue}</td>
+                                <td>{emp.openFollowUps}</td>
+                                <td>{emp.completedFollowUps}</td>
+                                <td style={{ color: '#2563eb', fontWeight: 700 }}>{emp.convertedLeads}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="ep-grid-2">
                 <div className="ep-card">

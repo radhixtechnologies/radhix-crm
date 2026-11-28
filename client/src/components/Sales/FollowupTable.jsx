@@ -61,7 +61,7 @@ const FollowupTable = ({
   const [deleteModal, setDeleteModal] = useState({ open: false, followup: null });
   const [editModal, setEditModal] = useState({ open: false, followup: null });
   const [completeModal, setCompleteModal] = useState({ open: false, followup: null });
-  const [waModal, setWaModal] = useState({ open: false, name: '', phone: '' });
+  const [waModal, setWaModal] = useState({ open: false, name: '', phone: '', leadId: '', date: '', time: '' });
 
   const allVisibleSelected = followups.length > 0 && followups.every((f) => selectedFollowups.includes(f._id));
   const someVisibleSelected = followups.some((f) => selectedFollowups.includes(f._id)) && !allVisibleSelected;
@@ -322,6 +322,9 @@ const FollowupTable = ({
                           open: true,
                           name: entityName,
                           phone: entityPhone,
+                          leadId: followup.type === 'lead' ? (related?._id || followup.relatedId || '') : '',
+                          date: followup.scheduledDate ? dayjs(followup.scheduledDate).format('DD MMM YYYY') : '',
+                          time: followup.scheduledTime || '',
                         })}
                         title={entityPhone ? 'Send WhatsApp Follow-up' : 'No phone number'}
                         disabled={!entityPhone}
@@ -407,10 +410,28 @@ const FollowupTable = ({
       {waModal.open && (
         <WhatsAppModal
           isOpen={waModal.open}
-          onClose={() => setWaModal({ open: false, name: '', phone: '' })}
+          onClose={() => setWaModal({ open: false, name: '', phone: '', leadId: '', date: '', time: '' })}
           recipientName={waModal.name}
           recipientPhone={waModal.phone}
-          defaultTemplateId="general_followup"
+          defaultTemplateId={waModal.date ? 'callback_confirmation' : 'general_followup'}
+          contextVariables={{
+            date: waModal.date || undefined,
+            time: waModal.time || undefined,
+          }}
+          onSent={async ({ message }) => {
+            if (waModal.leadId) {
+              try {
+                await salesService.addCommunication(waModal.leadId, {
+                  type: 'whatsapp',
+                  outcome: 'whatsapp_sent',
+                  notes: `WhatsApp sent: ${message}`,
+                });
+                if (onRefresh) await onRefresh();
+              } catch (err) {
+                console.warn('Failed to log WhatsApp to lead:', err);
+              }
+            }
+          }}
         />
       )}
     </div>

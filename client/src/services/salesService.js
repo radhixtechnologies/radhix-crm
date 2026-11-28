@@ -106,6 +106,7 @@ export const salesService = {
   // Follow-up services
   getFollowUps: (params) => api.get('/sales/followups', { params }),
   getFollowUpsSummary: (params) => api.get('/sales/followups/summary', { params }),
+  exportFollowUpsCsv: (params) => api.get('/sales/followups/export/csv', { params, responseType: 'blob' }),
   getFollowUp: (id) => api.get(`/sales/followups/${id}`),
   scheduleFollowUp: (data) => api.post('/sales/followups', data),
   updateFollowUp: (id, data) => api.put(`/sales/followups/${id}`, data),

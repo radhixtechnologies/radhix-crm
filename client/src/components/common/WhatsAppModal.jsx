@@ -19,6 +19,7 @@ const WhatsAppModal = ({
   recipientPhone = '',
   defaultTemplateId = 'general_followup',
   contextVariables = {},
+  onSent,
 }) => {
   const { user } = useAuth();
   const [selectedTemplateId, setSelectedTemplateId] = useState(defaultTemplateId);
@@ -58,6 +59,7 @@ const WhatsAppModal = ({
   const handleSend = () => {
     if (!phone) return;
     openWhatsApp(phone, message);
+    onSent?.({ phone, message, templateId: selectedTemplateId });
     onClose();
   };
 
