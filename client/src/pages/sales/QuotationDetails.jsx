@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FiEdit, FiX, FiCalendar, FiDollarSign, FiFileText, FiUser, FiMail, FiPhone, FiMapPin, FiClock, FiCheckCircle, FiPrinter, FiDownload } from 'react-icons/fi';
+import { FiEdit, FiX, FiCalendar, FiDollarSign, FiFileText, FiUser, FiMail, FiPhone, FiMapPin, FiClock, FiCheckCircle, FiPrinter, FiDownload, FiShare2, FiExternalLink, FiCopy } from 'react-icons/fi';
 import { salesService } from '../../services/salesService';
+import { growthService } from '../../services/growthService';
 import { formatCurrency, formatDate } from '../../utils/format';
 import Loader from '../../components/common/Loader';
 import '../../styles/sales/quotation-view.css';
@@ -11,6 +12,8 @@ const QuotationDetails = () => {
     const { id } = useParams();
     const [quotation, setQuotation] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [sharingLink, setSharingLink] = useState(false);
+    const [shareFeedback, setShareFeedback] = useState('');
     const API_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
 
     useEffect(() => {
@@ -81,6 +84,29 @@ const QuotationDetails = () => {
         } catch (error) {
             console.error('Error sending email:', error);
             alert('Failed to send email');
+        }
+    };
+
+    const handleShareClientPortal = async () => {
+        try {
+            setSharingLink(true);
+            const res = await growthService.shareQuotationLink(id);
+            if (res.data?.success) {
+                const fullUrl = `${window.location.origin}${res.data.sharePath}`;
+                try {
+                    await navigator.clipboard.writeText(fullUrl);
+                    setShareFeedback(`Client Portal Link copied: ${fullUrl}`);
+                } catch {
+                    setShareFeedback(`Client Portal Link ready: ${fullUrl}`);
+                }
+                setTimeout(() => setShareFeedback(''), 6000);
+                await fetchQuotation();
+            }
+        } catch (error) {
+            console.error('Error generating public quotation link:', error);
+            alert(error.response?.data?.message || 'Failed to generate client share link');
+        } finally {
+            setSharingLink(false);
         }
     };
 
@@ -163,6 +189,14 @@ const QuotationDetails = () => {
                             <button className="btn btn-secondary" onClick={handleSendEmail}>
                                 <FiMail /> Send Email
                             </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleShareClientPortal}
+                                disabled={sharingLink}
+                                style={{ background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', border: 'none' }}
+                            >
+                                <FiShare2 /> {sharingLink ? 'Sharing...' : 'Share Client Link'}
+                            </button>
                             {quotation.pdfUrl && (
                                 <a
                                     href={`${API_URL}${quotation.pdfUrl}`}
@@ -185,6 +219,59 @@ const QuotationDetails = () => {
 
                 {/* Main Content */}
                 <div className="quotation-view-content">
+                    {(shareFeedback || quotation.publicToken) && (
+                        <div
+                            className="no-print"
+                            style={{
+                                background: quotation.status === 'accepted' ? '#f0fdf4' : '#eff6ff',
+                                border: `1px solid ${quotation.status === 'accepted' ? '#86efac' : '#bfdbfe'}`,
+                                borderRadius: '10px',
+                                padding: '12px 16px',
+                                marginBottom: '18px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                flexWrap: 'wrap',
+                                gap: '10px',
+                                fontSize: '13.5px',
+                                color: '#0f172a',
+                            }}
+                        >
+                            <div>
+                                <strong>{shareFeedback || 'Client Approval & UPI Payment Portal:'}</strong>{' '}
+                                {quotation.publicToken && (
+                                    <a
+                                        href={`/quote/${quotation.publicToken}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        style={{ color: '#2563eb', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: '6px' }}
+                                    >
+                                        Open Client Link <FiExternalLink size={13} />
+                                    </a>
+                                )}
+                                {quotation.clientSignature?.signedByName && (
+                                    <div style={{ fontSize: '12px', color: '#166534', marginTop: '3px' }}>
+                                        Signed by {quotation.clientSignature.signedByName} on {formatDate(quotation.clientSignature.signedAt)}
+                                    </div>
+                                )}
+                                {quotation.clientFeedback && (
+                                    <div style={{ fontSize: '12px', color: '#475569', marginTop: '2px' }}>
+                                        Client Note: &ldquo;{quotation.clientFeedback}&rdquo;
+                                    </div>
+                                )}
+                            </div>
+                            {quotation.publicToken && (
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-secondary"
+                                    onClick={() => navigator.clipboard.writeText(`${window.location.origin}/quote/${quotation.publicToken}`)}
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                                >
+                                    <FiCopy size={13} /> Copy Link
+                                </button>
+                            )}
+                        </div>
+                    )}
                     {/* Basic Information Section */}
                     <section className="quotation-view-section">
                         <h2 className="quotation-view-section-title">Basic Information</h2>

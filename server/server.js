@@ -338,6 +338,8 @@ mountRoute('/api/branding', './routes/branding');
 mountRoute('/api/workflows', './routes/workflows');
 mountRoute('/api/branches', './routes/branches');
 mountRoute('/api/webhooks/ai-call', './routes/aiWebhook');
+mountRoute('/api/webhooks/leads', './routes/externalLeadWebhook');
+mountRoute('/api/public/quotations', './routes/publicQuotation');
 
 
 // Health check route
@@ -415,6 +417,13 @@ const startServer = async () => {
         console.log('✅ Activity reminders cron job started (runs every 5 minutes)');
         cron.schedule('*/15 * * * *', followUpReminders);
         console.log('✅ Follow-up reminders cron job started (runs every 15 minutes)');
+        const aiCallRetries = require('./jobs/aiCallRetries');
+        cron.schedule('*/10 * * * *', () => {
+          aiCallRetries().catch((error) => {
+            console.error('[AI Call Retry Job] Scheduled check failed:', error);
+          });
+        });
+        console.log('✅ AI Call auto-retry scheduler started (runs every 10 minutes)');
         cron.schedule('*/5 * * * *', () => {
           sendSiteVisitReminders().catch((error) => {
             console.error('[Real Estate reminders] Scheduled check failed:', error);

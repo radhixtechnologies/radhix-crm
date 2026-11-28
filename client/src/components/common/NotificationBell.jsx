@@ -1,15 +1,39 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiBell, FiCheck, FiX, FiTrash2 } from 'react-icons/fi';
+import { FiBell, FiCheck, FiX, FiTrash2, FiVolume2, FiVolumeX } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import notificationService from '../../services/notificationService';
 import './NotificationBell.css';
 
+const playSubtleChime = () => {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(660, now);
+        osc.frequency.setValueAtTime(880, now + 0.08);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.26);
+    } catch {
+        // Ignore audio context block before user interaction
+    }
+};
+
 const NotificationBell = () => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('crm_notif_sound') !== 'off');
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const dropdownRef = useRef(null);
+    const prevUnreadRef = useRef(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -35,8 +59,21 @@ const NotificationBell = () => {
         try {
             const response = await notificationService.getNotifications({ limit: 10 });
             if (response.data.success) {
-                setNotifications(response.data.data.notifications);
-                setUnreadCount(response.data.data.unreadCount);
+                const nextUnread = response.data.data.unreadCount || 0;
+                const list = response.data.data.notifications || [];
+                if (prevUnreadRef.current !== null && nextUnread > prevUnreadRef.current && soundEnabled) {
+                    playSubtleChime();
+                    if (typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission === 'granted' && list[0]) {
+                        try {
+                            new window.Notification(list[0].title || 'CRM Alert', { body: list[0].message || '' });
+                        } catch {
+                            // Ignore browser notification restrictions
+                        }
+                    }
+                }
+                prevUnreadRef.current = nextUnread;
+                setNotifications(list);
+                setUnreadCount(nextUnread);
             }
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -134,16 +171,42 @@ const NotificationBell = () => {
                 <div className="notification-dropdown">
                     <div className="notification-header">
                         <h3>Notifications</h3>
-                        {unreadCount > 0 && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <button
-                                className="mark-all-read-btn"
-                                onClick={handleMarkAllAsRead}
-                                disabled={loading}
+                                type="button"
+                                onClick={() => {
+                                    const next = !soundEnabled;
+                                    setSoundEnabled(next);
+                                    localStorage.setItem('crm_notif_sound', next ? 'on' : 'off');
+                                    if (next && typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission === 'default') {
+                                        window.Notification.requestPermission().catch(() => {});
+                                    }
+                                    if (next) playSubtleChime();
+                                }}
+                                title={soundEnabled ? 'Mute notification chimes' : 'Enable notification chimes'}
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: soundEnabled ? '#2563eb' : '#94a3b8',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    padding: '4px',
+                                }}
                             >
-                                <FiCheck size={14} />
-                                Mark all read
+                                {soundEnabled ? <FiVolume2 size={15} /> : <FiVolumeX size={15} />}
                             </button>
-                        )}
+                            {unreadCount > 0 && (
+                                <button
+                                    className="mark-all-read-btn"
+                                    onClick={handleMarkAllAsRead}
+                                    disabled={loading}
+                                >
+                                    <FiCheck size={14} />
+                                    Mark all read
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     <div className="notification-list">

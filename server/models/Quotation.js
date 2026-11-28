@@ -30,6 +30,17 @@ const quotationSchema = new mongoose.Schema({
   pdfUrl: { type: String, default: '' },
   emailSent: { type: Boolean, default: false },
   emailSentAt: Date,
+  publicToken: { type: String, unique: true, sparse: true },
+  sharedAt: Date,
+  acceptedAt: Date,
+  rejectedAt: Date,
+  clientFeedback: { type: String, default: '' },
+  clientSignature: {
+    signedByName: { type: String, default: '' },
+    signatureDataUrl: { type: String, default: '' },
+    signedAt: { type: Date, default: null },
+    ipAddress: { type: String, default: '' },
+  },
   isDeleted: { type: Boolean, default: false }
 }, { timestamps: true });
 

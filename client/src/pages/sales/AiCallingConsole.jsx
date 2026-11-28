@@ -16,6 +16,9 @@ import {
   FiTrendingUp,
   FiPlay,
   FiZap,
+  FiBarChart2,
+  FiRepeat,
+  FiMessageSquare,
 } from 'react-icons/fi';
 import { aiCallingService, OUTCOME_META, formatCallDuration } from '../../services/aiCallingService';
 import { useAuth } from '../../context/AuthContext';
@@ -48,7 +51,8 @@ const FALLBACK_PROVIDERS = [
 
 const AiCallingConsole = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = searchParams.get('tab') === 'settings' ? 'settings' : 'logs';
+  const qTab = searchParams.get('tab');
+  const initialTab = qTab === 'settings' || qTab === 'analytics' ? qTab : 'logs';
   const [activeTab, setActiveTab] = useState(initialTab);
 
   const { roleSlug, isAdmin, isSuperAdmin } = useAuth();
@@ -60,7 +64,21 @@ const AiCallingConsole = () => {
     roleSlug?.endsWith('_manager');
 
   const [calls, setCalls] = useState([]);
-  const [summary, setSummary] = useState({ totalCalls: 0, completed: 0, interested: 0, callbacksScheduled: 0 });
+  const [summary, setSummary] = useState({
+    totalCalls: 0,
+    completed: 0,
+    interested: 0,
+    notInterested: 0,
+    noAnswerOrBusy: 0,
+    callbacksScheduled: 0,
+    whatsappSent: 0,
+    retriesScheduled: 0,
+    totalDurationSeconds: 0,
+    totalCost: 0,
+    connectRate: 0,
+    interestedRate: 0,
+    avgDurationSeconds: 0,
+  });
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
   const [filters, setFilters] = useState({ status: '', outcome: '', provider: '' });
   const [loadingLogs, setLoadingLogs] = useState(false);
@@ -80,6 +98,14 @@ const AiCallingConsole = () => {
     autoCallNewLeads: false,
     defaultLanguage: 'hi-IN',
     systemScript: '',
+    autoWhatsAppAfterCall: false,
+    whatsappInterestedTemplate: '',
+    whatsappNoAnswerTemplate: '',
+    autoRetryEnabled: false,
+    maxRetryAttempts: 2,
+    retryDelayMinutes: 60,
+    dndStartHour: 21,
+    dndEndHour: 9,
     webhookUrl: '',
     providers: FALLBACK_PROVIDERS,
   });
@@ -91,7 +117,7 @@ const AiCallingConsole = () => {
 
   const switchTab = (tab) => {
     setActiveTab(tab);
-    setSearchParams(tab === 'settings' ? { tab: 'settings' } : {});
+    setSearchParams(tab === 'logs' ? {} : { tab });
   };
 
   const fetchCalls = useCallback(async () => {
@@ -162,6 +188,14 @@ const AiCallingConsole = () => {
         autoCallNewLeads: config.autoCallNewLeads,
         defaultLanguage: config.defaultLanguage,
         systemScript: config.systemScript,
+        autoWhatsAppAfterCall: config.autoWhatsAppAfterCall,
+        whatsappInterestedTemplate: config.whatsappInterestedTemplate,
+        whatsappNoAnswerTemplate: config.whatsappNoAnswerTemplate,
+        autoRetryEnabled: config.autoRetryEnabled,
+        maxRetryAttempts: Number(config.maxRetryAttempts) || 2,
+        retryDelayMinutes: Number(config.retryDelayMinutes) || 60,
+        dndStartHour: Number(config.dndStartHour ?? 21),
+        dndEndHour: Number(config.dndEndHour ?? 9),
       };
       if (config.apiKey.trim()) payload.apiKey = config.apiKey.trim();
       if (config.webhookSecret && !config.webhookSecret.includes('••••')) {
@@ -249,10 +283,17 @@ const AiCallingConsole = () => {
           </button>
           <button
             type="button"
+            className={`ai-calling-tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => switchTab('analytics')}
+          >
+            <FiBarChart2 /> Analytics & ROI
+          </button>
+          <button
+            type="button"
             className={`ai-calling-tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
             onClick={() => switchTab('settings')}
           >
-            <FiSettings /> Provider Settings
+            <FiSettings /> Provider & Automation
           </button>
         </div>
       </div>
@@ -428,9 +469,28 @@ const AiCallingConsole = () => {
                             <span style={{ fontWeight: 600, fontSize: '12.5px' }}>
                               {call.provider?.toUpperCase()}
                             </span>
+                            {(call.attemptNumber > 1 || call.whatsappAutoSent) && (
+                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+                                {call.attemptNumber > 1 && (
+                                  <span style={{ fontSize: '10.5px', background: '#e0e7ff', color: '#3730a3', padding: '1px 6px', borderRadius: '99px', fontWeight: 700 }}>
+                                    Retry #{call.attemptNumber}
+                                  </span>
+                                )}
+                                {call.whatsappAutoSent && (
+                                  <span style={{ fontSize: '10.5px', background: '#dcfce7', color: '#166534', padding: '1px 6px', borderRadius: '99px', fontWeight: 700 }}>
+                                    WA Sent
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </td>
                           <td>
                             <span className={`ai-badge ai-badge-${call.status}`}>{call.status}</span>
+                            {call.retryScheduled && !call.retryExecuted && call.nextRetryAt && (
+                              <div style={{ fontSize: '11px', color: '#b45309', marginTop: '3px', fontWeight: 600 }}>
+                                Auto-Retry: {new Date(call.nextRetryAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            )}
                           </td>
                           <td>
                             {outcomeInfo ? (
@@ -517,6 +577,80 @@ const AiCallingConsole = () => {
             )}
           </div>
         </>
+      ) : activeTab === 'analytics' ? (
+        <div>
+          <div className="ai-kpi-grid">
+            <div className="ai-kpi-card">
+              <div>
+                <div className="ai-kpi-label">Connect Rate</div>
+                <div className="ai-kpi-value">{summary.connectRate || 0}%</div>
+              </div>
+              <div className="ai-kpi-icon" style={{ background: '#eff6ff', color: '#2563eb' }}>
+                <FiPhoneCall />
+              </div>
+            </div>
+
+            <div className="ai-kpi-card">
+              <div>
+                <div className="ai-kpi-label">Interest Conversion</div>
+                <div className="ai-kpi-value">{summary.interestedRate || 0}%</div>
+              </div>
+              <div className="ai-kpi-icon" style={{ background: '#dcfce7', color: '#16a34a' }}>
+                <FiTrendingUp />
+              </div>
+            </div>
+
+            <div className="ai-kpi-card">
+              <div>
+                <div className="ai-kpi-label">Auto-WhatsApp Sent</div>
+                <div className="ai-kpi-value">{summary.whatsappSent || 0}</div>
+              </div>
+              <div className="ai-kpi-icon" style={{ background: '#ecfdf5', color: '#059669' }}>
+                <FiMessageSquare />
+              </div>
+            </div>
+
+            <div className="ai-kpi-card">
+              <div>
+                <div className="ai-kpi-label">Auto-Retries Queued</div>
+                <div className="ai-kpi-value">{summary.retriesScheduled || 0}</div>
+              </div>
+              <div className="ai-kpi-icon" style={{ background: '#fef3c7', color: '#d97706' }}>
+                <FiRepeat />
+              </div>
+            </div>
+          </div>
+
+          <div className="ai-card">
+            <h3 style={{ margin: '0 0 14px', fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
+              Call Outcomes & Voice Automation Breakdown
+            </h3>
+            {[
+              { label: 'Interested / Callback Booked', val: summary.interested || 0, color: '#10b981' },
+              { label: 'Not Interested', val: summary.notInterested || 0, color: '#ef4444' },
+              { label: 'No Answer / Busy (Retry Eligible)', val: summary.noAnswerOrBusy || 0, color: '#f59e0b' },
+            ].map((item) => {
+              const pct = summary.totalCalls > 0 ? Math.round((item.val / summary.totalCalls) * 100) : 0;
+              return (
+                <div key={item.label} style={{ marginBottom: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600, marginBottom: '5px', color: '#334155' }}>
+                    <span>{item.label}</span>
+                    <span>{item.val} calls ({pct}%)</span>
+                  </div>
+                  <div style={{ height: '10px', background: '#f1f5f9', borderRadius: '999px', overflow: 'hidden' }}>
+                    <div style={{ width: `${pct}%`, height: '100%', background: item.color, transition: 'width 0.3s ease' }} />
+                  </div>
+                </div>
+              );
+            })}
+
+            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginTop: '18px', paddingTop: '14px', borderTop: '1px solid #e2e8f0', fontSize: '13.5px', color: '#475569' }}>
+              <div><strong>Avg Connected Call:</strong> {formatCallDuration(summary.avgDurationSeconds)}</div>
+              <div><strong>Total Voice Talk-Time:</strong> {formatCallDuration(summary.totalDurationSeconds)}</div>
+              <div><strong>Tracked Provider Spend:</strong> ${(Number(summary.totalCost) || 0).toFixed(2)}</div>
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="ai-card">
           {loadingConfig ? (
@@ -659,6 +793,102 @@ const AiCallingConsole = () => {
                   <span className="ai-field-hint">
                     Passed dynamically via prompt context variables (`lead_name`, `company`, `requirements`) on every call.
                   </span>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '22px', padding: '16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px' }}>
+                <label className="ai-toggle-item" style={{ marginBottom: '12px' }}>
+                  <input
+                    type="checkbox"
+                    checked={config.autoWhatsAppAfterCall}
+                    disabled={!canManageSettings}
+                    onChange={(e) => setConfig((c) => ({ ...c, autoWhatsAppAfterCall: e.target.checked }))}
+                  />
+                  <FiMessageSquare color="#16a34a" /> Enable Post-Call Auto-WhatsApp Follow-up
+                </label>
+                <div className="ai-settings-form-grid">
+                  <div className="ai-field-group">
+                    <label>WhatsApp Message (Interested / Callback)</label>
+                    <textarea
+                      rows={2}
+                      disabled={!canManageSettings}
+                      value={config.whatsappInterestedTemplate}
+                      onChange={(e) => setConfig((c) => ({ ...c, whatsappInterestedTemplate: e.target.value }))}
+                    />
+                  </div>
+                  <div className="ai-field-group">
+                    <label>WhatsApp Message (No-Answer / Busy)</label>
+                    <textarea
+                      rows={2}
+                      disabled={!canManageSettings}
+                      value={config.whatsappNoAnswerTemplate}
+                      onChange={(e) => setConfig((c) => ({ ...c, whatsappNoAnswerTemplate: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="ai-field-hint" style={{ marginTop: '6px' }}>
+                  Variables supported: {'{name}'}, {'{company}'}, {'{callback}'}
+                </div>
+              </div>
+
+              <div style={{ marginTop: '16px', padding: '16px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px' }}>
+                <label className="ai-toggle-item" style={{ marginBottom: '12px' }}>
+                  <input
+                    type="checkbox"
+                    checked={config.autoRetryEnabled}
+                    disabled={!canManageSettings}
+                    onChange={(e) => setConfig((c) => ({ ...c, autoRetryEnabled: e.target.checked }))}
+                  />
+                  <FiRepeat color="#d97706" /> Smart Auto-Retry on No-Answer / Busy (DND Safe)
+                </label>
+                <div className="ai-settings-form-grid">
+                  <div className="ai-field-group">
+                    <label>Max Attempts per Lead</label>
+                    <select
+                      disabled={!canManageSettings}
+                      value={config.maxRetryAttempts}
+                      onChange={(e) => setConfig((c) => ({ ...c, maxRetryAttempts: Number(e.target.value) }))}
+                    >
+                      <option value={2}>2 Total Attempts</option>
+                      <option value={3}>3 Total Attempts</option>
+                      <option value={4}>4 Total Attempts</option>
+                    </select>
+                  </div>
+                  <div className="ai-field-group">
+                    <label>Retry Delay</label>
+                    <select
+                      disabled={!canManageSettings}
+                      value={config.retryDelayMinutes}
+                      onChange={(e) => setConfig((c) => ({ ...c, retryDelayMinutes: Number(e.target.value) }))}
+                    >
+                      <option value={30}>After 30 minutes</option>
+                      <option value={60}>After 1 hour</option>
+                      <option value={120}>After 2 hours</option>
+                      <option value={240}>After 4 hours</option>
+                    </select>
+                  </div>
+                  <div className="ai-field-group">
+                    <label>DND Evening Cutoff (IST Hour)</label>
+                    <input
+                      type="number"
+                      min={18}
+                      max={23}
+                      disabled={!canManageSettings}
+                      value={config.dndStartHour}
+                      onChange={(e) => setConfig((c) => ({ ...c, dndStartHour: Number(e.target.value) }))}
+                    />
+                  </div>
+                  <div className="ai-field-group">
+                    <label>DND Morning Resume (IST Hour)</label>
+                    <input
+                      type="number"
+                      min={6}
+                      max={12}
+                      disabled={!canManageSettings}
+                      value={config.dndEndHour}
+                      onChange={(e) => setConfig((c) => ({ ...c, dndEndHour: Number(e.target.value) }))}
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -5,6 +5,7 @@ const AiCallLog = require('../models/AiCallLog');
 const Notification = require('../models/Notification');
 const { getTenantCompanyId } = require('../utils/tenantHelper');
 const { parseFollowUpDate, recordLeadRemarkAndFollowUp, getIstDayRange } = require('../utils/followUpSync');
+const { sendMetaCloudMessage, fillTemplate } = require('./whatsappService');
 
 const SUPPORTED_PROVIDERS = [
   {
@@ -104,7 +105,42 @@ const getEffectiveAiConfig = async ({ user = null, companyId = null, companyDoc 
     systemScript:
       saved.systemScript ||
       'Namaste {name} ji, main {company} ki taraf se baat kar raha hoon. Aapne hamari service me interest dikhaya tha. Kya abhi 2 minute baat karne ka sahi samay hai?',
+    autoWhatsAppAfterCall: Boolean(saved.autoWhatsAppAfterCall),
+    whatsappInterestedTemplate:
+      saved.whatsappInterestedTemplate ||
+      'Namaste {name} ji! {company} se baat karne ke liye dhanyavaad. Aapka callback {callback} par schedule ho gaya hai. Koi query ho toh yahin reply karein.',
+    whatsappNoAnswerTemplate:
+      saved.whatsappNoAnswerTemplate ||
+      'Namaste {name} ji, humne {company} se aapko call try kiya tha par connect nahi ho paaya. Kripya batayein ki aapko kis time call karein?',
+    autoRetryEnabled: Boolean(saved.autoRetryEnabled),
+    maxRetryAttempts: Number(saved.maxRetryAttempts) || 2,
+    retryDelayMinutes: Number(saved.retryDelayMinutes) || 60,
+    dndStartHour: saved.dndStartHour !== undefined ? Number(saved.dndStartHour) : 21,
+    dndEndHour: saved.dndEndHour !== undefined ? Number(saved.dndEndHour) : 9,
   };
+};
+
+const computeNextAllowedRetryTime = (delayMinutes = 60, dndStartHour = 21, dndEndHour = 9, baseDate = new Date()) => {
+  const candidate = new Date(baseDate.getTime() + Math.max(10, Number(delayMinutes) || 60) * 60000);
+  const istOffsetMs = 5.5 * 3600000;
+  const istDate = new Date(candidate.getTime() + istOffsetMs);
+  const istHour = istDate.getUTCHours();
+
+  const inDnd =
+    dndStartHour > dndEndHour
+      ? istHour >= dndStartHour || istHour < dndEndHour
+      : dndStartHour < dndEndHour
+        ? istHour >= dndStartHour && istHour < dndEndHour
+        : false;
+
+  if (!inDnd) return candidate;
+
+  // Roll forward to dndEndHour:05 IST
+  if (dndStartHour > dndEndHour && istHour >= dndStartHour) {
+    istDate.setUTCDate(istDate.getUTCDate() + 1);
+  }
+  istDate.setUTCHours(dndEndHour, 5, 0, 0);
+  return new Date(istDate.getTime() - istOffsetMs);
 };
 
 const buildWebhookUrl = (req, webhookSecret = '') => {
@@ -280,7 +316,16 @@ const dispatchToProvider = async ({ config, lead, callLog, customScript = '', re
   throw err;
 };
 
-const initiateAiCallForLead = async ({ lead, user = null, companyId = null, customScript = '', overrideProvider = '', req = null }) => {
+const initiateAiCallForLead = async ({
+  lead,
+  user = null,
+  companyId = null,
+  customScript = '',
+  overrideProvider = '',
+  req = null,
+  attemptNumber = 1,
+  parentCallId = null,
+}) => {
   const config = await getEffectiveAiConfig({
     user,
     companyId: companyId || lead.tenantCompany,
@@ -306,6 +351,8 @@ const initiateAiCallForLead = async ({ lead, user = null, companyId = null, cust
     fromNumber: config.fromNumber,
     toNumber,
     status: 'queued',
+    attemptNumber,
+    parentCallId,
     startedAt: new Date(),
   });
 
@@ -618,6 +665,62 @@ const processAiCallWebhook = async ({ payload, querySecret = '', headerSecret = 
 
       callLog.syncedToLead = true;
 
+      // Post-call Auto-WhatsApp follow-up
+      if (config.autoWhatsAppAfterCall && !callLog.whatsappAutoSent && lead.phone) {
+        let waTemplate = '';
+        if (['interested', 'callback_requested'].includes(callLog.outcome)) {
+          waTemplate = config.whatsappInterestedTemplate;
+        } else if (['no_answer', 'busy'].includes(callLog.outcome)) {
+          waTemplate = config.whatsappNoAnswerTemplate;
+        }
+        if (waTemplate) {
+          const cbLabel = cbDate
+            ? `${cbDate.toLocaleDateString('en-IN')}${cbTime ? ` (${cbTime})` : ''}`
+            : 'jald hi';
+          const waMessage = fillTemplate(waTemplate, {
+            name: lead.name || 'ji',
+            company: config.companyName || 'our team',
+            callback: cbLabel,
+          });
+          try {
+            const waRes = await sendMetaCloudMessage(lead.phone, waMessage);
+            callLog.whatsappAutoSent = Boolean(waRes?.success);
+            callLog.whatsappAutoStatus = waRes?.simulated
+              ? 'simulated'
+              : waRes?.success
+                ? 'sent'
+                : 'failed';
+            if (waRes?.success) {
+              await recordLeadRemarkAndFollowUp({
+                lead,
+                user: systemActor,
+                content: `[Auto-WhatsApp after AI Call] ${waMessage}`,
+                remarkType: 'whatsapp',
+                createFollowUpTask: false,
+              });
+            }
+          } catch (waErr) {
+            callLog.whatsappAutoStatus = 'failed';
+            console.warn('Auto WhatsApp after AI Call failed:', waErr.message);
+          }
+        }
+      }
+
+      // Auto-retry scheduling for No-Answer / Busy calls (respects DND hours)
+      if (
+        config.autoRetryEnabled &&
+        ['no_answer', 'busy'].includes(callLog.outcome) &&
+        (callLog.attemptNumber || 1) < (config.maxRetryAttempts || 2) &&
+        !callLog.retryScheduled
+      ) {
+        callLog.retryScheduled = true;
+        callLog.nextRetryAt = computeNextAllowedRetryTime(
+          config.retryDelayMinutes,
+          config.dndStartHour,
+          config.dndEndHour
+        );
+      }
+
       if (lead.assignedTo && ['interested', 'callback_requested'].includes(callLog.outcome)) {
         const Employee = require('../models/Employee');
         const emp = await Employee.findById(lead.assignedTo).select('user').lean();
@@ -710,6 +813,7 @@ module.exports = {
   resolveCompanyRecord,
   getEffectiveAiConfig,
   buildWebhookUrl,
+  computeNextAllowedRetryTime,
   initiateAiCallForLead,
   parseProviderWebhookPayload,
   processAiCallWebhook,

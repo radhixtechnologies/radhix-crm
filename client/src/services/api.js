@@ -52,7 +52,7 @@ api.interceptors.response.use(
       localStorage.removeItem('user');
       localStorage.removeItem('sessionId');
       // Do not reload or redirect if already on login or public routes to prevent infinite refresh loops
-      const publicPaths = ['/login', '/forgot-password', '/reset-password', '/forms'];
+      const publicPaths = ['/login', '/forgot-password', '/reset-password', '/forms', '/quote'];
       const isPublicPath = publicPaths.some((p) => window.location.pathname.startsWith(p));
       if (!isPublicPath) {
         window.location.href = '/login';

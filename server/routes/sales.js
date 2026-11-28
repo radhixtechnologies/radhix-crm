@@ -144,6 +144,16 @@ router.post('/ai-calling/test-connection', checkModuleAccess('sales'), testAiCal
 router.get('/ai-calling/calls', checkModuleAccess('sales'), getAiCallLogs);
 router.post('/ai-calling/calls/:callId/simulate-complete', checkModuleAccess('sales'), simulateCallWebhookResult);
 
+// Smart Lead Routing & External Portal Webhooks
+const {
+  getLeadRoutingConfig,
+  updateLeadRoutingConfig,
+  simulateExternalLeadWebhook,
+} = require('../controllers/sales/leadRoutingController');
+router.get('/lead-routing/config', checkModuleAccess('sales'), getLeadRoutingConfig);
+router.put('/lead-routing/config', checkModuleAccess('sales'), updateLeadRoutingConfig);
+router.post('/lead-routing/test-webhook', checkModuleAccess('sales'), simulateExternalLeadWebhook);
+
 // Bulk Lead operations
 router.put('/leads/bulk/assign', checkModuleAccess('sales'), bulkAssignLeads);
 router.put('/leads/bulk/status', checkModuleAccess('sales'), bulkUpdateStatus);
@@ -225,6 +235,8 @@ router.route('/quotations/:id')
 
 router.post('/quotations/:id/send', checkModuleAccess('sales'), sendQuotation);
 router.post('/quotations/:id/generate-pdf', checkModuleAccess('sales'), generatePDF);
+const { shareQuotationLink } = require('../controllers/sales/quotationController');
+router.post('/quotations/:id/share-link', checkModuleAccess('sales'), shareQuotationLink);
 
 // Follow-up routes - Admin only
 router.route('/followups')

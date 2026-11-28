@@ -106,6 +106,35 @@ const aiCallLogSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    attemptNumber: {
+      type: Number,
+      default: 1,
+    },
+    parentCallId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'AiCallLog',
+      default: null,
+    },
+    nextRetryAt: {
+      type: Date,
+      default: null,
+    },
+    retryScheduled: {
+      type: Boolean,
+      default: false,
+    },
+    retryExecuted: {
+      type: Boolean,
+      default: false,
+    },
+    whatsappAutoSent: {
+      type: Boolean,
+      default: false,
+    },
+    whatsappAutoStatus: {
+      type: String,
+      default: '',
+    },
     errorMessage: {
       type: String,
       default: '',

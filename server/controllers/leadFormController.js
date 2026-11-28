@@ -114,18 +114,41 @@ exports.submitPublicForm = async (req, res) => {
       noteLines.push(`${form.fields.customQuestion}: ${customAnswer.trim()}`);
     }
 
-    // Create lead in CRM
-    const newLead = await Lead.create({
-      name: name.trim(),
-      email: email ? email.trim() : undefined,
-      phone: phone ? phone.trim() : undefined,
-      source: form.source || 'Website Embed Form',
-      industry: form.industry || 'General',
-      value: budget ? Number(budget) : 0,
-      status: 'new',
-      notes: noteLines.join('\n'),
-      assignedTo: form.assignedTo || undefined,
+    const { intakeLeadWithRouting } = require('../utils/leadIntake');
+    const summaryText = noteLines.join(' | ');
+    const normalizedSource = ['website', 'referral', 'social-media', 'email', 'phone', 'campaign', 'meta', 'indiamart', 'justdial', 'tradeindia', 'webhook', 'other'].includes(
+      String(form.source || '').toLowerCase()
+    )
+      ? String(form.source).toLowerCase()
+      : 'website';
+
+    const { isDuplicate, lead: newLead } = await intakeLeadWithRouting({
+      leadFields: {
+        name: name.trim(),
+        email: email ? email.trim() : '',
+        phone: phone ? phone.trim() : '',
+        source: normalizedSource,
+        industry: form.industry || 'General',
+        value: budget ? Number(budget) : 0,
+        status: 'new',
+        notes: summaryText ? [{ content: `[Form: ${form.title}] ${summaryText}`, addedBy: null }] : [],
+        assignedTo: form.assignedTo || undefined,
+      },
+      sourceLabel: `Web Form (${form.title})`,
+      summaryNote: summaryText,
     });
+
+    if (!isDuplicate && newLead.phone) {
+      const { getEffectiveAiConfig, initiateAiCallForLead } = require('../services/aiCallingService');
+      getEffectiveAiConfig({ companyId: newLead.tenantCompany })
+        .then((aiCfg) => {
+          if (aiCfg?.enabled && aiCfg?.autoCallNewLeads) {
+            return initiateAiCallForLead({ lead: newLead, companyId: newLead.tenantCompany });
+          }
+          return null;
+        })
+        .catch(() => {});
+    }
 
     // Increment submissions count on form
     form.submissionsCount = (form.submissionsCount || 0) + 1;

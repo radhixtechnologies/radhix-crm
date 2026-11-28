@@ -36,6 +36,14 @@ exports.getAiCallingConfig = async (req, res) => {
         autoCallNewLeads: config.autoCallNewLeads,
         defaultLanguage: config.defaultLanguage,
         systemScript: config.systemScript,
+        autoWhatsAppAfterCall: config.autoWhatsAppAfterCall,
+        whatsappInterestedTemplate: config.whatsappInterestedTemplate,
+        whatsappNoAnswerTemplate: config.whatsappNoAnswerTemplate,
+        autoRetryEnabled: config.autoRetryEnabled,
+        maxRetryAttempts: config.maxRetryAttempts,
+        retryDelayMinutes: config.retryDelayMinutes,
+        dndStartHour: config.dndStartHour,
+        dndEndHour: config.dndEndHour,
         webhookUrl: buildWebhookUrl(req, config.webhookSecret),
         providers: SUPPORTED_PROVIDERS,
       },
@@ -66,6 +74,14 @@ exports.updateAiCallingConfig = async (req, res) => {
       autoCallNewLeads,
       defaultLanguage,
       systemScript,
+      autoWhatsAppAfterCall,
+      whatsappInterestedTemplate,
+      whatsappNoAnswerTemplate,
+      autoRetryEnabled,
+      maxRetryAttempts,
+      retryDelayMinutes,
+      dndStartHour,
+      dndEndHour,
     } = req.body;
 
     const updatedAi = {
@@ -81,6 +97,27 @@ exports.updateAiCallingConfig = async (req, res) => {
       autoCallNewLeads: autoCallNewLeads !== undefined ? Boolean(autoCallNewLeads) : existing.autoCallNewLeads,
       defaultLanguage: defaultLanguage !== undefined ? String(defaultLanguage).trim() : existing.defaultLanguage,
       systemScript: systemScript !== undefined ? String(systemScript).trim() : existing.systemScript,
+      autoWhatsAppAfterCall:
+        autoWhatsAppAfterCall !== undefined ? Boolean(autoWhatsAppAfterCall) : existing.autoWhatsAppAfterCall,
+      whatsappInterestedTemplate:
+        whatsappInterestedTemplate !== undefined
+          ? String(whatsappInterestedTemplate).trim()
+          : existing.whatsappInterestedTemplate,
+      whatsappNoAnswerTemplate:
+        whatsappNoAnswerTemplate !== undefined
+          ? String(whatsappNoAnswerTemplate).trim()
+          : existing.whatsappNoAnswerTemplate,
+      autoRetryEnabled: autoRetryEnabled !== undefined ? Boolean(autoRetryEnabled) : existing.autoRetryEnabled,
+      maxRetryAttempts:
+        maxRetryAttempts !== undefined
+          ? Math.min(5, Math.max(1, Number(maxRetryAttempts) || 2))
+          : existing.maxRetryAttempts || 2,
+      retryDelayMinutes:
+        retryDelayMinutes !== undefined
+          ? Math.min(1440, Math.max(10, Number(retryDelayMinutes) || 60))
+          : existing.retryDelayMinutes || 60,
+      dndStartHour: dndStartHour !== undefined ? Number(dndStartHour) : existing.dndStartHour ?? 21,
+      dndEndHour: dndEndHour !== undefined ? Number(dndEndHour) : existing.dndEndHour ?? 9,
     };
 
     company.aiCalling = updatedAi;
@@ -173,12 +210,34 @@ exports.getAiCallLogs = async (req, res) => {
             _id: null,
             totalCalls: { $sum: 1 },
             completed: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
-            interested: { $sum: { $cond: [{ $eq: ['$outcome', 'interested'] }, 1, 0] } },
+            interested: { $sum: { $cond: [{ $in: ['$outcome', ['interested', 'callback_requested']] }, 1, 0] } },
+            notInterested: { $sum: { $cond: [{ $eq: ['$outcome', 'not_interested'] }, 1, 0] } },
+            noAnswerOrBusy: { $sum: { $cond: [{ $in: ['$outcome', ['no_answer', 'busy']] }, 1, 0] } },
             callbacksScheduled: { $sum: { $cond: [{ $ne: ['$nextFollowUpDate', null] }, 1, 0] } },
+            whatsappSent: { $sum: { $cond: [{ $eq: ['$whatsappAutoSent', true] }, 1, 0] } },
+            retriesScheduled: { $sum: { $cond: [{ $eq: ['$retryScheduled', true] }, 1, 0] } },
+            totalDurationSeconds: { $sum: '$durationSeconds' },
+            totalCost: { $sum: '$cost' },
           },
         },
       ]),
     ]);
+
+    const s = summaryAgg[0] || {
+      totalCalls: 0,
+      completed: 0,
+      interested: 0,
+      notInterested: 0,
+      noAnswerOrBusy: 0,
+      callbacksScheduled: 0,
+      whatsappSent: 0,
+      retriesScheduled: 0,
+      totalDurationSeconds: 0,
+      totalCost: 0,
+    };
+    s.connectRate = s.totalCalls > 0 ? Math.round((s.completed / s.totalCalls) * 100) : 0;
+    s.interestedRate = s.completed > 0 ? Math.round((s.interested / s.completed) * 100) : 0;
+    s.avgDurationSeconds = s.completed > 0 ? Math.round(s.totalDurationSeconds / s.completed) : 0;
 
     res.json({
       success: true,
@@ -186,7 +245,7 @@ exports.getAiCallLogs = async (req, res) => {
       total,
       page: currentPage,
       pages: Math.ceil(total / pageLimit),
-      summary: summaryAgg[0] || { totalCalls: 0, completed: 0, interested: 0, callbacksScheduled: 0 },
+      summary: s,
     });
   } catch (error) {
     sendError(res, error);

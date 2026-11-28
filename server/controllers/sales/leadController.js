@@ -7,6 +7,7 @@ const Notification = require('../../models/Notification');
 const { executeWorkflowEngine } = require('../workflowController');
 const { applyTenantScope, getTenantCompanyId } = require('../../utils/tenantHelper');
 const { getIstDayRange, recordLeadRemarkAndFollowUp } = require('../../utils/followUpSync');
+const { intakeLeadWithRouting } = require('../../utils/leadIntake');
 
 const sendError = (res, error) => res.status(error.statusCode || 500).json({ success: false, message: error.message });
 const roleSlug = (user) => typeof user?.role === 'object' ? user.role?.slug : user?.role;
@@ -256,17 +257,34 @@ exports.createLead = async (req, res) => {
       }
     }
 
-    const data = await Lead.create(leadData);
+    const { isDuplicate, lead: data, roundRobinAssigned } = await intakeLeadWithRouting({
+      leadFields: leadData,
+      companyId: leadCompanyId,
+      sourceLabel: 'CRM Entry',
+      actorUser: req.user,
+      skipDuplicateGuard: Boolean(req.body.allowDuplicate),
+      skipRoundRobin: Boolean(leadData.assignedTo),
+    });
+
     await data.populate({
       path: 'assignedTo',
       select: 'user employeeId department designation',
       populate: { path: 'user', select: 'name email' },
     });
 
+    if (isDuplicate) {
+      return res.status(200).json({
+        success: true,
+        isDuplicate: true,
+        data,
+        message: 'Duplicate Guard matched an existing lead and logged a Re-inquiry remark.',
+      });
+    }
+
     // Execute active automation workflows asynchronously without blocking response
     executeWorkflowEngine('lead_created', data).catch(err => console.warn('Workflow execution warning:', err.message));
 
-    res.status(201).json({ success: true, data });
+    res.status(201).json({ success: true, roundRobinAssigned, data });
   } catch (error) {
     sendError(res, error);
   }

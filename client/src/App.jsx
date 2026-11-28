@@ -122,6 +122,8 @@ const CreateQuotation = lazy(() => import('./pages/sales/CreateQuotation'));
 const QuotationDetails = lazy(() => import('./pages/sales/QuotationDetails'));
 const FollowupList = lazy(() => import('./pages/sales/FollowupList'));
 const AiCallingConsole = lazy(() => import('./pages/sales/AiCallingConsole'));
+const LeadRoutingSettings = lazy(() => import('./pages/sales/LeadRoutingSettings'));
+const PublicQuotationView = lazy(() => import('./pages/sales/PublicQuotationView'));
 
 // Contact Management
 const ContactList = lazy(() => import('./pages/contacts/ContactList'));
@@ -266,6 +268,10 @@ const AppRoutes = () => {
       <Route
         path="/forms/:id"
         element={<PublicLeadForm />}
+      />
+      <Route
+        path="/quote/:token"
+        element={<PublicQuotationView />}
       />
       <Route
         path="/change-password"
@@ -1480,6 +1486,16 @@ const AppRoutes = () => {
           <ProtectedRoute requiredModule="sales">
             <Layout>
               <AiCallingConsole />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales/routing"
+        element={
+          <ProtectedRoute requiredModule="sales">
+            <Layout>
+              <LeadRoutingSettings />
             </Layout>
           </ProtectedRoute>
         }

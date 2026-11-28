@@ -57,7 +57,7 @@ const leadSchema = new mongoose.Schema({
   },
   source: {
     type: String,
-    enum: ['website', 'referral', 'social-media', 'email', 'phone', 'campaign', 'meta', 'other'],
+    enum: ['website', 'referral', 'social-media', 'email', 'phone', 'campaign', 'meta', 'indiamart', 'justdial', 'tradeindia', 'webhook', 'other'],
     default: 'website',
   },
   metaLeadId: {
@@ -121,6 +121,14 @@ const leadSchema = new mongoose.Schema({
   tags: [String],
   // Last activity tracking
   lastActivityDate: {
+    type: Date,
+    default: null,
+  },
+  reInquiryCount: {
+    type: Number,
+    default: 0,
+  },
+  lastInquiryAt: {
     type: Date,
     default: null,
   },

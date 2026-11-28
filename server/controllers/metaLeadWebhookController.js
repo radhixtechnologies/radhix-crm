@@ -165,45 +165,53 @@ const saveMetaLead = async (event, pageId) => {
   const company = getFieldValue(fields, FIELD_ALIASES.company);
   const industry = getFieldValue(fields, FIELD_ALIASES.industry);
   const notes = buildMetaFormNotes(fields);
+  const { intakeLeadWithRouting } = require('../utils/leadIntake');
 
-  const newLead = await Lead.create({
-    name: name || email || phone || `Meta Lead #${String(event.leadgen_id).slice(-6)}`,
-    email: email || '',
-    phone: phone || '',
-    company: company || '',
-    industry: industry || '',
-    source: 'meta',
-    tenantCompany,
-    metaLeadId: event.leadgen_id,
-    metaAttribution: {
-      pageId: pageId || event.page_id,
-      formId: metaLead.form_id || event.form_id,
-      campaignId: metaLead.campaign_id || event.campaign_id,
-      adId: metaLead.ad_id || event.ad_id,
-      adName: metaLead.ad_name || event.ad_name,
-      adsetId: metaLead.adset_id || event.adset_id,
-      adsetName: metaLead.adset_name || event.adset_name,
-      platform: metaLead.platform,
+  const { isDuplicate, lead: newLead } = await intakeLeadWithRouting({
+    leadFields: {
+      name: name || email || phone || `Meta Lead #${String(event.leadgen_id).slice(-6)}`,
+      email: email || '',
+      phone: phone || '',
+      company: company || '',
+      industry: industry || '',
+      source: 'meta',
+      tenantCompany,
+      metaLeadId: event.leadgen_id,
+      metaAttribution: {
+        pageId: pageId || event.page_id,
+        formId: metaLead.form_id || event.form_id,
+        campaignId: metaLead.campaign_id || event.campaign_id,
+        adId: metaLead.ad_id || event.ad_id,
+        adName: metaLead.ad_name || event.ad_name,
+        adsetId: metaLead.adset_id || event.adset_id,
+        adsetName: metaLead.adset_name || event.adset_name,
+        platform: metaLead.platform,
+      },
+      ...(notes.length > 0 ? { notes } : {}),
     },
-    ...(notes.length > 0 ? { notes } : {}),
+    companyId: tenantCompany,
+    sourceLabel: 'Meta Ads',
+    summaryNote: notes.map((n) => n.content).join(' | '),
   });
 
-  // Execute active workflow automation rules (WhatsApp, Email, Auto-assignment)
-  triggerLeadAutomations(newLead, 'Meta lead');
+  if (!isDuplicate) {
+    // Execute active workflow automation rules (WhatsApp, Email, Auto-assignment)
+    triggerLeadAutomations(newLead, 'Meta lead');
 
-  // Auto-trigger AI Voice Call if enabled in company AI Calling settings
-  if (newLead.phone) {
-    const { getEffectiveAiConfig, initiateAiCallForLead } = require('../services/aiCallingService');
-    getEffectiveAiConfig({ companyId: newLead.tenantCompany })
-      .then((aiCfg) => {
-        if (aiCfg?.enabled && aiCfg?.autoCallNewLeads) {
-          return initiateAiCallForLead({ lead: newLead, companyId: newLead.tenantCompany });
-        }
-        return null;
-      })
-      .catch((aiErr) => {
-        console.warn('Auto AI Call trigger skipped/failed:', aiErr.message);
-      });
+    // Auto-trigger AI Voice Call if enabled in company AI Calling settings
+    if (newLead.phone) {
+      const { getEffectiveAiConfig, initiateAiCallForLead } = require('../services/aiCallingService');
+      getEffectiveAiConfig({ companyId: newLead.tenantCompany })
+        .then((aiCfg) => {
+          if (aiCfg?.enabled && aiCfg?.autoCallNewLeads) {
+            return initiateAiCallForLead({ lead: newLead, companyId: newLead.tenantCompany });
+          }
+          return null;
+        })
+        .catch((aiErr) => {
+          console.warn('Auto AI Call trigger skipped/failed:', aiErr.message);
+        });
+    }
   }
 
   return true;
